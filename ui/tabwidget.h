@@ -270,6 +270,7 @@ class BINARYNINJAUIAPI DockableTabWidget : public QWidget
 	int addTab(QWidget* widget, const QString& title);
 	int insertTab(int idx, QWidget* widget, const QString& title);
 	void removeTab(int idx);
+	void doReparentTab(int oldIdx, DockableTabWidget* target, int newIdx);
 
 	int count();
 	int currentIndex();
@@ -309,6 +310,7 @@ class BINARYNINJAUIAPI DockableTabWidget : public QWidget
 	void tabRemovedForReparent(int oldIdx, QWidget* widget, DockableTabWidget* target, int newIdx);
 	void tabAddedForReparent(int idx, DockableTabWidget* source);
 	void splitTab(int idx, Qt::Edge edge);
+	void reparentTab(int oldIdx, DockableTabWidget* target, int newIdx);
 
   private Q_SLOTS:
 	void tabBarCurrentChanged(int idx);
@@ -316,7 +318,7 @@ class BINARYNINJAUIAPI DockableTabWidget : public QWidget
 	void tabBarTabMoved(int oldIdx, int newIdx);
 	void tabBarNewWindowForTab(int idx, QRect rectHint);
 	void tabBarSplitTab(int idx, Qt::Edge edge);
-	void reparentTab(int oldIdx, DockableTabWidget* target, int newIdx);
+	void tabBarReparentTab(int oldIdx, DockableTabWidget* target, int newIdx);
 };
 
 /*!

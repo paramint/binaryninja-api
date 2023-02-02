@@ -265,6 +265,11 @@ extern "C"
 	typedef struct BNLogger BNLogger;
 	typedef struct BNSymbolQueue BNSymbolQueue;
 	typedef struct BNTypeContainer BNTypeContainer;
+	typedef struct BNProject BNProject;
+	typedef struct BNProjectFile BNProjectFile;
+	typedef struct BNExternalLibrary BNExternalLibrary;
+	typedef struct BNExternalLocation BNExternalLocation;
+	typedef struct BNProjectFolder BNProjectFolder;
 
 	//! Console log levels
 	typedef enum BNLogLevel
@@ -1482,7 +1487,24 @@ extern "C"
 		void (*componentFunctionRemoved)(void*ctxt, BNBinaryView* view, BNComponent* component, BNFunction* function);
 		void (*componentDataVariableAdded)(void*ctxt, BNBinaryView* view, BNComponent* component, BNDataVariable* var);
 		void (*componentDataVariableRemoved)(void*ctxt, BNBinaryView* view, BNComponent* component, BNDataVariable* var);
+		void (*externalLibraryAdded)(void* ctxt, BNBinaryView* data, BNExternalLibrary* library);
+		void (*externalLibraryUpdated)(void* ctxt, BNBinaryView* data, BNExternalLibrary* library);
+		void (*externalLibraryRemoved)(void* ctxt, BNBinaryView* data, BNExternalLibrary* library);
+		void (*externalLocationAdded)(void* ctxt, BNBinaryView* data, BNExternalLocation* location);
+		void (*externalLocationUpdated)(void* ctxt, BNBinaryView* data, BNExternalLocation* location);
+		void (*externalLocationRemoved)(void* ctxt, BNBinaryView* data, BNExternalLocation* location);
 	} BNBinaryDataNotification;
+
+	typedef struct BNProjectNotification
+	{
+		void* context;
+		void (*projectFileAdded)(void* ctxt, BNProject* project, BNProjectFile* projectFile);
+		void (*projectFileUpdated)(void* ctxt, BNProject* project, BNProjectFile* projectFile);
+		void (*projectFileRemoved)(void* ctxt, BNProject* project, BNProjectFile* projectFile);
+		void (*projectFolderAdded)(void* ctxt, BNProject* project, BNProjectFolder* projectFolder);
+		void (*projectFolderUpdated)(void* ctxt, BNProject* project, BNProjectFolder* projectFolder);
+		void (*projectFolderRemoved)(void* ctxt, BNProject* project, BNProjectFolder* projectFolder);
+	} BNProjectNotification;
 
 	typedef struct BNFileAccessor
 	{
@@ -3197,7 +3219,7 @@ extern "C"
 	BINARYNINJACOREAPI void BNSetSaveSettingsName(BNSaveSettings* settings, const char* name);
 
 	// File metadata object
-	BINARYNINJACOREAPI BNFileMetadata* BNCreateFileMetadata(void);
+	BINARYNINJACOREAPI BNFileMetadata* BNCreateFileMetadata();
 	BINARYNINJACOREAPI BNFileMetadata* BNNewFileReference(BNFileMetadata* file);
 	BINARYNINJACOREAPI void BNFreeFileMetadata(BNFileMetadata* file);
 	BINARYNINJACOREAPI void BNCloseFile(BNFileMetadata* file);
@@ -3248,6 +3270,81 @@ extern "C"
 	BINARYNINJACOREAPI size_t BNGetKeyValueStoreDataSize(BNKeyValueStore* store);
 	BINARYNINJACOREAPI size_t BNGetKeyValueStoreValueStorageSize(BNKeyValueStore* store);
 	BINARYNINJACOREAPI size_t BNGetKeyValueStoreNamespaceSize(BNKeyValueStore* store);
+
+	// Project object
+	BINARYNINJACOREAPI BNProject* BNNewProjectReference(BNProject* project);
+	BINARYNINJACOREAPI void BNFreeProject(BNProject* project);
+	BINARYNINJACOREAPI BNProject* BNCreateProject(const char* path, const char* name);
+	BINARYNINJACOREAPI BNProject* BNOpenProject(const char* path);
+	BINARYNINJACOREAPI bool BNCloseProject(BNProject* project);
+	BINARYNINJACOREAPI char* BNProjectGetId(BNProject* project);
+	BINARYNINJACOREAPI bool BNProjectIsOpen(BNProject* project);
+	BINARYNINJACOREAPI char* BNProjectGetPath(BNProject* project);
+	BINARYNINJACOREAPI char* BNProjectGetName(BNProject* project);
+	BINARYNINJACOREAPI void BNProjectSetName(BNProject* project, const char* name);
+
+	BINARYNINJACOREAPI void BNProjectPullFiles(BNProject* project);
+	BINARYNINJACOREAPI BNProjectFile* BNProjectCreateFile(BNProject* project, const uint8_t* contents, size_t contentsSize, BNProjectFolder* folder, const char* name, const char* description);
+	BINARYNINJACOREAPI BNProjectFile** BNProjectGetFiles(BNProject* project, size_t* count);
+	BINARYNINJACOREAPI BNProjectFile* BNProjectGetFileById(BNProject* project, const char* id);
+	BINARYNINJACOREAPI void BNProjectPushFile(BNProject* project, BNProjectFile* file);
+	BINARYNINJACOREAPI void BNProjectDeleteFile(BNProject* project, BNProjectFile* file);
+
+	BINARYNINJACOREAPI void BNProjectPullFolders(BNProject* project);
+	BINARYNINJACOREAPI BNProjectFolder* BNProjectCreateFolder(BNProject* project, BNProjectFolder* parent, const char* name, const char* description);
+	BINARYNINJACOREAPI BNProjectFolder** BNProjectGetFolders(BNProject* project, size_t* count);
+	BINARYNINJACOREAPI BNProjectFolder* BNProjectGetFolderById(BNProject* project, const char* id);
+	BINARYNINJACOREAPI void BNProjectPushFolder(BNProject* project, BNProjectFolder* folder);
+	BINARYNINJACOREAPI void BNProjectDeleteFolder(BNProject* project, BNProjectFolder* folder);
+
+	// ProjectFile object
+	BINARYNINJACOREAPI BNProjectFile* BNNewProjectFileReference(BNProjectFile* file);
+	BINARYNINJACOREAPI void BNFreeProjectFile(BNProjectFile* file);
+	BINARYNINJACOREAPI void BNFreeProjectFileList(BNProjectFile** files, size_t count);
+	BINARYNINJACOREAPI char* BNProjectFileGetPathOnDisk(BNProjectFile* file);
+	BINARYNINJACOREAPI char* BNProjectFileGetName(BNProjectFile* file);
+	BINARYNINJACOREAPI void BNProjectFileSetName(BNProjectFile* file, const char* name);
+	BINARYNINJACOREAPI char* BNProjectFileGetDescription(BNProjectFile* file);
+	BINARYNINJACOREAPI void BNProjectFileSetDescription(BNProjectFile* file, const char* description);
+	BINARYNINJACOREAPI char* BNProjectFileGetId(BNProjectFile* file);
+	BINARYNINJACOREAPI BNProjectFolder* BNProjectFileGetFolder(BNProjectFile* file);
+	BINARYNINJACOREAPI void BNProjectFileSetFolder(BNProjectFile* file, BNProjectFolder* folder);
+	BINARYNINJACOREAPI BNProject* BNProjectFileGetProject(BNProjectFile* file);
+
+	// ProjectFolder object
+	BINARYNINJACOREAPI BNProjectFolder* BNNewProjectFolderReference(BNProjectFolder* folder);
+	BINARYNINJACOREAPI void BNFreeProjectFolder(BNProjectFolder* folder);
+	BINARYNINJACOREAPI void BNFreeProjectFolderList(BNProjectFolder** folders, size_t count);
+	BINARYNINJACOREAPI char* BNProjectFolderGetId(BNProjectFolder* folder);
+	BINARYNINJACOREAPI char* BNProjectFolderGetName(BNProjectFolder* folder);
+	BINARYNINJACOREAPI void BNProjectFolderSetName(BNProjectFolder* folder, const char* name);
+	BINARYNINJACOREAPI char* BNProjectFolderGetDescription(BNProjectFolder* folder);
+	BINARYNINJACOREAPI void BNProjectFolderSetDescription(BNProjectFolder* folder, const char* description);
+	BINARYNINJACOREAPI BNProjectFolder* BNProjectFolderGetParent(BNProjectFolder* folder);
+	BINARYNINJACOREAPI void BNProjectFolderSetParent(BNProjectFolder* folder, BNProjectFolder* parent);
+	BINARYNINJACOREAPI BNProject* BNProjectFolderGetProject(BNProjectFolder* folder);
+
+	// ExternalLibrary object
+	BINARYNINJACOREAPI BNExternalLibrary* BNNewExternalLibraryReference(BNExternalLibrary* lib);
+	BINARYNINJACOREAPI void BNFreeExternalLibrary(BNExternalLibrary* lib);
+	BINARYNINJACOREAPI void BNFreeExternalLibraryList(BNExternalLibrary** libs, size_t count);
+	BINARYNINJACOREAPI char* BNExternalLibraryGetName(BNExternalLibrary* lib);
+	BINARYNINJACOREAPI void BNExternalLibrarySetBackingFileId(BNExternalLibrary* lib, const char* fileId);
+	BINARYNINJACOREAPI char* BNExternalLibraryGetBackingFileId(BNExternalLibrary* lib);
+
+	// ExternalLocation object
+	BINARYNINJACOREAPI BNExternalLocation* BNNewExternalLocationReference(BNExternalLocation*loc);
+	BINARYNINJACOREAPI void BNFreeExternalLocation(BNExternalLocation*loc);
+	BINARYNINJACOREAPI void BNFreeExternalLocationList(BNExternalLocation**locs, size_t count);
+	BINARYNINJACOREAPI char* BNExternalLocationGetInternalSymbol(BNExternalLocation* loc);
+	BINARYNINJACOREAPI uint64_t BNExternalLocationGetAddress(BNExternalLocation* loc);
+	BINARYNINJACOREAPI char* BNExternalLocationGetSymbol(BNExternalLocation* loc);
+	BINARYNINJACOREAPI BNExternalLibrary* BNExternalLocationGetExternalLibrary(BNExternalLocation* loc);
+	BINARYNINJACOREAPI bool BNExternalLocationHasAddress(BNExternalLocation* loc);
+	BINARYNINJACOREAPI bool BNExternalLocationHasSymbol(BNExternalLocation* loc);
+	BINARYNINJACOREAPI void BNExternalLocationSetAddress(BNExternalLocation* loc, uint64_t* address);
+	BINARYNINJACOREAPI void BNExternalLocationSetSymbol(BNExternalLocation* loc, const char* symbol);
+	BINARYNINJACOREAPI void BNExternalLocationSetExternalLibrary(BNExternalLocation* loc, BNExternalLibrary* library);
 
 	// Database object
 	BINARYNINJACOREAPI BNDatabase* BNNewDatabaseReference(BNDatabase* database);
@@ -3313,10 +3410,12 @@ extern "C"
 	BINARYNINJACOREAPI char* BNGetFilename(BNFileMetadata* file);
 	BINARYNINJACOREAPI void BNSetFilename(BNFileMetadata* file, const char* name);
 
+	BINARYNINJACOREAPI BNProjectFile* BNGetProjectFile(BNFileMetadata* file);
+	BINARYNINJACOREAPI void BNSetProjectFile(BNFileMetadata* file, BNProjectFile* pfile);
+
 	BINARYNINJACOREAPI char* BNBeginUndoActions(BNFileMetadata* file, bool anonymousAllowed);
 	BINARYNINJACOREAPI void BNCommitUndoActions(BNFileMetadata* file, const char* id);
 	BINARYNINJACOREAPI void BNRevertUndoActions(BNFileMetadata* file, const char* id);
-
 
 	BINARYNINJACOREAPI bool BNCanUndo(BNFileMetadata* file);
 	BINARYNINJACOREAPI bool BNUndo(BNFileMetadata* file);
@@ -3339,10 +3438,6 @@ extern "C"
 	BINARYNINJACOREAPI char* BNGetUserName(BNUser* user);
 	BINARYNINJACOREAPI char* BNGetUserEmail(BNUser* user);
 	BINARYNINJACOREAPI char* BNGetUserId(BNUser* user);
-
-	BINARYNINJACOREAPI bool BNOpenProject(BNFileMetadata* file);
-	BINARYNINJACOREAPI void BNCloseProject(BNFileMetadata* file);
-	BINARYNINJACOREAPI bool BNIsProjectOpen(BNFileMetadata* file);
 
 	BINARYNINJACOREAPI char* BNGetCurrentView(BNFileMetadata* file);
 	BINARYNINJACOREAPI uint64_t BNGetCurrentOffset(BNFileMetadata* file);
@@ -3422,6 +3517,9 @@ extern "C"
 
 	BINARYNINJACOREAPI void BNRegisterDataNotification(BNBinaryView* view, BNBinaryDataNotification* notify);
 	BINARYNINJACOREAPI void BNUnregisterDataNotification(BNBinaryView* view, BNBinaryDataNotification* notify);
+
+	BINARYNINJACOREAPI void BNRegisterProjectNotification(BNProject* project, BNProjectNotification* notify);
+	BINARYNINJACOREAPI void BNUnregisterProjectNotification(BNProject* project, BNProjectNotification* notify);
 
 	BINARYNINJACOREAPI bool BNCanAssemble(BNBinaryView* view, BNArchitecture* arch);
 
@@ -5689,6 +5787,15 @@ extern "C"
 		bool (*progress)(size_t, size_t), const BNMetadata* const options);
 	BINARYNINJACOREAPI BNBinaryView* BNLoadBinaryView(BNBinaryView* view, const bool updateAnalysis,
 		bool (*progress)(size_t, size_t), const BNMetadata* const options, const bool isDatabase);
+
+	BINARYNINJACOREAPI BNExternalLibrary* BNBinaryViewAddExternalLibrary(BNBinaryView* view, const char* name, const char* backingFileId, bool isAuto);
+	BINARYNINJACOREAPI void BNBinaryViewRemoveExternalLibrary(BNBinaryView* view, const char* name);
+	BINARYNINJACOREAPI BNExternalLibrary* BNBinaryViewGetExternalLibrary(BNBinaryView* view, const char* name);
+	BINARYNINJACOREAPI BNExternalLibrary** BNBinaryViewGetExternalLibraries(BNBinaryView* view, size_t* count);
+	BINARYNINJACOREAPI BNExternalLocation* BNBinaryViewAddExternalLocation(BNBinaryView* view, const char* internalSymbol, BNExternalLibrary* library, const char* externalSymbol, uint64_t* externalAddress, bool isAuto);
+	BINARYNINJACOREAPI void BNBinaryViewRemoveExternalLocation(BNBinaryView* view, const char* internalSymbol);
+	BINARYNINJACOREAPI BNExternalLocation* BNBinaryViewGetExternalLocation(BNBinaryView* view, const char* internalSymbol);
+	BINARYNINJACOREAPI BNExternalLocation** BNBinaryViewGetExternalLocations(BNBinaryView* view, size_t* count);
 
 	// Source code processing
 	BINARYNINJACOREAPI bool BNPreprocessSource(const char* source, const char* fileName, char** output, char** errors,

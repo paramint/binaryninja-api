@@ -2114,6 +2114,200 @@ namespace BinaryNinja {
 		void WriteAnalysisCache(Ref<KeyValueStore> val);
 	};
 
+
+	/*!
+
+		\ingroup project
+	*/
+	struct ProjectException : std::runtime_error
+	{
+		ProjectException(const std::string& desc) : std::runtime_error(desc.c_str()) {}
+	};
+
+	class ExternalLibrary;
+	class Project;
+	class ProjectFile;
+	class ProjectFolder;
+
+	/*!
+
+	\ingroup project
+	*/
+
+	class ExternalLocation : public CoreRefCountObject<BNExternalLocation, BNNewExternalLocationReference, BNFreeExternalLocation>
+	{
+	public:
+		ExternalLocation(BNExternalLocation* loc);
+
+		std::string GetInternalSymbol();
+		std::optional<uint64_t> GetAddress();
+		std::optional<std::string> GetSymbol();
+		Ref<ExternalLibrary> GetExternalLibrary();
+
+		bool HasAddress();
+		bool HasSymbol();
+
+		void SetAddress(std::optional<uint64_t> address);
+		void SetSymbol(std::optional<std::string> symbol);
+		void SetExternalLibrary(Ref<ExternalLibrary> library);
+	};
+
+	/*!
+
+	\ingroup project
+	*/
+
+	class ExternalLibrary : public CoreRefCountObject<BNExternalLibrary, BNNewExternalLibraryReference, BNFreeExternalLibrary>
+	{
+	public:
+		ExternalLibrary(BNExternalLibrary* lib);
+
+		std::string GetName() const;
+		std::optional<std::string> GetBackingFileId() const;
+
+		void SetBackingFileId(const std::optional<std::string>& backingFileId);
+	};
+
+
+	/*!
+		\ingroup project
+	*/
+	class ProjectNotification
+	{
+	  private:
+		BNProjectNotification m_callbacks;
+
+		static void ProjectFileAddedCallback(void* ctxt, BNProject* project, BNProjectFile* projectFile);
+		static void ProjectFileUpdatedCallback(void* ctxt, BNProject* project, BNProjectFile* projectFile);
+		static void ProjectFileRemovedCallback(void* ctxt, BNProject* project, BNProjectFile* projectFile);
+		static void ProjectFolderAddedCallback(void* ctxt, BNProject* project, BNProjectFolder* projectFolder);
+		static void ProjectFolderUpdatedCallback(void* ctxt, BNProject* project, BNProjectFolder* projectFolder);
+		static void ProjectFolderRemovedCallback(void* ctxt, BNProject* project, BNProjectFolder* projectFolder);
+
+	  public:
+		ProjectNotification();
+		virtual ~ProjectNotification() {}
+
+		BNProjectNotification* GetCallbacks() { return &m_callbacks; }
+
+		virtual void OnProjectFileAdded(Project* project, ProjectFile* projectFile)
+		{
+			(void)project;
+			(void)projectFile;
+		}
+
+		virtual void OnProjectFileUpdated(Project* project, ProjectFile* projectFile)
+		{
+			(void)project;
+			(void)projectFile;
+		}
+
+		virtual void OnProjectFileRemoved(Project* project, ProjectFile* projectFile)
+		{
+			(void)project;
+			(void)projectFile;
+		}
+
+		virtual void OnProjectFolderAdded(Project* project, ProjectFolder* projectFolder)
+		{
+			(void)project;
+			(void)projectFolder;
+		}
+
+		virtual void OnProjectFolderUpdated(Project* project, ProjectFolder* projectFolder)
+		{
+			(void)project;
+			(void)projectFolder;
+		}
+
+		virtual void OnProjectFolderRemoved(Project* project, ProjectFolder* projectFolder)
+		{
+			(void)project;
+			(void)projectFolder;
+		}
+	};
+
+	/*!
+
+	\ingroup project
+	*/
+	class ProjectFolder : public CoreRefCountObject<BNProjectFolder, BNNewProjectFolderReference, BNFreeProjectFolder>
+	{
+	public:
+		ProjectFolder(BNProjectFolder* folder);
+
+		Ref<Project> GetProject() const;
+		std::string GetId() const;
+		std::string GetName() const;
+		std::string GetDescription() const;
+		void SetName(const std::string& name);
+		void SetDescription(const std::string& description);
+		Ref<ProjectFolder> GetParent() const;
+		void SetParent(Ref<ProjectFolder> parent);
+	};
+
+	/*!
+
+	\ingroup project
+	*/
+	class ProjectFile : public CoreRefCountObject<BNProjectFile, BNNewProjectFileReference, BNFreeProjectFile>
+	{
+	public:
+		ProjectFile(BNProjectFile* binary);
+
+		Ref<Project> GetProject() const;
+		std::string GetPathOnDisk() const;
+		std::string GetName() const;
+		std::string GetDescription() const;
+		void SetName(const std::string& name);
+		void SetDescription(const std::string& description);
+		std::string GetId() const;
+		Ref<ProjectFolder> GetFolder() const;
+		void SetFolder(Ref<ProjectFolder> folder);
+	};
+
+
+	/*!
+
+		\ingroup project
+	*/
+	class Project : public CoreRefCountObject<BNProject, BNNewProjectReference, BNFreeProject>
+	{
+	  public:
+		Project(BNProject* project);
+
+		static Ref<Project> CreateProject(const std::string& path, const std::string& name);
+		static Ref<Project> OpenProject(const std::string& path);
+
+		bool Close();
+		std::string GetId() const;
+		bool IsOpen() const;
+		std::string GetPath() const;
+		std::string GetName() const;
+		void SetName(const std::string& name);
+
+		bool PathExists(Ref<ProjectFolder> folder, const std::string& name) const;
+
+
+		void PullFolders();
+		Ref<ProjectFolder> CreateFolder(Ref<ProjectFolder> parent, const std::string& name, const std::string& description);
+		std::vector<Ref<ProjectFolder>> GetFolders() const;
+		Ref<ProjectFolder> GetFolderById(const std::string& id) const;
+		void PushFolder(Ref<ProjectFolder> folder);
+		void DeleteFolder(Ref<ProjectFolder> folder);
+
+		void PullFiles();
+		Ref<ProjectFile> CreateFile(const std::vector<uint8_t>& contents, Ref<ProjectFolder> folder, const std::string& name, const std::string& description);
+		std::vector<Ref<ProjectFile>> GetFiles() const;
+		Ref<ProjectFile> GetFileById(const std::string& id) const;
+		void PushFile(Ref<ProjectFile> file);
+		void DeleteFile(Ref<ProjectFile> file);
+
+		void RegisterNotification(ProjectNotification* notify);
+		void UnregisterNotification(ProjectNotification* notify);
+	};
+
+
 	/*!
 
 		\ingroup undo
@@ -2164,6 +2358,7 @@ namespace BinaryNinja {
 	  public:
 		FileMetadata();
 		FileMetadata(const std::string& filename);
+		FileMetadata(Ref<ProjectFile> projectFile);
 		FileMetadata(BNFileMetadata* file);
 
 		/*! Close the underlying file handle
@@ -2365,10 +2560,6 @@ namespace BinaryNinja {
 		std::optional<std::string> GetLastRedoEntryTitle();
 		void ClearUndoEntries();
 
-		bool OpenProject();
-		void CloseProject();
-		bool IsProjectOpen();
-
 		/*! Get the current View name, e.g. ``Linear:ELF``, ``Graph:PE``
 
 		    \return The current view name
@@ -2425,6 +2616,8 @@ namespace BinaryNinja {
 		    \param data the binary view to unregister
 		*/
 		void UnregisterViewOfType(const std::string& type, BinaryNinja::Ref<BinaryNinja::BinaryView> data);
+
+		Ref<ProjectFile> GetProjectFile() const;
 	};
 
 	class Function;
@@ -2489,6 +2682,12 @@ namespace BinaryNinja {
 		static void ComponentFunctionRemovedCallback(void* ctxt, BNBinaryView* data, BNComponent* component, BNFunction* function);
 		static void ComponentDataVariableAddedCallback(void* ctxt, BNBinaryView* data, BNComponent* component, BNDataVariable* var);
 		static void ComponentDataVariableRemovedCallback(void* ctxt, BNBinaryView* data, BNComponent* component, BNDataVariable* var);
+		static void ExternalLibraryAddedCallback(void* ctxt, BNBinaryView* data, BNExternalLibrary* library);
+		static void ExternalLibraryUpdatedCallback(void* ctxt, BNBinaryView* data, BNExternalLibrary* library);
+		static void ExternalLibraryRemovedCallback(void* ctxt, BNBinaryView* data, BNExternalLibrary* library);
+		static void ExternalLocationAddedCallback(void* ctxt, BNBinaryView* data, BNExternalLocation* location);
+		static void ExternalLocationUpdatedCallback(void* ctxt, BNBinaryView* data, BNExternalLocation* location);
+		static void ExternalLocationRemovedCallback(void* ctxt, BNBinaryView* data, BNExternalLocation* location);
 
 	  public:
 
@@ -2839,6 +3038,42 @@ namespace BinaryNinja {
 			(void)component;
 			(void)var;
 		}
+
+		virtual void OnExternalLibraryAdded(BinaryView* data, ExternalLibrary* library)
+		{
+			(void)data;
+			(void)library;
+		}
+
+		virtual void OnExternalLibraryUpdated(BinaryView* data, ExternalLibrary* library)
+		{
+			(void)data;
+			(void)library;
+		}
+
+		virtual void OnExternalLibraryRemoved(BinaryView* data, ExternalLibrary* library)
+		{
+			(void)data;
+			(void)library;
+		}
+
+		virtual void OnExternalLocationAdded(BinaryView* data, ExternalLocation* location)
+		{
+			(void)data;
+			(void)location;
+		}
+
+		virtual void OnExternalLocationUpdated(BinaryView* data, ExternalLocation* location)
+		{
+			(void)data;
+			(void)location;
+		}
+
+		virtual void OnExternalLocationRemoved(BinaryView* data, ExternalLocation* location)
+		{
+			(void)data;
+			(void)location;
+		}
 	};
 
 	/*!
@@ -2952,9 +3187,9 @@ namespace BinaryNinja {
 	*/
 	class QualifiedName : public NameList
 	{
-	  public:
-		using NameList::operator=;
 		using NameList::operator+;
+		using NameList::operator=;
+	  public:
 
 		QualifiedName();
 		QualifiedName(const BNQualifiedName* name);
@@ -2979,9 +3214,9 @@ namespace BinaryNinja {
 	*/
 	class NameSpace : public NameList
 	{
-	  public:
-		using NameList::operator=;
 		using NameList::operator+;
+		using NameList::operator=;
+	  public:
 
 		NameSpace();
 		NameSpace(const std::string& name);
@@ -5700,6 +5935,16 @@ namespace BinaryNinja {
 		 	\return Whether the magic value exists
 		*/
 		bool GetExpressionParserMagicValue(const std::string& name, uint64_t* value);
+
+		Ref<ExternalLibrary> AddExternalLibrary(const std::string& name, const std::optional<std::string>& backingFileId, bool isAuto = false);
+		void RemoveExternalLibrary(const std::string& name);
+		Ref<ExternalLibrary> GetExternalLibrary(const std::string& name);
+		std::vector<Ref<ExternalLibrary>> GetExternalLibraries();
+
+		Ref<ExternalLocation> AddExternalLocation(const std::string& internalSymbol, Ref<ExternalLibrary> library, std::optional<std::string> externalSymbol, std::optional<uint64_t> externalAddress, bool isAuto = false);
+		void RemoveExternalLocation(const std::string& internalSymbol);
+		Ref<ExternalLocation> GetExternalLocation(const std::string& internalSymbol);
+		std::vector<Ref<ExternalLocation>> GetExternalLocations();
 	};
 
 
@@ -14696,7 +14941,7 @@ namespace BinaryNinja {
 			================= ========================== ============== ==============================================
 			Default           SettingsDefaultScope       Lowest         Settings Schema
 			User              SettingsUserScope          -              <User Directory>/settings.json
-			Project           SettingsProjectScope       -              <Project Directory>/.binaryninja/settings.json
+			Project           SettingsProjectScope       -              <Project Directory>/settings.json
 			Resource          SettingsResourceScope      Highest        Raw BinaryView (Storage in BNDB)
 			================= ========================== ============== ==============================================
 
