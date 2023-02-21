@@ -264,7 +264,7 @@ extern "C"
 	typedef struct BNSecretsProvider BNSecretsProvider;
 	typedef struct BNLogger BNLogger;
 	typedef struct BNSymbolQueue BNSymbolQueue;
-
+	typedef struct BNTypeArchive BNTypeArchive;
 
 	//! Console log levels
 	typedef enum BNLogLevel
@@ -6556,6 +6556,20 @@ extern "C"
 		void (*add)(void* ctxt, BNSymbol* symbol, BNType* type), void* addContext);
 	BINARYNINJACOREAPI void BNProcessSymbolQueue(BNSymbolQueue* queue);
 
+	// Type Archives
+	BINARYNINJACOREAPI BNTypeArchive* BNNewTypeArchiveReference(BNTypeArchive* archive);
+	BINARYNINJACOREAPI void BNFreeTypeArchiveReference(BNTypeArchive* archive);
+	BINARYNINJACOREAPI BNTypeArchive* BNOpenTypeArchive(const char* path);
+	BINARYNINJACOREAPI BNTypeArchive* BNCreateTypeArchive(const char* path);
+	BINARYNINJACOREAPI char* BNGetTypeArchiveId(BNTypeArchive* archive);
+	BINARYNINJACOREAPI char* BNGetTypeArchivePath(BNTypeArchive* archive);
+	BINARYNINJACOREAPI bool BNAddTypeArchiveNamedTypes(BNTypeArchive* archive, const BNQualifiedNameAndType* types, size_t count);
+	BINARYNINJACOREAPI BNType* BNGetTypeArchiveNamedType(BNTypeArchive* archive, const BNQualifiedName* name);
+	BINARYNINJACOREAPI BNQualifiedNameAndType* BNGetTypeArchiveNamedTypes(BNTypeArchive* archive, size_t* count);
+	BINARYNINJACOREAPI BNQualifiedName* BNGetTypeArchiveNamedTypeNames(BNTypeArchive* archive, size_t* count);
+	BINARYNINJACOREAPI bool BNStoreTypeArchiveMetadata(BNTypeArchive* archive, const char* key, BNMetadata* value);
+	BINARYNINJACOREAPI BNMetadata* BNQueryTypeArchiveMetadata(BNTypeArchive* archive, const char* key);
+	BINARYNINJACOREAPI bool BNRemoveTypeArchiveMetadata(BNTypeArchive* archive, const char* key);
 #ifdef __cplusplus
 }
 #endif
