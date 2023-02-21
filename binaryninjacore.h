@@ -2987,6 +2987,17 @@ extern "C"
 		void (*licenseStatusChanged)(void* ctxt, bool stillValid);
 	} BNEnterpriseServerCallbacks;
 
+	struct BNTypeArchiveNotification
+	{
+		void* context;
+		void (*viewConnected)(void* ctxt, BNBinaryView* view);
+		void (*viewDisconnected)(void* ctxt, BNBinaryView* view);
+		void (*typeAdded)(void* ctxt, const BNQualifiedName* name, BNType* definition);
+		void (*typeUpdated)(void* ctxt, const BNQualifiedName* name, BNType* oldDefinition, BNType* newDefinition);
+		void (*typeRenamed)(void* ctxt, const BNQualifiedName* oldName, const BNQualifiedName* newName);
+		void (*typeDeleted)(void* ctxt, const BNQualifiedName* name, BNType* definition);
+	};
+
 	BINARYNINJACOREAPI char* BNAllocString(const char* contents);
 	BINARYNINJACOREAPI void BNFreeString(char* str);
 	BINARYNINJACOREAPI char** BNAllocStringList(const char** contents, size_t size);
@@ -6560,13 +6571,16 @@ extern "C"
 	BINARYNINJACOREAPI BNTypeArchive* BNNewTypeArchiveReference(BNTypeArchive* archive);
 	BINARYNINJACOREAPI void BNFreeTypeArchiveReference(BNTypeArchive* archive);
 	BINARYNINJACOREAPI BNTypeArchive* BNOpenTypeArchive(const char* path);
-	BINARYNINJACOREAPI BNTypeArchive* BNCreateTypeArchive(const char* path);
 	BINARYNINJACOREAPI char* BNGetTypeArchiveId(BNTypeArchive* archive);
 	BINARYNINJACOREAPI char* BNGetTypeArchivePath(BNTypeArchive* archive);
 	BINARYNINJACOREAPI bool BNAddTypeArchiveNamedTypes(BNTypeArchive* archive, const BNQualifiedNameAndType* types, size_t count);
+	BINARYNINJACOREAPI bool BNRenameTypeArchiveNamedType(BNTypeArchive* archive, const BNQualifiedName* oldName, const BNQualifiedName* newName);
+	BINARYNINJACOREAPI bool BNRemoveTypeArchiveNamedType(BNTypeArchive* archive, const BNQualifiedName* name);
 	BINARYNINJACOREAPI BNType* BNGetTypeArchiveNamedType(BNTypeArchive* archive, const BNQualifiedName* name);
 	BINARYNINJACOREAPI BNQualifiedNameAndType* BNGetTypeArchiveNamedTypes(BNTypeArchive* archive, size_t* count);
 	BINARYNINJACOREAPI BNQualifiedName* BNGetTypeArchiveNamedTypeNames(BNTypeArchive* archive, size_t* count);
+	BINARYNINJACOREAPI void BNRegisterTypeArchiveNotification(BNTypeArchive* archive, BNTypeArchiveNotification* notification);
+	BINARYNINJACOREAPI void BNUnregisterTypeArchiveNotification(BNTypeArchive* archive, BNTypeArchiveNotification* notification);
 	BINARYNINJACOREAPI bool BNStoreTypeArchiveMetadata(BNTypeArchive* archive, const char* key, BNMetadata* value);
 	BINARYNINJACOREAPI BNMetadata* BNQueryTypeArchiveMetadata(BNTypeArchive* archive, const char* key);
 	BINARYNINJACOREAPI bool BNRemoveTypeArchiveMetadata(BNTypeArchive* archive, const char* key);
