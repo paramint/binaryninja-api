@@ -224,3 +224,58 @@ class TypeArchive:
 			return result
 		finally:
 			core.BNFreeQualifiedNameAndTypeArray(named_types, count.value)
+
+	def get_direct_references(self, id: str) -> List[str]:
+		"""
+
+		:param id:
+		:return:
+		"""
+		count = ctypes.c_size_t(0)
+		ids = core.BNGetTypeArchiveDirectTypeReferences(self.handle, id, count)
+		if ids is None:
+			raise RuntimeError("BNGetTypeArchiveDirectTypeReferences")
+		result = []
+		try:
+			for i in range(0, count.value):
+				result.append(ids[i])
+			return result
+		finally:
+			core.BNFreeStringList(ids, count.value)
+
+	def get_recursive_references(self, id: str) -> List[str]:
+		"""
+
+		:param id:
+		:return:
+		"""
+		count = ctypes.c_size_t(0)
+		ids = core.BNGetTypeArchiveRecursiveTypeReferences(self.handle, id, count)
+		if ids is None:
+			raise RuntimeError("BNGetTypeArchiveRecursiveTypeReferences")
+		result = []
+		try:
+			for i in range(0, count.value):
+				result.append(ids[i])
+			return result
+		finally:
+			core.BNFreeStringList(ids, count.value)
+
+	def get_incoming_direct_references(self, id: str) -> List[str]:
+		"""
+
+		:param id:
+		:return:
+		"""
+		count = ctypes.c_size_t(0)
+		ids = core.BNGetTypeArchiveIncomingDirectTypeReferences(self.handle, id, count)
+		if ids is None:
+			raise RuntimeError("BNGetTypeArchiveIncomingDirectTypeReferences")
+		result = []
+		try:
+			for i in range(0, count.value):
+				result.append(ids[i])
+			return result
+		finally:
+			core.BNFreeStringList(ids, count.value)
+

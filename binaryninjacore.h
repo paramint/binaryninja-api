@@ -6582,6 +6582,9 @@ extern "C"
 	BINARYNINJACOREAPI BNQualifiedName BNGetTypeArchiveTypeName(BNTypeArchive* archive, const char* id);
 	BINARYNINJACOREAPI BNQualifiedNameAndType* BNGetTypeArchiveNamedTypes(BNTypeArchive* archive, size_t* count);
 	BINARYNINJACOREAPI BNQualifiedName* BNGetTypeArchiveNamedTypeNames(BNTypeArchive* archive, size_t* count);
+	BINARYNINJACOREAPI char** BNGetTypeArchiveDirectTypeReferences(BNTypeArchive* archive, const char* id, size_t* count);
+	BINARYNINJACOREAPI char** BNGetTypeArchiveRecursiveTypeReferences(BNTypeArchive* archive, const char* id, size_t* count);
+	BINARYNINJACOREAPI char** BNGetTypeArchiveIncomingDirectTypeReferences(BNTypeArchive* archive, const char* id, size_t* count);
 	BINARYNINJACOREAPI void BNRegisterTypeArchiveNotification(BNTypeArchive* archive, BNTypeArchiveNotification* notification);
 	BINARYNINJACOREAPI void BNUnregisterTypeArchiveNotification(BNTypeArchive* archive, BNTypeArchiveNotification* notification);
 	BINARYNINJACOREAPI bool BNStoreTypeArchiveMetadata(BNTypeArchive* archive, const char* key, BNMetadata* value);
