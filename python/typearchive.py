@@ -143,9 +143,9 @@ class TypeArchive:
 		if not core.BNAddTypeArchiveNamedTypes(self.handle, api_types, len(new_types)):
 			raise RuntimeError("BNAddTypeArchiveNamedTypes")
 
-	def get_named_type(self, name: Union[str, types.QualifiedName]) -> Optional[types.Type]:
+	def get_type_by_name(self, name: Union[str, types.QualifiedName]) -> Optional[types.Type]:
 		"""
-		`get_named_type` direct extracts a reference to a contained type -- when
+		`get_type_by_name` direct extracts a reference to a contained type -- when
 		attempting to extract types from a library into a BinaryView, consider using
 		:py:meth:`import_library_type <binaryview.BinaryView.import_library_type>` instead.
 
@@ -154,10 +154,59 @@ class TypeArchive:
 		"""
 		if not isinstance(name, types.QualifiedName):
 			name = types.QualifiedName(name)
-		t = core.BNGetTypeArchiveNamedType(self.handle, name._to_core_struct())
+		t = core.BNGetTypeArchiveTypeByName(self.handle, name._to_core_struct())
 		if t is None:
 			return None
 		return types.Type.create(t)
+
+	def get_type_by_id(self, id: str) -> Optional[types.Type]:
+		"""
+		`get_type_by_id` direct extracts a reference to a contained type -- when
+		attempting to extract types from a library into a BinaryView, consider using
+		:py:meth:`import_library_type <binaryview.BinaryView.import_library_type>` instead.
+
+		:param str id:
+		:rtype: Type
+		"""
+		t = core.BNGetTypeArchiveTypeById(self.handle, id)
+		if t is None:
+			return None
+		return types.Type.create(t)
+
+	def get_type_name(self, id: str) -> Optional['types.QualifiedName']:
+		"""
+		`get_type_by_id` direct extracts a reference to a contained type -- when
+		attempting to extract types from a library into a BinaryView, consider using
+		:py:meth:`import_library_type <binaryview.BinaryView.import_library_type>` instead.
+
+		:param str id:
+		:rtype: Type
+		"""
+		name = core.BNGetTypeArchiveTypeName(self.handle, id)
+		if name is None:
+			return None
+		qname = types.QualifiedName._from_core_struct(name)
+		if len(qname.name) == 0:
+			return None
+		return qname
+
+	def get_type_id(self, name: Union[str, types.QualifiedName]) -> Optional[str]:
+		"""
+		`get_type_by_name` direct extracts a reference to a contained type -- when
+		attempting to extract types from a library into a BinaryView, consider using
+		:py:meth:`import_library_type <binaryview.BinaryView.import_library_type>` instead.
+
+		:param QualifiedName name:
+		:rtype: Type
+		"""
+		if not isinstance(name, types.QualifiedName):
+			name = types.QualifiedName(name)
+		t = core.BNGetTypeArchiveTypeId(self.handle, name._to_core_struct())
+		if t is None:
+			return None
+		if t == "":
+			return None
+		return t
 
 	@property
 	def named_types(self) -> Dict[types.QualifiedName, types.Type]:

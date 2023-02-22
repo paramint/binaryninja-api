@@ -6576,7 +6576,10 @@ extern "C"
 	BINARYNINJACOREAPI bool BNAddTypeArchiveNamedTypes(BNTypeArchive* archive, const BNQualifiedNameAndType* types, size_t count);
 	BINARYNINJACOREAPI bool BNRenameTypeArchiveNamedType(BNTypeArchive* archive, const BNQualifiedName* oldName, const BNQualifiedName* newName);
 	BINARYNINJACOREAPI bool BNRemoveTypeArchiveNamedType(BNTypeArchive* archive, const BNQualifiedName* name);
-	BINARYNINJACOREAPI BNType* BNGetTypeArchiveNamedType(BNTypeArchive* archive, const BNQualifiedName* name);
+	BINARYNINJACOREAPI BNType* BNGetTypeArchiveTypeById(BNTypeArchive* archive, const char* id);
+	BINARYNINJACOREAPI BNType* BNGetTypeArchiveTypeByName(BNTypeArchive* archive, const BNQualifiedName* name);
+	BINARYNINJACOREAPI char* BNGetTypeArchiveTypeId(BNTypeArchive* archive, const BNQualifiedName* name);
+	BINARYNINJACOREAPI BNQualifiedName BNGetTypeArchiveTypeName(BNTypeArchive* archive, const char* id);
 	BINARYNINJACOREAPI BNQualifiedNameAndType* BNGetTypeArchiveNamedTypes(BNTypeArchive* archive, size_t* count);
 	BINARYNINJACOREAPI BNQualifiedName* BNGetTypeArchiveNamedTypeNames(BNTypeArchive* archive, size_t* count);
 	BINARYNINJACOREAPI void BNRegisterTypeArchiveNotification(BNTypeArchive* archive, BNTypeArchiveNotification* notification);
