@@ -142,12 +142,14 @@ class TypeArchive:
 		if not core.BNAddTypeArchiveNamedTypes(self.handle, api_types, len(new_types)):
 			raise RuntimeError("BNAddTypeArchiveNamedTypes")
 
-	def get_type_by_name(self, name: Union[str, types.QualifiedName], snapshot: str = "") -> Optional[types.Type]:
+	def get_type_by_name(self, name: Union[str, types.QualifiedName], snapshot: Optional[str] = None) -> Optional[types.Type]:
 		"""
 
 		:param QualifiedName name:
 		:rtype: Type
 		"""
+		if snapshot is None:
+			snapshot = self.current_snapshot_id
 		if not isinstance(name, types.QualifiedName):
 			name = types.QualifiedName(name)
 		t = core.BNGetTypeArchiveTypeByName(self.handle, name._to_core_struct(), snapshot)
@@ -155,23 +157,29 @@ class TypeArchive:
 			return None
 		return types.Type.create(t)
 
-	def get_type_by_id(self, id: str, snapshot: str = "") -> Optional[types.Type]:
+	def get_type_by_id(self, id: str, snapshot: Optional[str] = None) -> Optional[types.Type]:
 		"""
 
 		:param str id:
 		:rtype: Type
 		"""
+		if snapshot is None:
+			snapshot = self.current_snapshot_id
+		assert id is not None
 		t = core.BNGetTypeArchiveTypeById(self.handle, id, snapshot)
 		if t is None:
 			return None
 		return types.Type.create(t)
 
-	def get_type_name(self, id: str, snapshot: str = "") -> Optional['types.QualifiedName']:
+	def get_type_name(self, id: str, snapshot: Optional[str] = None) -> Optional['types.QualifiedName']:
 		"""
 
 		:param str id:
 		:rtype: Type
 		"""
+		if snapshot is None:
+			snapshot = self.current_snapshot_id
+		assert id is not None
 		name = core.BNGetTypeArchiveTypeName(self.handle, id, snapshot)
 		if name is None:
 			return None
@@ -180,12 +188,14 @@ class TypeArchive:
 			return None
 		return qname
 
-	def get_type_id(self, name: Union[str, types.QualifiedName], snapshot: str = "") -> Optional[str]:
+	def get_type_id(self, name: Union[str, types.QualifiedName], snapshot: Optional[str] = None) -> Optional[str]:
 		"""
 
 		:param QualifiedName name:
 		:rtype: Type
 		"""
+		if snapshot is None:
+			snapshot = self.current_snapshot_id
 		if not isinstance(name, types.QualifiedName):
 			name = types.QualifiedName(name)
 		t = core.BNGetTypeArchiveTypeId(self.handle, name._to_core_struct(), snapshot)
@@ -203,12 +213,14 @@ class TypeArchive:
 		"""
 		return self.get_named_types()
 
-	def get_named_types(self, snapshot: str = "") -> Dict[types.QualifiedName, types.Type]:
+	def get_named_types(self, snapshot: Optional[str] = None) -> Dict[types.QualifiedName, types.Type]:
 		"""
 
 		:param snapshot:
 		:return:
 		"""
+		if snapshot is None:
+			snapshot = self.current_snapshot_id
 		count = ctypes.c_ulonglong(0)
 		result = {}
 		named_types = core.BNGetTypeArchiveNamedTypes(self.handle, snapshot, count)
@@ -221,13 +233,16 @@ class TypeArchive:
 		finally:
 			core.BNFreeQualifiedNameAndTypeArray(named_types, count.value)
 
-	def get_outgoing_direct_references(self, id: str, snapshot: str = "") -> List[str]:
+	def get_outgoing_direct_references(self, id: str, snapshot: Optional[str] = None) -> List[str]:
 		"""
 
 		:param id:
 		:param snapshot:
 		:return:
 		"""
+		if snapshot is None:
+			snapshot = self.current_snapshot_id
+		assert id is not None
 		count = ctypes.c_size_t(0)
 		ids = core.BNGetTypeArchiveOutgoingDirectTypeReferences(self.handle, id, snapshot, count)
 		if ids is None:
@@ -240,13 +255,16 @@ class TypeArchive:
 		finally:
 			core.BNFreeStringList(ids, count.value)
 
-	def get_outgoing_recursive_references(self, id: str, snapshot: str = "") -> List[str]:
+	def get_outgoing_recursive_references(self, id: str, snapshot: Optional[str] = None) -> List[str]:
 		"""
 
 		:param id:
 		:param snapshot:
 		:return:
 		"""
+		if snapshot is None:
+			snapshot = self.current_snapshot_id
+		assert id is not None
 		count = ctypes.c_size_t(0)
 		ids = core.BNGetTypeArchiveOutgoingRecursiveTypeReferences(self.handle, id, snapshot, count)
 		if ids is None:
@@ -259,13 +277,16 @@ class TypeArchive:
 		finally:
 			core.BNFreeStringList(ids, count.value)
 
-	def get_incoming_direct_references(self, id: str, snapshot: str = "") -> List[str]:
+	def get_incoming_direct_references(self, id: str, snapshot: Optional[str] = None) -> List[str]:
 		"""
 
 		:param id:
 		:param snapshot:
 		:return:
 		"""
+		if snapshot is None:
+			snapshot = self.current_snapshot_id
+		assert id is not None
 		count = ctypes.c_size_t(0)
 		ids = core.BNGetTypeArchiveIncomingDirectTypeReferences(self.handle, id, snapshot, count)
 		if ids is None:
@@ -278,13 +299,16 @@ class TypeArchive:
 		finally:
 			core.BNFreeStringList(ids, count.value)
 
-	def get_incoming_recursive_references(self, id: str, snapshot: str = "") -> List[str]:
+	def get_incoming_recursive_references(self, id: str, snapshot: Optional[str] = None) -> List[str]:
 		"""
 
 		:param id:
 		:param snapshot:
 		:return:
 		"""
+		if snapshot is None:
+			snapshot = self.current_snapshot_id
+		assert id is not None
 		count = ctypes.c_size_t(0)
 		ids = core.BNGetTypeArchiveIncomingRecursiveTypeReferences(self.handle, id, snapshot, count)
 		if ids is None:
