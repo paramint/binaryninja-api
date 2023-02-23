@@ -44,6 +44,11 @@ class TypeArchive:
 
 	@staticmethod
 	def open(path: str) -> Optional['TypeArchive']:
+		"""
+
+		:param path:
+		:return:
+		"""
 		handle = core.BNOpenTypeArchive(path)
 		if handle is None:
 			return None
@@ -51,15 +56,250 @@ class TypeArchive:
 
 	@property
 	def path(self) -> Optional[str]:
+		"""
+
+		:return:
+		"""
 		return core.BNGetTypeArchivePath(self.handle)
 
 	@property
 	def id(self) -> Optional[str]:
+		"""
+
+		:return:
+		"""
 		return core.BNGetTypeArchiveId(self.handle)
+
+	@property
+	def current_snapshot_id(self) -> str:
+		"""
+
+		:return:
+		"""
+		result = core.BNGetTypeArchiveCurrentSnapshotId(self.handle)
+		if result is None:
+			raise RuntimeError("BNGetTypeArchiveCurrentSnapshotId")
+		return result
+
+	@property
+	def all_snapshot_ids(self) -> List[str]:
+		"""
+
+		:return:
+		"""
+		count = ctypes.c_ulonglong(0)
+		ids = core.BNGetTypeArchiveAllSnapshotIds(self.handle, count)
+		if ids is None:
+			raise RuntimeError("BNGetTypeArchiveAllSnapshotIds")
+		result = []
+		try:
+			for i in range(0, count.value):
+				result.append(ids[i])
+			return result
+		finally:
+			core.BNFreeStringList(ids, count.value)
+
+	def get_snapshot_parent_id(self, snapshot: str) -> Optional[str]:
+		"""
+
+		:param snapshot:
+		:return:
+		"""
+		result = core.BNGetTypeArchiveSnapshotParentId(self.handle, snapshot)
+		if result is None:
+			raise RuntimeError("BNGetTypeArchiveSnapshotParentId")
+		if result == "":
+			return None
+		return result
+
+	def add_named_type(self, name: 'types.QualifiedNameType', type: 'types.Type') -> None:
+		"""
+
+		:param QualifiedName name:
+		:param Type t:
+		:rtype: None
+		"""
+		self.add_named_types([(name, type)])
+
+	def add_named_types(self, new_types: List[Tuple['types.QualifiedNameType', 'types.Type']]) -> None:
+		"""
+
+		:param new_types:
+		:return:
+		"""
+		api_types = (core.BNQualifiedNameAndType * len(new_types))()
+		i = 0
+		for (name, type) in new_types:
+			if not isinstance(name, types.QualifiedName):
+				name = types.QualifiedName(name)
+			type = type.immutable_copy()
+			if not isinstance(type, types.Type):
+				raise ValueError("parameter type must be a Type")
+			api_types[i].name = name._to_core_struct()
+			api_types[i].type = type.handle
+			i += 1
+
+		if not core.BNAddTypeArchiveNamedTypes(self.handle, api_types, len(new_types)):
+			raise RuntimeError("BNAddTypeArchiveNamedTypes")
+
+	def get_type_by_name(self, name: Union[str, types.QualifiedName], snapshot: str = "") -> Optional[types.Type]:
+		"""
+
+		:param QualifiedName name:
+		:rtype: Type
+		"""
+		if not isinstance(name, types.QualifiedName):
+			name = types.QualifiedName(name)
+		t = core.BNGetTypeArchiveTypeByName(self.handle, name._to_core_struct(), snapshot)
+		if t is None:
+			return None
+		return types.Type.create(t)
+
+	def get_type_by_id(self, id: str, snapshot: str = "") -> Optional[types.Type]:
+		"""
+
+		:param str id:
+		:rtype: Type
+		"""
+		t = core.BNGetTypeArchiveTypeById(self.handle, id, snapshot)
+		if t is None:
+			return None
+		return types.Type.create(t)
+
+	def get_type_name(self, id: str, snapshot: str = "") -> Optional['types.QualifiedName']:
+		"""
+
+		:param str id:
+		:rtype: Type
+		"""
+		name = core.BNGetTypeArchiveTypeName(self.handle, id, snapshot)
+		if name is None:
+			return None
+		qname = types.QualifiedName._from_core_struct(name)
+		if len(qname.name) == 0:
+			return None
+		return qname
+
+	def get_type_id(self, name: Union[str, types.QualifiedName], snapshot: str = "") -> Optional[str]:
+		"""
+
+		:param QualifiedName name:
+		:rtype: Type
+		"""
+		if not isinstance(name, types.QualifiedName):
+			name = types.QualifiedName(name)
+		t = core.BNGetTypeArchiveTypeId(self.handle, name._to_core_struct(), snapshot)
+		if t is None:
+			return None
+		if t == "":
+			return None
+		return t
+
+	@property
+	def named_types(self) -> Dict[types.QualifiedName, types.Type]:
+		"""
+
+		:return:
+		"""
+		return self.get_named_types()
+
+	def get_named_types(self, snapshot: str = "") -> Dict[types.QualifiedName, types.Type]:
+		"""
+
+		:param snapshot:
+		:return:
+		"""
+		count = ctypes.c_ulonglong(0)
+		result = {}
+		named_types = core.BNGetTypeArchiveNamedTypes(self.handle, snapshot, count)
+		assert named_types is not None, "core.BNGetTypeArchiveNamedTypes returned None"
+		try:
+			for i in range(0, count.value):
+				name = types.QualifiedName._from_core_struct(named_types[i].name)
+				result[name] = types.Type.create(core.BNNewTypeReference(named_types[i].type))
+			return result
+		finally:
+			core.BNFreeQualifiedNameAndTypeArray(named_types, count.value)
+
+	def get_outgoing_direct_references(self, id: str, snapshot: str = "") -> List[str]:
+		"""
+
+		:param id:
+		:param snapshot:
+		:return:
+		"""
+		count = ctypes.c_size_t(0)
+		ids = core.BNGetTypeArchiveOutgoingDirectTypeReferences(self.handle, id, snapshot, count)
+		if ids is None:
+			raise RuntimeError("BNGetTypeArchiveOutgoingDirectTypeReferences")
+		result = []
+		try:
+			for i in range(0, count.value):
+				result.append(ids[i])
+			return result
+		finally:
+			core.BNFreeStringList(ids, count.value)
+
+	def get_outgoing_recursive_references(self, id: str, snapshot: str = "") -> List[str]:
+		"""
+
+		:param id:
+		:param snapshot:
+		:return:
+		"""
+		count = ctypes.c_size_t(0)
+		ids = core.BNGetTypeArchiveOutgoingRecursiveTypeReferences(self.handle, id, snapshot, count)
+		if ids is None:
+			raise RuntimeError("BNGetTypeArchiveOutgoingRecursiveTypeReferences")
+		result = []
+		try:
+			for i in range(0, count.value):
+				result.append(ids[i])
+			return result
+		finally:
+			core.BNFreeStringList(ids, count.value)
+
+	def get_incoming_direct_references(self, id: str, snapshot: str = "") -> List[str]:
+		"""
+
+		:param id:
+		:param snapshot:
+		:return:
+		"""
+		count = ctypes.c_size_t(0)
+		ids = core.BNGetTypeArchiveIncomingDirectTypeReferences(self.handle, id, snapshot, count)
+		if ids is None:
+			raise RuntimeError("BNGetTypeArchiveIncomingDirectTypeReferences")
+		result = []
+		try:
+			for i in range(0, count.value):
+				result.append(ids[i])
+			return result
+		finally:
+			core.BNFreeStringList(ids, count.value)
+
+	def get_incoming_recursive_references(self, id: str, snapshot: str = "") -> List[str]:
+		"""
+
+		:param id:
+		:param snapshot:
+		:return:
+		"""
+		count = ctypes.c_size_t(0)
+		ids = core.BNGetTypeArchiveIncomingRecursiveTypeReferences(self.handle, id, snapshot, count)
+		if ids is None:
+			raise RuntimeError("BNGetTypeArchiveIncomingRecursiveTypeReferences")
+		result = []
+		try:
+			for i in range(0, count.value):
+				result.append(ids[i])
+			return result
+		finally:
+			core.BNFreeStringList(ids, count.value)
+
 
 	def query_metadata(self, key: str) -> Optional[metadata.Metadata]:
 		"""
-		`query_metadata` retrieves a metadata associated with the given key stored in the type library
 
 		:param string key: key to query
 		:rtype: metadata associated with the key
@@ -76,14 +316,6 @@ class TypeArchive:
 
 	def store_metadata(self, key: str, md: metadata.Metadata) -> None:
 		"""
-		`store_metadata` stores an object for the given key in the current type library. Objects stored using
-		`store_metadata` can be retrieved from any reference to the library. Objects stored are not arbitrary python
-		objects! The values stored must be able to be held in a Metadata object. See :py:class:`Metadata`
-		for more information. Python objects could obviously be serialized using pickle but this intentionally
-		a task left to the user since there is the potential security issues.
-
-		This is primarily intended as a way to store Platform specific information relevant to BinaryView implementations;
-		for example the PE BinaryViewType uses type library metadata to retrieve ordinal information, when available.
 
 		:param string key: key value to associate the Metadata object with
 		:param Varies md: object to store.
@@ -100,7 +332,6 @@ class TypeArchive:
 
 	def remove_metadata(self, key: str) -> None:
 		"""
-		`remove_metadata` removes the metadata associated with key from the current type library.
 
 		:param string key: key associated with metadata
 		:rtype: None
@@ -110,172 +341,3 @@ class TypeArchive:
 			>>> lib.remove_metadata("integer")
 		"""
 		core.BNRemoveTypeArchiveMetadata(self.handle, key)
-
-	def add_named_type(self, name: 'types.QualifiedNameType', type: 'types.Type') -> None:
-		"""
-		`add_named_type` directly inserts a named object into the type library's object store.
-		This is not done recursively, so care should be taken that types referring to other types
-		through NamedTypeReferences are already appropriately prepared.
-
-		To add types and objects from an existing BinaryView, it is recommended to use
-		:py:meth:`export_type_to_library <binaryview.BinaryView.export_type_to_library>`, which will automatically pull in
-		all referenced types and record additional dependencies as needed.
-
-		:param QualifiedName name:
-		:param Type t:
-		:rtype: None
-		"""
-		self.add_named_types([(name, type)])
-
-	def add_named_types(self, new_types: List[Tuple['types.QualifiedNameType', 'types.Type']]) -> None:
-		api_types = (core.BNQualifiedNameAndType * len(new_types))()
-		i = 0
-		for (name, type) in new_types:
-			if not isinstance(name, types.QualifiedName):
-				name = types.QualifiedName(name)
-			type = type.immutable_copy()
-			if not isinstance(type, types.Type):
-				raise ValueError("parameter type must be a Type")
-			api_types[i].name = name._to_core_struct()
-			api_types[i].type = type.handle
-			i += 1
-
-		if not core.BNAddTypeArchiveNamedTypes(self.handle, api_types, len(new_types)):
-			raise RuntimeError("BNAddTypeArchiveNamedTypes")
-
-	def get_type_by_name(self, name: Union[str, types.QualifiedName]) -> Optional[types.Type]:
-		"""
-		`get_type_by_name` direct extracts a reference to a contained type -- when
-		attempting to extract types from a library into a BinaryView, consider using
-		:py:meth:`import_library_type <binaryview.BinaryView.import_library_type>` instead.
-
-		:param QualifiedName name:
-		:rtype: Type
-		"""
-		if not isinstance(name, types.QualifiedName):
-			name = types.QualifiedName(name)
-		t = core.BNGetTypeArchiveTypeByName(self.handle, name._to_core_struct())
-		if t is None:
-			return None
-		return types.Type.create(t)
-
-	def get_type_by_id(self, id: str) -> Optional[types.Type]:
-		"""
-		`get_type_by_id` direct extracts a reference to a contained type -- when
-		attempting to extract types from a library into a BinaryView, consider using
-		:py:meth:`import_library_type <binaryview.BinaryView.import_library_type>` instead.
-
-		:param str id:
-		:rtype: Type
-		"""
-		t = core.BNGetTypeArchiveTypeById(self.handle, id)
-		if t is None:
-			return None
-		return types.Type.create(t)
-
-	def get_type_name(self, id: str) -> Optional['types.QualifiedName']:
-		"""
-		`get_type_by_id` direct extracts a reference to a contained type -- when
-		attempting to extract types from a library into a BinaryView, consider using
-		:py:meth:`import_library_type <binaryview.BinaryView.import_library_type>` instead.
-
-		:param str id:
-		:rtype: Type
-		"""
-		name = core.BNGetTypeArchiveTypeName(self.handle, id)
-		if name is None:
-			return None
-		qname = types.QualifiedName._from_core_struct(name)
-		if len(qname.name) == 0:
-			return None
-		return qname
-
-	def get_type_id(self, name: Union[str, types.QualifiedName]) -> Optional[str]:
-		"""
-		`get_type_by_name` direct extracts a reference to a contained type -- when
-		attempting to extract types from a library into a BinaryView, consider using
-		:py:meth:`import_library_type <binaryview.BinaryView.import_library_type>` instead.
-
-		:param QualifiedName name:
-		:rtype: Type
-		"""
-		if not isinstance(name, types.QualifiedName):
-			name = types.QualifiedName(name)
-		t = core.BNGetTypeArchiveTypeId(self.handle, name._to_core_struct())
-		if t is None:
-			return None
-		if t == "":
-			return None
-		return t
-
-	@property
-	def named_types(self) -> Dict[types.QualifiedName, types.Type]:
-		"""
-		A dict containing all named types provided by a type library (read-only)
-		"""
-		count = ctypes.c_ulonglong(0)
-		result = {}
-		named_types = core.BNGetTypeArchiveNamedTypes(self.handle, count)
-		assert named_types is not None, "core.BNGetTypeArchiveNamedTypes returned None"
-		try:
-			for i in range(0, count.value):
-				name = types.QualifiedName._from_core_struct(named_types[i].name)
-				result[name] = types.Type.create(core.BNNewTypeReference(named_types[i].type))
-			return result
-		finally:
-			core.BNFreeQualifiedNameAndTypeArray(named_types, count.value)
-
-	def get_direct_references(self, id: str) -> List[str]:
-		"""
-
-		:param id:
-		:return:
-		"""
-		count = ctypes.c_size_t(0)
-		ids = core.BNGetTypeArchiveDirectTypeReferences(self.handle, id, count)
-		if ids is None:
-			raise RuntimeError("BNGetTypeArchiveDirectTypeReferences")
-		result = []
-		try:
-			for i in range(0, count.value):
-				result.append(ids[i])
-			return result
-		finally:
-			core.BNFreeStringList(ids, count.value)
-
-	def get_recursive_references(self, id: str) -> List[str]:
-		"""
-
-		:param id:
-		:return:
-		"""
-		count = ctypes.c_size_t(0)
-		ids = core.BNGetTypeArchiveRecursiveTypeReferences(self.handle, id, count)
-		if ids is None:
-			raise RuntimeError("BNGetTypeArchiveRecursiveTypeReferences")
-		result = []
-		try:
-			for i in range(0, count.value):
-				result.append(ids[i])
-			return result
-		finally:
-			core.BNFreeStringList(ids, count.value)
-
-	def get_incoming_direct_references(self, id: str) -> List[str]:
-		"""
-
-		:param id:
-		:return:
-		"""
-		count = ctypes.c_size_t(0)
-		ids = core.BNGetTypeArchiveIncomingDirectTypeReferences(self.handle, id, count)
-		if ids is None:
-			raise RuntimeError("BNGetTypeArchiveIncomingDirectTypeReferences")
-		result = []
-		try:
-			for i in range(0, count.value):
-				result.append(ids[i])
-			return result
-		finally:
-			core.BNFreeStringList(ids, count.value)
-
