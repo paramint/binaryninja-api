@@ -2992,10 +2992,10 @@ extern "C"
 		void* context;
 		void (*viewConnected)(void* ctxt, BNBinaryView* view);
 		void (*viewDisconnected)(void* ctxt, BNBinaryView* view);
-		void (*typeAdded)(void* ctxt, const BNQualifiedName* name, BNType* definition);
-		void (*typeUpdated)(void* ctxt, const BNQualifiedName* name, BNType* oldDefinition, BNType* newDefinition);
-		void (*typeRenamed)(void* ctxt, const BNQualifiedName* oldName, const BNQualifiedName* newName);
-		void (*typeDeleted)(void* ctxt, const BNQualifiedName* name, BNType* definition);
+		void (*typeAdded)(void* ctxt, const char* id, BNType* definition);
+		void (*typeUpdated)(void* ctxt, const char* id, BNType* oldDefinition, BNType* newDefinition);
+		void (*typeRenamed)(void* ctxt, const char* id, const BNQualifiedName* oldName, const BNQualifiedName* newName);
+		void (*typeDeleted)(void* ctxt, const char* id, BNType* definition);
 	};
 
 	BINARYNINJACOREAPI char* BNAllocString(const char* contents);
@@ -5507,6 +5507,7 @@ extern "C"
 	BINARYNINJACOREAPI char* BNGetTypeReferenceId(BNNamedTypeReference* nt);
 	BINARYNINJACOREAPI BNQualifiedName BNGetTypeReferenceName(BNNamedTypeReference* nt);
 	BINARYNINJACOREAPI void BNFreeQualifiedName(BNQualifiedName* name);
+	BINARYNINJACOREAPI void BNFreeQualifiedNameArray(BNQualifiedName* names, size_t count);
 	BINARYNINJACOREAPI void BNFreeNamedTypeReference(BNNamedTypeReference* nt);
 	BINARYNINJACOREAPI BNNamedTypeReference* BNNewNamedTypeReference(BNNamedTypeReference* nt);
 
@@ -6576,15 +6577,16 @@ extern "C"
 	BINARYNINJACOREAPI char* BNGetTypeArchiveCurrentSnapshotId(BNTypeArchive* archive);
 	BINARYNINJACOREAPI char** BNGetTypeArchiveAllSnapshotIds(BNTypeArchive* archive, size_t* count);
 	BINARYNINJACOREAPI char* BNGetTypeArchiveSnapshotParentId(BNTypeArchive* archive, const char* id);
-	BINARYNINJACOREAPI bool BNAddTypeArchiveNamedTypes(BNTypeArchive* archive, const BNQualifiedNameAndType* types, size_t count);
-	BINARYNINJACOREAPI bool BNRenameTypeArchiveNamedType(BNTypeArchive* archive, const BNQualifiedName* oldName, const BNQualifiedName* newName);
-	BINARYNINJACOREAPI bool BNRemoveTypeArchiveNamedType(BNTypeArchive* archive, const BNQualifiedName* name);
+	BINARYNINJACOREAPI bool BNAddTypeArchiveTypes(BNTypeArchive* archive, const BNQualifiedNameAndType* types, size_t count);
+	BINARYNINJACOREAPI bool BNRenameTypeArchiveType(BNTypeArchive* archive, const char* id, const BNQualifiedName* newName);
+	BINARYNINJACOREAPI bool BNRemoveTypeArchiveType(BNTypeArchive* archive, const char* id);
 	BINARYNINJACOREAPI BNType* BNGetTypeArchiveTypeById(BNTypeArchive* archive, const char* id, const char* snapshot);
 	BINARYNINJACOREAPI BNType* BNGetTypeArchiveTypeByName(BNTypeArchive* archive, const BNQualifiedName* name, const char* snapshot);
 	BINARYNINJACOREAPI char* BNGetTypeArchiveTypeId(BNTypeArchive* archive, const BNQualifiedName* name, const char* snapshot);
 	BINARYNINJACOREAPI BNQualifiedName BNGetTypeArchiveTypeName(BNTypeArchive* archive, const char* id, const char* snapshot);
-	BINARYNINJACOREAPI BNQualifiedNameAndType* BNGetTypeArchiveNamedTypes(BNTypeArchive* archive, const char* snapshot, size_t* count);
-	BINARYNINJACOREAPI BNQualifiedName* BNGetTypeArchiveNamedTypeNames(BNTypeArchive* archive, const char* snapshot, size_t* count);
+	BINARYNINJACOREAPI BNQualifiedNameTypeAndId* BNGetTypeArchiveTypes(BNTypeArchive* archive, const char* snapshot, size_t* count);
+	BINARYNINJACOREAPI char** BNGetTypeArchiveTypeIds(BNTypeArchive* archive, const char* snapshot, size_t* count);
+	BINARYNINJACOREAPI BNQualifiedName* BNGetTypeArchiveTypeNames(BNTypeArchive* archive, const char* snapshot, size_t* count);
 	BINARYNINJACOREAPI char** BNGetTypeArchiveOutgoingDirectTypeReferences(BNTypeArchive* archive, const char* id, const char* snapshot, size_t* count);
 	BINARYNINJACOREAPI char** BNGetTypeArchiveOutgoingRecursiveTypeReferences(BNTypeArchive* archive, const char* id, const char* snapshot, size_t* count);
 	BINARYNINJACOREAPI char** BNGetTypeArchiveIncomingDirectTypeReferences(BNTypeArchive* archive, const char* id, const char* snapshot, size_t* count);

@@ -24,7 +24,7 @@ from typing import Optional, List, Dict, Union, Tuple
 # Binary Ninja components
 import binaryninja
 from . import _binaryninjacore as core
-from . import types
+from . import types as ty_
 from . import metadata
 from . import platform
 from . import architecture
@@ -112,37 +112,53 @@ class TypeArchive:
 			return None
 		return result
 
-	def add_named_type(self, name: 'types.QualifiedNameType', type: 'types.Type') -> None:
+	def add_type(self, name: 'ty_.QualifiedNameType', type: 'ty_.Type') -> None:
 		"""
 
 		:param QualifiedName name:
 		:param Type t:
 		:rtype: None
 		"""
-		self.add_named_types([(name, type)])
+		self.add_types([(name, type)])
 
-	def add_named_types(self, new_types: List[Tuple['types.QualifiedNameType', 'types.Type']]) -> None:
+	def add_types(self, new_types: List[Tuple['ty_.QualifiedNameType', 'ty_.Type']]) -> None:
 		"""
 
 		:param new_types:
-		:return:
 		"""
 		api_types = (core.BNQualifiedNameAndType * len(new_types))()
 		i = 0
 		for (name, type) in new_types:
-			if not isinstance(name, types.QualifiedName):
-				name = types.QualifiedName(name)
+			if not isinstance(name, ty_.QualifiedName):
+				name = ty_.QualifiedName(name)
 			type = type.immutable_copy()
-			if not isinstance(type, types.Type):
+			if not isinstance(type, ty_.Type):
 				raise ValueError("parameter type must be a Type")
 			api_types[i].name = name._to_core_struct()
 			api_types[i].type = type.handle
 			i += 1
 
-		if not core.BNAddTypeArchiveNamedTypes(self.handle, api_types, len(new_types)):
-			raise RuntimeError("BNAddTypeArchiveNamedTypes")
+		if not core.BNAddTypeArchiveTypes(self.handle, api_types, len(new_types)):
+			raise RuntimeError("BNAddTypeArchiveTypes")
 
-	def get_type_by_name(self, name: Union[str, types.QualifiedName], snapshot: Optional[str] = None) -> Optional[types.Type]:
+	def rename_type(self, id: str, new_name: 'ty_.QualifiedNameType') -> None:
+		"""
+
+		:param id:
+		:param new_name:
+		"""
+		if not core.BNRenameTypeArchiveType(self.handle, id, new_name._to_core_struct()):
+			raise RuntimeError("BNRenameTypeArchiveType")
+
+	def remove_type(self, id: str) -> None:
+		"""
+
+		:param id:
+		"""
+		if not core.BNRemoveTypeArchiveType(self.handle, id):
+			raise RuntimeError("BNRemoveTypeArchiveType")
+
+	def get_type_by_name(self, name: Union[str, ty_.QualifiedName], snapshot: Optional[str] = None) -> Optional[ty_.Type]:
 		"""
 
 		:param QualifiedName name:
@@ -150,14 +166,14 @@ class TypeArchive:
 		"""
 		if snapshot is None:
 			snapshot = self.current_snapshot_id
-		if not isinstance(name, types.QualifiedName):
-			name = types.QualifiedName(name)
+		if not isinstance(name, ty_.QualifiedName):
+			name = ty_.QualifiedName(name)
 		t = core.BNGetTypeArchiveTypeByName(self.handle, name._to_core_struct(), snapshot)
 		if t is None:
 			return None
-		return types.Type.create(t)
+		return ty_.Type.create(t)
 
-	def get_type_by_id(self, id: str, snapshot: Optional[str] = None) -> Optional[types.Type]:
+	def get_type_by_id(self, id: str, snapshot: Optional[str] = None) -> Optional[ty_.Type]:
 		"""
 
 		:param str id:
@@ -169,9 +185,9 @@ class TypeArchive:
 		t = core.BNGetTypeArchiveTypeById(self.handle, id, snapshot)
 		if t is None:
 			return None
-		return types.Type.create(t)
+		return ty_.Type.create(t)
 
-	def get_type_name(self, id: str, snapshot: Optional[str] = None) -> Optional['types.QualifiedName']:
+	def get_type_name(self, id: str, snapshot: Optional[str] = None) -> Optional['ty_.QualifiedName']:
 		"""
 
 		:param str id:
@@ -183,12 +199,12 @@ class TypeArchive:
 		name = core.BNGetTypeArchiveTypeName(self.handle, id, snapshot)
 		if name is None:
 			return None
-		qname = types.QualifiedName._from_core_struct(name)
+		qname = ty_.QualifiedName._from_core_struct(name)
 		if len(qname.name) == 0:
 			return None
 		return qname
 
-	def get_type_id(self, name: Union[str, types.QualifiedName], snapshot: Optional[str] = None) -> Optional[str]:
+	def get_type_id(self, name: Union[str, ty_.QualifiedName], snapshot: Optional[str] = None) -> Optional[str]:
 		"""
 
 		:param QualifiedName name:
@@ -196,8 +212,8 @@ class TypeArchive:
 		"""
 		if snapshot is None:
 			snapshot = self.current_snapshot_id
-		if not isinstance(name, types.QualifiedName):
-			name = types.QualifiedName(name)
+		if not isinstance(name, ty_.QualifiedName):
+			name = ty_.QualifiedName(name)
 		t = core.BNGetTypeArchiveTypeId(self.handle, name._to_core_struct(), snapshot)
 		if t is None:
 			return None
@@ -206,14 +222,14 @@ class TypeArchive:
 		return t
 
 	@property
-	def named_types(self) -> Dict[types.QualifiedName, types.Type]:
+	def types(self) -> Dict[str, Tuple[ty_.QualifiedName, ty_.Type]]:
 		"""
 
 		:return:
 		"""
-		return self.get_named_types()
+		return self.get_types()
 
-	def get_named_types(self, snapshot: Optional[str] = None) -> Dict[types.QualifiedName, types.Type]:
+	def get_types(self, snapshot: Optional[str] = None) -> Dict[str, Tuple[ty_.QualifiedName, ty_.Type]]:
 		"""
 
 		:param snapshot:
@@ -223,15 +239,70 @@ class TypeArchive:
 			snapshot = self.current_snapshot_id
 		count = ctypes.c_ulonglong(0)
 		result = {}
-		named_types = core.BNGetTypeArchiveNamedTypes(self.handle, snapshot, count)
-		assert named_types is not None, "core.BNGetTypeArchiveNamedTypes returned None"
+		named_types = core.BNGetTypeArchiveTypes(self.handle, snapshot, count)
+		assert named_types is not None, "core.BNGetTypeArchiveTypes returned None"
 		try:
 			for i in range(0, count.value):
-				name = types.QualifiedName._from_core_struct(named_types[i].name)
-				result[name] = types.Type.create(core.BNNewTypeReference(named_types[i].type))
+				name = ty_.QualifiedName._from_core_struct(named_types[i].name)
+				id = core.pyNativeStr(named_types[i].id)
+				result[id] = (name, ty_.Type.create(core.BNNewTypeReference(named_types[i].type)))
 			return result
 		finally:
-			core.BNFreeQualifiedNameAndTypeArray(named_types, count.value)
+			core.BNFreeTypeIdList(named_types, count.value)
+
+	@property
+	def type_ids(self) -> List[str]:
+		"""
+
+		:return:
+		"""
+		return self.get_type_ids()
+
+	def get_type_ids(self, snapshot: Optional[str] = None) -> List[str]:
+		"""
+
+		:param snapshot:
+		:return:
+		"""
+		if snapshot is None:
+			snapshot = self.current_snapshot_id
+		count = ctypes.c_ulonglong(0)
+		result = []
+		ids = core.BNGetTypeArchiveTypeIds(self.handle, snapshot, count)
+		assert ids is not None, "core.BNGetTypeArchiveTypeIds returned None"
+		try:
+			for i in range(count.value):
+				result.append(core.pyNativeStr(ids[i]))
+			return result
+		finally:
+			core.BNFreeStringList(ids, count.value)
+
+	@property
+	def type_names(self) -> List['ty_.QualifiedName']:
+		"""
+
+		:return:
+		"""
+		return self.get_type_names()
+
+	def get_type_names(self, snapshot: Optional[str] = None) -> List['ty_.QualifiedName']:
+		"""
+
+		:param snapshot:
+		:return:
+		"""
+		if snapshot is None:
+			snapshot = self.current_snapshot_id
+		count = ctypes.c_ulonglong(0)
+		result = []
+		names = core.BNGetTypeArchiveTypeNames(self.handle, snapshot, count)
+		assert names is not None, "core.BNGetTypeArchiveTypeNames returned None"
+		try:
+			for i in range(count.value):
+				result.append(ty_.QualifiedName._from_core_struct(names[i]))
+			return result
+		finally:
+			core.BNFreeQualifiedNameArray(names, count.value)
 
 	def get_outgoing_direct_references(self, id: str, snapshot: Optional[str] = None) -> List[str]:
 		"""
