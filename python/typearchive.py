@@ -94,7 +94,7 @@ class TypeArchive:
 		result = []
 		try:
 			for i in range(0, count.value):
-				result.append(ids[i])
+				result.append(core.pyNativeStr(ids[i]))
 			return result
 		finally:
 			core.BNFreeStringList(ids, count.value)
@@ -147,6 +147,8 @@ class TypeArchive:
 		:param id:
 		:param new_name:
 		"""
+		if not isinstance(new_name, ty_.QualifiedName):
+			new_name = ty_.QualifiedName(new_name)
 		if not core.BNRenameTypeArchiveType(self.handle, id, new_name._to_core_struct()):
 			raise RuntimeError("BNRenameTypeArchiveType")
 
@@ -321,7 +323,7 @@ class TypeArchive:
 		result = []
 		try:
 			for i in range(0, count.value):
-				result.append(ids[i])
+				result.append(core.pyNativeStr(ids[i]))
 			return result
 		finally:
 			core.BNFreeStringList(ids, count.value)
@@ -343,7 +345,7 @@ class TypeArchive:
 		result = []
 		try:
 			for i in range(0, count.value):
-				result.append(ids[i])
+				result.append(core.pyNativeStr(ids[i]))
 			return result
 		finally:
 			core.BNFreeStringList(ids, count.value)
@@ -365,7 +367,7 @@ class TypeArchive:
 		result = []
 		try:
 			for i in range(0, count.value):
-				result.append(ids[i])
+				result.append(core.pyNativeStr(ids[i]))
 			return result
 		finally:
 			core.BNFreeStringList(ids, count.value)
@@ -387,13 +389,13 @@ class TypeArchive:
 		result = []
 		try:
 			for i in range(0, count.value):
-				result.append(ids[i])
+				result.append(core.pyNativeStr(ids[i]))
 			return result
 		finally:
 			core.BNFreeStringList(ids, count.value)
 
 
-	def query_metadata(self, key: str) -> Optional[metadata.Metadata]:
+	def query_metadata(self, key: str) -> Optional['metadata.MetadataValueType']:
 		"""
 
 		:param string key: key to query
@@ -409,7 +411,7 @@ class TypeArchive:
 			return None
 		return metadata.Metadata(handle=md_handle).value
 
-	def store_metadata(self, key: str, md: metadata.Metadata) -> None:
+	def store_metadata(self, key: str, md: 'metadata.MetadataValueType') -> None:
 		"""
 
 		:param string key: key value to associate the Metadata object with

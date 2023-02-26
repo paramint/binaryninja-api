@@ -227,7 +227,7 @@ class TypeLibrary:
 		"""
 		return core.BNFinalizeTypeLibrary(self.handle)
 
-	def query_metadata(self, key: str) -> Optional[metadata.Metadata]:
+	def query_metadata(self, key: str) -> Optional['metadata.MetadataValueType']:
 		"""
 		`query_metadata` retrieves a metadata associated with the given key stored in the type library
 
