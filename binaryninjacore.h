@@ -6593,9 +6593,9 @@ extern "C"
 	BINARYNINJACOREAPI char** BNGetTypeArchiveIncomingRecursiveTypeReferences(BNTypeArchive* archive, const char* id, const char* snapshot, size_t* count);
 	BINARYNINJACOREAPI void BNRegisterTypeArchiveNotification(BNTypeArchive* archive, BNTypeArchiveNotification* notification);
 	BINARYNINJACOREAPI void BNUnregisterTypeArchiveNotification(BNTypeArchive* archive, BNTypeArchiveNotification* notification);
-	BINARYNINJACOREAPI bool BNStoreTypeArchiveMetadata(BNTypeArchive* archive, const char* key, BNMetadata* value);
-	BINARYNINJACOREAPI BNMetadata* BNQueryTypeArchiveMetadata(BNTypeArchive* archive, const char* key);
-	BINARYNINJACOREAPI bool BNRemoveTypeArchiveMetadata(BNTypeArchive* archive, const char* key);
+	BINARYNINJACOREAPI bool BNTypeArchiveStoreMetadata(BNTypeArchive* archive, const char* key, BNMetadata* value);
+	BINARYNINJACOREAPI BNMetadata* BNTypeArchiveQueryMetadata(BNTypeArchive* archive, const char* key);
+	BINARYNINJACOREAPI bool BNTypeArchiveRemoveMetadata(BNTypeArchive* archive, const char* key);
 #ifdef __cplusplus
 }
 #endif

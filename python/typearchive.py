@@ -406,7 +406,7 @@ class TypeArchive:
 			>>> lib.query_metadata("ordinals")["9"]
 			"htons"
 		"""
-		md_handle = core.BNQueryTypeArchiveMetadata(self.handle, key)
+		md_handle = core.BNTypeArchiveQueryMetadata(self.handle, key)
 		if md_handle is None:
 			return None
 		return metadata.Metadata(handle=md_handle).value
@@ -425,7 +425,7 @@ class TypeArchive:
 		"""
 		if not isinstance(md, metadata.Metadata):
 			md = metadata.Metadata(md)
-		core.BNStoreTypeArchiveMetadata(self.handle, key, md.handle)
+		core.BNTypeArchiveStoreMetadata(self.handle, key, md.handle)
 
 	def remove_metadata(self, key: str) -> None:
 		"""
@@ -437,4 +437,4 @@ class TypeArchive:
 			>>> lib.store_metadata("integer", 1337)
 			>>> lib.remove_metadata("integer")
 		"""
-		core.BNRemoveTypeArchiveMetadata(self.handle, key)
+		core.BNTypeArchiveRemoveMetadata(self.handle, key)

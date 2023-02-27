@@ -30,6 +30,7 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <unordered_set>
 #include <exception>
 #include <functional>
 #include <set>
@@ -15731,6 +15732,297 @@ namespace BinaryNinja {
 
 		*/
 		void Finalize();
+	};
+
+	class TypeArchive;
+	class TypeArchiveNotification
+	{
+		BNTypeArchiveNotification m_callbacks;
+
+		static void OnViewConnectedCallback(void* ctx, BNBinaryView* view);
+		static void OnViewDisconnectedCallback(void* ctx, BNBinaryView* view);
+		static void OnTypeAddedCallback(void* ctx, const char* id, BNType* definition);
+		static void OnTypeUpdatedCallback(void* ctx, const char* id, BNType* oldDefinition, BNType* newDefinition);
+		static void OnTypeRenamedCallback(void* ctx, const char* id, const BNQualifiedName* oldName, const BNQualifiedName* newName);
+		static void OnTypeDeletedCallback(void* ctx, const char* id, BNType* definition);
+
+	public:
+		TypeArchiveNotification();
+		virtual ~TypeArchiveNotification() = default;
+
+		BNTypeArchiveNotification* GetCallbacks() { return &m_callbacks; }
+
+		/*!
+		    Called when a new view is connected to the type archive.
+		    \param view
+		 */
+		virtual void OnViewConnected(Ref<BinaryView> view)
+		{
+			(void)view;
+		}
+
+		/*!
+		    Called when a previously connected view is disconnected.
+		    \param view
+		 */
+		virtual void OnViewDisconnected(Ref<BinaryView> view)
+		{
+			(void)view;
+		}
+
+		/*!
+		    Called when a type is added to the archive
+		    \param id Id of type added
+		    \param definition Definition of type
+		 */
+		virtual void OnTypeAdded(const std::string& id, Ref<Type> definition)
+		{
+			(void)id;
+		}
+
+		/*!
+		    Called when a type in the archive is updated to a new definition
+		    \param id Id of type
+		    \param oldDefinition Previous definition
+		    \param newDefinition Current definition
+		 */
+		virtual void OnTypeUpdated(const std::string& id, Ref<Type> oldDefinition, Ref<Type> newDefinition)
+		{
+			(void)id;
+			(void)oldDefinition;
+			(void)newDefinition;
+		}
+
+		/*!
+		    Called when a type in the archive is renamed
+		    \param id Type id
+		    \param oldName Previous name
+		    \param newName Current name
+		 */
+		virtual void OnTypeRenamed(const std::string& id, const QualifiedName& oldName, const QualifiedName& newName)
+		{
+			(void)oldName;
+			(void)newName;
+		}
+
+		/*!
+		    Called when a type in the archive is deleted from the archive
+		    \param id Id of type deleted
+		    \param definition Definition of type deleted
+		 */
+		virtual void OnTypeDeleted(const std::string& id, Ref<Type> definition)
+		{
+			(void)id;
+			(void)definition;
+		}
+	};
+
+	/*!
+	    \ingroup binaryview
+	 */
+	class TypeArchive: public CoreRefCountObject<BNTypeArchive, BNNewTypeArchiveReference, BNFreeTypeArchiveReference>
+	{
+	public:
+		TypeArchive(BNTypeArchive* archive);
+
+		/*!
+		    Open the type archive at the given path, if it exists, or create one if it does not.
+		    \param path Path to type archive file
+		    \return Type archive, or nullptr if it could not be loaded.
+		 */
+		static Ref<TypeArchive> Open(const std::string& path);
+
+		/*!
+		    Get the unique id associated with this type archive
+		    \return The id
+		 */
+		std::string GetId() const;
+
+		/*!
+		    Get the path to the type archive
+		    \return The path
+		 */
+		std::string GetPath() const;
+
+		/*!
+		    Get the id of the current snapshot in the type archive
+		    \throws DatabaseException if an exception occurs
+		    \return Snapshot id
+		 */
+		std::string GetCurrentSnapshotId() const noexcept(false);
+
+		/*!
+		    Get a list of every snapshot's id
+		    \throws DatabaseException if an exception occurs
+		    \return All ids (including the empty first snapshot)
+		 */
+		std::vector<std::string> GetAllSnapshotIds() const noexcept(false);
+
+		/*!
+		    Get the id of the parent to the given snapshot
+		    \param id Child snapshot id
+		    \throws DatabaseException if an exception occurs
+		    \return Parent snapshot id, or empty string if the snapshot is a root
+		 */
+		std::string GetSnapshotParentId(const std::string& id) const noexcept(false);
+
+		/*!
+		    Add named types to the type archive. Types must have all dependant named
+		    types prior to being added, or this function will fail.
+		    Types already existing with any added names will be overwritten.
+		    \param name Name of new type
+		    \param types Type definitions
+		    \throws DatabaseException if an exception occurs
+		    \return True if the types were added
+		 */
+		bool AddTypes(const std::vector<QualifiedNameAndType>& types) noexcept(false);
+
+		/*!
+		    Change the name of an existing type in the type archive.
+		    \param id Type id
+		    \param newName New type name
+		    \throws DatabaseException if an exception occurs
+		    \return True if successful
+		 */
+		bool RenameType(const std::string& id, const QualifiedName& newName) noexcept(false);
+
+		/*!
+		    Remove an existing type in the type archive.
+		    \param id Type id
+		    \throws DatabaseException if an exception occurs
+		    \return True if successful
+		 */
+		bool RemoveType(const std::string& id) noexcept(false);
+
+		/*!
+		    Retrieve a stored type in the archive by id
+		    \param id Type id
+		    \param snapshot Snapshot id to search for types, or empty string to search the latest snapshot
+		    \throws DatabaseException if an exception occurs
+		    \return Type, if it exists. Otherwise nullptr
+		 */
+		Ref<Type> GetTypeById(const std::string& id, const std::string& snapshot) const noexcept(false);
+
+		/*!
+		    Retrieve a stored type in the archive
+		    \param name Type name
+		    \param snapshot Snapshot id to search for types, or empty string to search the latest snapshot
+		    \throws DatabaseException if an exception occurs
+		    \return Type, if it exists. Otherwise nullptr
+		 */
+		Ref<Type> GetTypeByName(const QualifiedName& name, const std::string& snapshot) const noexcept(false);
+
+		/*!
+		    Retrieve a type's id by its name
+		    \param name Type name
+		    \param snapshot Snapshot id to search for types, or empty string to search the latest snapshot
+		    \throws DatabaseException if an exception occurs
+		    \return Type id, if it exists. Otherwise empty string
+		 */
+		std::string GetTypeId(const QualifiedName& name, const std::string& snapshot) const noexcept(false);
+
+		/*!
+		    Retrieve a type's name by its id
+		    \param id Type id
+		    \param snapshot Snapshot id to search for types, or empty string to search the latest snapshot
+		    \throws DatabaseException if an exception occurs
+		    \return Type name, if it exists. Otherwise empty string
+		 */
+		QualifiedName GetTypeName(const std::string& id, const std::string& snapshot) const noexcept(false);
+
+		/*!
+		    Retrieve all stored types in the archive
+		    \param snapshot Snapshot id to search for types, or empty string to search the latest snapshot
+		    \throws DatabaseException if an exception occurs
+		    \return All types
+		 */
+		std::unordered_map<std::string, QualifiedNameAndType> GetTypes(const std::string& snapshot) const noexcept(false);
+
+		/*!
+		    Get a list of all types' ids currently in the archive
+		    \param snapshot Snapshot id to search for types, or empty string to search the latest snapshot
+		    \throws DatabaseException if an exception occurs
+		    \return All type ids
+		 */
+		std::vector<std::string> GetTypeIds(const std::string& snapshot) const noexcept(false);
+
+		/*!
+		    Get a list of all types' names currently in the archive
+		    \param snapshot Snapshot id to search for types, or empty string to search the latest snapshot
+		    \throws DatabaseException if an exception occurs
+		    \return All type names
+		 */
+		std::vector<QualifiedName> GetTypeNames(const std::string& snapshot) const noexcept(false);
+
+		/*!
+		    Get all types a given type references directly
+		    \param id Source type id
+		    \param snapshot Snapshot id to search for types, or empty string to search the latest snapshot
+		    \throws DatabaseException if an exception occurs
+		    \return Target type ids
+		 */
+		std::unordered_set<std::string> GetOutgoingDirectTypeReferences(const std::string& id, const std::string& snapshot) const noexcept(false);
+
+		/*!
+		    Get all types a given type references, and any types that the referenced types reference
+		    \param id Source type id
+		    \param snapshot Snapshot id to search for types, or empty string to search the latest snapshot
+		    \throws DatabaseException if an exception occurs
+		    \return Target type ids
+		 */
+		std::unordered_set<std::string> GetOutgoingRecursiveTypeReferences(const std::string& id, const std::string& snapshot) const noexcept(false);
+
+		/*!
+		    Get all types that reference a given type
+		    \param id Target type id
+		    \param snapshot Snapshot id to search for types, or empty string to search the latest snapshot
+		    \throws DatabaseException if an exception occurs
+		    \return Source type ids
+		 */
+		std::unordered_set<std::string> GetIncomingDirectTypeReferences(const std::string& id, const std::string& snapshot) const noexcept(false);
+
+		/*!
+		    Get all types that reference a given type, and all types that reference them, recursively
+		    \param id Target type id
+		    \param snapshot Snapshot id to search for types, or empty string to search the latest snapshot
+		    \throws DatabaseException if an exception occurs
+		    \return Source type ids
+		 */
+		std::unordered_set<std::string> GetIncomingRecursiveTypeReferences(const std::string& id, const std::string& snapshot) const noexcept(false);
+
+		/*!
+		    Register a notification listener
+		    \param notification Object to receive notifications
+		 */
+		void RegisterNotification(TypeArchiveNotification* notification);
+
+		/*!
+		    Unregister a notification listener
+		    \param notification Object to no longer receive notifications
+		 */
+		void UnregisterNotification(TypeArchiveNotification* notification);
+
+		/*!
+		    Store a key/value pair in the archive's metadata storage
+		    \param key Metadata key
+		    \param value Metadata value
+		    \throws DatabaseException if an exception occurs
+		 */
+		void StoreMetadata(const std::string& key, Ref<Metadata> value) noexcept(false);
+
+		/*!
+		    Look up a metadata entry in the archive
+		    \param key Metadata key
+		    \return Metadata value, if it exists. Otherwise, nullptr
+		 */
+		Ref<Metadata> QueryMetadata(const std::string& key) const noexcept(false);
+
+		/*!
+		    Delete a given metadata entry in the archive
+		    \param key Metadata key
+		    \throws DatabaseException if an exception occurs
+		 */
+		void RemoveMetadata(const std::string& key) noexcept(false);
 	};
 
 	/*!
