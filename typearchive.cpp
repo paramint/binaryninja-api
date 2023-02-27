@@ -173,8 +173,10 @@ bool TypeArchive::RemoveType(const std::string& id) noexcept(false)
 }
 
 
-Ref<Type> TypeArchive::GetTypeById(const std::string& id, const std::string& snapshot) const noexcept(false)
+Ref<Type> TypeArchive::GetTypeById(const std::string& id, std::string snapshot) const noexcept(false)
 {
+	if (snapshot.empty())
+		snapshot = GetCurrentSnapshotId();
 	BNType* type = BNGetTypeArchiveTypeById(m_object, id.c_str(), snapshot.c_str());
 	if (!type)
 		return nullptr;
@@ -182,8 +184,10 @@ Ref<Type> TypeArchive::GetTypeById(const std::string& id, const std::string& sna
 }
 
 
-Ref<Type> TypeArchive::GetTypeByName(const QualifiedName& name, const std::string& snapshot) const noexcept(false)
+Ref<Type> TypeArchive::GetTypeByName(const QualifiedName& name, std::string snapshot) const noexcept(false)
 {
+	if (snapshot.empty())
+		snapshot = GetCurrentSnapshotId();
 	BNQualifiedName qname = name.GetAPIObject();
 	BNType* type = BNGetTypeArchiveTypeByName(m_object, &qname, snapshot.c_str());
 	QualifiedName::FreeAPIObject(&qname);
@@ -193,8 +197,10 @@ Ref<Type> TypeArchive::GetTypeByName(const QualifiedName& name, const std::strin
 }
 
 
-std::string TypeArchive::GetTypeId(const QualifiedName& name, const std::string& snapshot) const noexcept(false)
+std::string TypeArchive::GetTypeId(const QualifiedName& name, std::string snapshot) const noexcept(false)
 {
+	if (snapshot.empty())
+		snapshot = GetCurrentSnapshotId();
 	BNQualifiedName qname = name.GetAPIObject();
 	char* id = BNGetTypeArchiveTypeId(m_object, &qname, snapshot.c_str());
 	QualifiedName::FreeAPIObject(&qname);
@@ -207,8 +213,10 @@ std::string TypeArchive::GetTypeId(const QualifiedName& name, const std::string&
 }
 
 
-QualifiedName TypeArchive::GetTypeName(const std::string& id, const std::string& snapshot) const noexcept(false)
+QualifiedName TypeArchive::GetTypeName(const std::string& id, std::string snapshot) const noexcept(false)
 {
+	if (snapshot.empty())
+		snapshot = GetCurrentSnapshotId();
 	BNQualifiedName qname = BNGetTypeArchiveTypeName(m_object, id.c_str(), snapshot.c_str());
 	QualifiedName result = QualifiedName::FromAPIObject(&qname);
 	BNFreeQualifiedName(&qname);
@@ -216,8 +224,10 @@ QualifiedName TypeArchive::GetTypeName(const std::string& id, const std::string&
 }
 
 
-std::unordered_map<std::string, QualifiedNameAndType> TypeArchive::GetTypes(const std::string& snapshot) const noexcept(false)
+std::unordered_map<std::string, QualifiedNameAndType> TypeArchive::GetTypes(std::string snapshot) const noexcept(false)
 {
+	if (snapshot.empty())
+	snapshot = GetCurrentSnapshotId();
 	size_t count = 0;
 	BNQualifiedNameTypeAndId* types = BNGetTypeArchiveTypes(m_object, snapshot.c_str(), &count);
 	if (!types)
@@ -237,8 +247,10 @@ std::unordered_map<std::string, QualifiedNameAndType> TypeArchive::GetTypes(cons
 }
 
 
-std::vector<std::string> TypeArchive::GetTypeIds(const std::string& snapshot) const noexcept(false)
+std::vector<std::string> TypeArchive::GetTypeIds(std::string snapshot) const noexcept(false)
 {
+	if (snapshot.empty())
+		snapshot = GetCurrentSnapshotId();
 	size_t count = 0;
 	char** ids = BNGetTypeArchiveTypeIds(m_object, snapshot.c_str(), &count);
 	if (!ids)
@@ -254,8 +266,10 @@ std::vector<std::string> TypeArchive::GetTypeIds(const std::string& snapshot) co
 }
 
 
-std::vector<QualifiedName> TypeArchive::GetTypeNames(const std::string& snapshot) const noexcept(false)
+std::vector<QualifiedName> TypeArchive::GetTypeNames(std::string snapshot) const noexcept(false)
 {
+	if (snapshot.empty())
+		snapshot = GetCurrentSnapshotId();
 	size_t count = 0;
 	BNQualifiedName* names = BNGetTypeArchiveTypeNames(m_object, snapshot.c_str(), &count);
 	if (!names)
@@ -272,8 +286,10 @@ std::vector<QualifiedName> TypeArchive::GetTypeNames(const std::string& snapshot
 }
 
 
-std::unordered_set<std::string> TypeArchive::GetOutgoingDirectTypeReferences(const std::string& id, const std::string& snapshot) const noexcept(false)
+std::unordered_set<std::string> TypeArchive::GetOutgoingDirectTypeReferences(const std::string& id, std::string snapshot) const noexcept(false)
 {
+	if (snapshot.empty())
+		snapshot = GetCurrentSnapshotId();
 	size_t count = 0;
 	char** ids = BNGetTypeArchiveOutgoingDirectTypeReferences(m_object, id.c_str(), snapshot.c_str(), &count);
 	if (!ids)
@@ -289,8 +305,10 @@ std::unordered_set<std::string> TypeArchive::GetOutgoingDirectTypeReferences(con
 }
 
 
-std::unordered_set<std::string> TypeArchive::GetOutgoingRecursiveTypeReferences(const std::string& id, const std::string& snapshot) const noexcept(false)
+std::unordered_set<std::string> TypeArchive::GetOutgoingRecursiveTypeReferences(const std::string& id, std::string snapshot) const noexcept(false)
 {
+	if (snapshot.empty())
+		snapshot = GetCurrentSnapshotId();
 	size_t count = 0;
 	char** ids = BNGetTypeArchiveOutgoingRecursiveTypeReferences(m_object, id.c_str(), snapshot.c_str(), &count);
 	if (!ids)
@@ -306,8 +324,10 @@ std::unordered_set<std::string> TypeArchive::GetOutgoingRecursiveTypeReferences(
 }
 
 
-std::unordered_set<std::string> TypeArchive::GetIncomingDirectTypeReferences(const std::string& id, const std::string& snapshot) const noexcept(false)
+std::unordered_set<std::string> TypeArchive::GetIncomingDirectTypeReferences(const std::string& id, std::string snapshot) const noexcept(false)
 {
+	if (snapshot.empty())
+		snapshot = GetCurrentSnapshotId();
 	size_t count = 0;
 	char** ids = BNGetTypeArchiveIncomingDirectTypeReferences(m_object, id.c_str(), snapshot.c_str(), &count);
 	if (!ids)
@@ -323,8 +343,10 @@ std::unordered_set<std::string> TypeArchive::GetIncomingDirectTypeReferences(con
 }
 
 
-std::unordered_set<std::string> TypeArchive::GetIncomingRecursiveTypeReferences(const std::string& id, const std::string& snapshot) const noexcept(false)
+std::unordered_set<std::string> TypeArchive::GetIncomingRecursiveTypeReferences(const std::string& id, std::string snapshot) const noexcept(false)
 {
+	if (snapshot.empty())
+		snapshot = GetCurrentSnapshotId();
 	size_t count = 0;
 	char** ids = BNGetTypeArchiveIncomingRecursiveTypeReferences(m_object, id.c_str(), snapshot.c_str(), &count);
 	if (!ids)

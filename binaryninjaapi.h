@@ -15901,7 +15901,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Type, if it exists. Otherwise nullptr
 		 */
-		Ref<Type> GetTypeById(const std::string& id, const std::string& snapshot) const noexcept(false);
+		Ref<Type> GetTypeById(const std::string& id, std::string snapshot = "") const noexcept(false);
 
 		/*!
 		    Retrieve a stored type in the archive
@@ -15910,7 +15910,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Type, if it exists. Otherwise nullptr
 		 */
-		Ref<Type> GetTypeByName(const QualifiedName& name, const std::string& snapshot) const noexcept(false);
+		Ref<Type> GetTypeByName(const QualifiedName& name, std::string snapshot = "") const noexcept(false);
 
 		/*!
 		    Retrieve a type's id by its name
@@ -15919,7 +15919,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Type id, if it exists. Otherwise empty string
 		 */
-		std::string GetTypeId(const QualifiedName& name, const std::string& snapshot) const noexcept(false);
+		std::string GetTypeId(const QualifiedName& name, std::string snapshot = "") const noexcept(false);
 
 		/*!
 		    Retrieve a type's name by its id
@@ -15928,7 +15928,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Type name, if it exists. Otherwise empty string
 		 */
-		QualifiedName GetTypeName(const std::string& id, const std::string& snapshot) const noexcept(false);
+		QualifiedName GetTypeName(const std::string& id, std::string snapshot = "") const noexcept(false);
 
 		/*!
 		    Retrieve all stored types in the archive
@@ -15936,7 +15936,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return All types
 		 */
-		std::unordered_map<std::string, QualifiedNameAndType> GetTypes(const std::string& snapshot) const noexcept(false);
+		std::unordered_map<std::string, QualifiedNameAndType> GetTypes(std::string snapshot = "") const noexcept(false);
 
 		/*!
 		    Get a list of all types' ids currently in the archive
@@ -15944,7 +15944,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return All type ids
 		 */
-		std::vector<std::string> GetTypeIds(const std::string& snapshot) const noexcept(false);
+		std::vector<std::string> GetTypeIds(std::string snapshot = "") const noexcept(false);
 
 		/*!
 		    Get a list of all types' names currently in the archive
@@ -15952,7 +15952,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return All type names
 		 */
-		std::vector<QualifiedName> GetTypeNames(const std::string& snapshot) const noexcept(false);
+		std::vector<QualifiedName> GetTypeNames(std::string snapshot = "") const noexcept(false);
 
 		/*!
 		    Get all types a given type references directly
@@ -15961,7 +15961,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Target type ids
 		 */
-		std::unordered_set<std::string> GetOutgoingDirectTypeReferences(const std::string& id, const std::string& snapshot) const noexcept(false);
+		std::unordered_set<std::string> GetOutgoingDirectTypeReferences(const std::string& id, std::string snapshot = "") const noexcept(false);
 
 		/*!
 		    Get all types a given type references, and any types that the referenced types reference
@@ -15970,7 +15970,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Target type ids
 		 */
-		std::unordered_set<std::string> GetOutgoingRecursiveTypeReferences(const std::string& id, const std::string& snapshot) const noexcept(false);
+		std::unordered_set<std::string> GetOutgoingRecursiveTypeReferences(const std::string& id, std::string snapshot = "") const noexcept(false);
 
 		/*!
 		    Get all types that reference a given type
@@ -15979,7 +15979,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Source type ids
 		 */
-		std::unordered_set<std::string> GetIncomingDirectTypeReferences(const std::string& id, const std::string& snapshot) const noexcept(false);
+		std::unordered_set<std::string> GetIncomingDirectTypeReferences(const std::string& id, std::string snapshot = "") const noexcept(false);
 
 		/*!
 		    Get all types that reference a given type, and all types that reference them, recursively
@@ -15988,7 +15988,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Source type ids
 		 */
-		std::unordered_set<std::string> GetIncomingRecursiveTypeReferences(const std::string& id, const std::string& snapshot) const noexcept(false);
+		std::unordered_set<std::string> GetIncomingRecursiveTypeReferences(const std::string& id, std::string snapshot = "") const noexcept(false);
 
 		/*!
 		    Register a notification listener
