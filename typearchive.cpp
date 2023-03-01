@@ -81,6 +81,15 @@ Ref<TypeArchive> TypeArchive::Open(const std::string& path)
 }
 
 
+Ref<TypeArchive> TypeArchive::LookupById(const std::string& id)
+{
+	BNTypeArchive* handle = BNLookupTypeArchiveById(id.c_str());
+	if (!handle)
+		return nullptr;
+	return new TypeArchive(handle);
+}
+
+
 std::string TypeArchive::GetId() const
 {
 	char* str = BNGetTypeArchiveId(m_object);
@@ -101,9 +110,9 @@ std::string TypeArchive::GetPath() const
 
 std::string TypeArchive::GetCurrentSnapshotId() const noexcept(false)
 {
-	char* str = BNGetTypeArchivePath(m_object);
+	char* str = BNGetTypeArchiveCurrentSnapshotId(m_object);
 	if (!str)
-		throw DatabaseException("BNGetTypeArchivePath");
+		throw DatabaseException("BNGetTypeArchiveCurrentSnapshotId");
 	std::string result(str);
 	BNFreeString(str);
 	return result;
@@ -282,7 +291,27 @@ std::vector<QualifiedName> TypeArchive::GetTypeNames(std::string snapshot) const
 	}
 	BNFreeTypeNameList(names, count);
 	return result;
+}
 
+
+std::unordered_map<std::string, QualifiedName> TypeArchive::GetTypeNamesAndIds(std::string snapshot) const noexcept(false)
+{
+	if (snapshot.empty())
+		snapshot = GetCurrentSnapshotId();
+	BNQualifiedName* names = nullptr;
+	char** ids = nullptr;
+	size_t count = 0;
+	if (!BNGetTypeArchiveTypeNamesAndIds(m_object, snapshot.c_str(), &names, &ids, &count))
+		throw DatabaseException("BNGetTypeArchiveTypeNamesAndIds");
+
+	std::unordered_map<std::string, QualifiedName> result;
+	for (size_t i = 0; i < count; ++i)
+	{
+		result.emplace(ids[i], QualifiedName::FromAPIObject(&names[i]));
+	}
+	BNFreeTypeNameList(names, count);
+	BNFreeStringList(ids, count);
+	return result;
 }
 
 

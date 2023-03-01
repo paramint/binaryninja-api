@@ -6572,6 +6572,7 @@ extern "C"
 	BINARYNINJACOREAPI BNTypeArchive* BNNewTypeArchiveReference(BNTypeArchive* archive);
 	BINARYNINJACOREAPI void BNFreeTypeArchiveReference(BNTypeArchive* archive);
 	BINARYNINJACOREAPI BNTypeArchive* BNOpenTypeArchive(const char* path);
+	BINARYNINJACOREAPI BNTypeArchive* BNLookupTypeArchiveById(const char* id);
 	BINARYNINJACOREAPI char* BNGetTypeArchiveId(BNTypeArchive* archive);
 	BINARYNINJACOREAPI char* BNGetTypeArchivePath(BNTypeArchive* archive);
 	BINARYNINJACOREAPI char* BNGetTypeArchiveCurrentSnapshotId(BNTypeArchive* archive);
@@ -6587,6 +6588,7 @@ extern "C"
 	BINARYNINJACOREAPI BNQualifiedNameTypeAndId* BNGetTypeArchiveTypes(BNTypeArchive* archive, const char* snapshot, size_t* count);
 	BINARYNINJACOREAPI char** BNGetTypeArchiveTypeIds(BNTypeArchive* archive, const char* snapshot, size_t* count);
 	BINARYNINJACOREAPI BNQualifiedName* BNGetTypeArchiveTypeNames(BNTypeArchive* archive, const char* snapshot, size_t* count);
+	BINARYNINJACOREAPI bool BNGetTypeArchiveTypeNamesAndIds(BNTypeArchive* archive, const char* snapshot, BNQualifiedName** names, char*** ids, size_t* count);
 	BINARYNINJACOREAPI char** BNGetTypeArchiveOutgoingDirectTypeReferences(BNTypeArchive* archive, const char* id, const char* snapshot, size_t* count);
 	BINARYNINJACOREAPI char** BNGetTypeArchiveOutgoingRecursiveTypeReferences(BNTypeArchive* archive, const char* id, const char* snapshot, size_t* count);
 	BINARYNINJACOREAPI char** BNGetTypeArchiveIncomingDirectTypeReferences(BNTypeArchive* archive, const char* id, const char* snapshot, size_t* count);

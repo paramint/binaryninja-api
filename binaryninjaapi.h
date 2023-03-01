@@ -15833,6 +15833,13 @@ namespace BinaryNinja {
 		static Ref<TypeArchive> Open(const std::string& path);
 
 		/*!
+		    Get a reference to the type archive with the known id, if one exists.
+		    \param id Type archive id
+		    \return Type archive, or nullptr if it could not be found.
+		 */
+		static Ref<TypeArchive> LookupById(const std::string& id);
+
+		/*!
 		    Get the unique id associated with this type archive
 		    \return The id
 		 */
@@ -15953,6 +15960,14 @@ namespace BinaryNinja {
 		    \return All type names
 		 */
 		std::vector<QualifiedName> GetTypeNames(std::string snapshot = "") const noexcept(false);
+
+		/*!
+		    Get a list of all types' names and ids currently in the archive
+		    \param snapshot Snapshot id to search for types, or empty string to search the latest snapshot
+		    \throws DatabaseException if an exception occurs
+		    \return All type names and ids
+		 */
+		std::unordered_map<std::string, QualifiedName> GetTypeNamesAndIds(std::string snapshot = "") const noexcept(false);
 
 		/*!
 		    Get all types a given type references directly

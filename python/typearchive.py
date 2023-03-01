@@ -54,6 +54,18 @@ class TypeArchive:
 			return None
 		return TypeArchive(handle=handle)
 
+	@staticmethod
+	def lookup_by_id(id: str) -> Optional['TypeArchive']:
+		"""
+
+		:param id:
+		:return:
+		"""
+		handle = core.BNLookupTypeArchiveById(id)
+		if handle is None:
+			return None
+		return TypeArchive(handle=handle)
+
 	@property
 	def path(self) -> Optional[str]:
 		"""
@@ -302,6 +314,37 @@ class TypeArchive:
 		try:
 			for i in range(count.value):
 				result.append(ty_.QualifiedName._from_core_struct(names[i]))
+			return result
+		finally:
+			core.BNFreeQualifiedNameArray(names, count.value)
+
+	@property
+	def type_names_and_ids(self) -> Dict[str, 'ty_.QualifiedName']:
+		"""
+
+		:return:
+		"""
+		return self.get_type_names_and_ids()
+
+	def get_type_names_and_ids(self, snapshot: Optional[str] = None) -> Dict[str, 'ty_.QualifiedName']:
+		"""
+
+		:param snapshot:
+		:return:
+		"""
+		if snapshot is None:
+			snapshot = self.current_snapshot_id
+		names = ctypes.POINTER(core.BNQualifiedName)()
+		ids = ctypes.POINTER(ctypes.c_char_p)()
+		count = ctypes.c_ulonglong(0)
+		result = {}
+		if not core.BNGetTypeArchiveTypeNamesAndIds(self.handle, snapshot, names, ids, count):
+			raise RuntimeError("core.BNGetTypeArchiveTypeNamesAndIds returned False")
+		try:
+			for i in range(count.value):
+				id = core.pyNativeStr(ids[i])
+				name = ty_.QualifiedName._from_core_struct(names[i])
+				result[id] = name
 			return result
 		finally:
 			core.BNFreeQualifiedNameArray(names, count.value)
