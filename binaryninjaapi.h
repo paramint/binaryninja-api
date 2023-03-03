@@ -3436,6 +3436,7 @@ namespace BinaryNinja {
 	class Component;
 	class DebugInfo;
 	class TypeLibrary;
+	class TypeArchive;
 
 	class QueryMetadataException : public ExceptionWithStackTrace
 	{
@@ -5245,6 +5246,50 @@ namespace BinaryNinja {
 			        or std::nullopt if it was not imported
 		 */
 		std::optional<std::pair<Ref<TypeLibrary>, QualifiedName>> LookupImportedTypeLibrary(const QualifiedName& name);
+		/*!
+			Connect a given type archive to the binary view. No types will actually be synced by calling this, just they
+			will become available.
+			\param archive New archive
+		 */
+		void ConnectTypeArchive(Ref<TypeArchive> archive);
+		/*!
+			Disconnect from a type archive, breaking all connections to types synced with the archive
+			\param archive Archive to remove
+		 */
+		void DisconnectTypeArchive(Ref<TypeArchive> archive);
+		/*!
+			Look up a connected archive by its id
+			\param id Id of archive
+			\return Archive, if one exists with that id. Otherwise nullptr
+		 */
+		Ref<TypeArchive> GetTypeArchive(const std::string& id) const;
+		/*!
+			Get all connected type archives
+			\returnAll archives
+		 */
+		std::unordered_map<std::string, Ref<TypeArchive>> GetTypeArchives() const;
+		/*!
+			Get a list of all available type names in all connected archives, and their archive/type id pair
+			\return All type names in a map
+		 */
+		std::unordered_map<QualifiedName, std::map<std::string, std::string>> GetTypeArchiveTypeNames() const;
+		/*!
+			Pull a type from a type archive, syncing with it and any dependencies
+			\param archiveId Id of archive
+			\param typeId Id of desired type
+			\param type [out] Definition of desired type
+			\param dependencies [out] List of extra types that are dependencies of the desired type that were also added
+			\return True if successful
+		 */
+		bool PullTypeArchiveType(const std::string& archiveId, const std::string& typeId, QualifiedNameAndType& type, std::vector<std::string>& dependencies);
+		/*!
+			Push an updated type into a type archive
+			\param archiveId Id of archive
+			\param typeId Id of pushed type
+			\param type New definition of type
+			\return True if successful
+		 */
+		bool PushTypeArchiveType(const std::string& archiveId, const std::string& typeId, const QualifiedNameAndType& type);
 
 		bool FindNextData(
 		    uint64_t start, const DataBuffer& data, uint64_t& result, BNFindFlag flags = FindCaseSensitive);
@@ -16058,3 +16103,16 @@ namespace BinaryNinja {
 		void Process();
 	};
 }  // namespace BinaryNinja
+
+
+namespace std
+{
+	template<> struct hash<BinaryNinja::QualifiedName>
+	{
+		typedef BinaryNinja::QualifiedName argument_type;
+		size_t operator()(argument_type const& value) const
+		{
+			return std::hash<std::string>()(value.GetString());
+		}
+	};
+}  // namespace std

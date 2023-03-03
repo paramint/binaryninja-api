@@ -64,6 +64,7 @@ from . import mediumlevelil
 from . import highlevelil
 from . import debuginfo
 from . import flowgraph
+from . import typearchive
 # The following are imported as such to allow the type checker disambiguate the module name
 # from properties and methods of the same name
 from . import workflow as _workflow
