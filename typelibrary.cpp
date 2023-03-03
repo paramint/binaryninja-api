@@ -153,6 +153,7 @@ std::vector<QualifiedNameAndType> TypeLibrary::GetNamedObjects()
 		QualifiedNameAndType qnat;
 		qnat.name = QualifiedName::FromAPIObject(&objects[i].name);
 		qnat.type = new Type(BNNewTypeReference(objects[i].type));
+		result.push_back(std::move(qnat));
 	}
 	BNFreeQualifiedNameAndTypeArray(objects, count);
 	return result;
@@ -169,6 +170,7 @@ std::vector<QualifiedNameAndType> TypeLibrary::GetNamedTypes()
 		QualifiedNameAndType qnat;
 		qnat.name = QualifiedName::FromAPIObject(&types[i].name);
 		qnat.type = new Type(BNNewTypeReference(types[i].type));
+		result.push_back(std::move(qnat));
 	}
 	BNFreeQualifiedNameAndTypeArray(types, count);
 	return result;
