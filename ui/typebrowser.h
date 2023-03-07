@@ -27,6 +27,9 @@ protected:
 	virtual void generateChildren() = 0;
 	void updateChildIndices();
 
+	template<typename T, typename T2>
+	friend void updateNodes(TypeBrowserTreeNode* node, std::map<T, std::shared_ptr<T2>>& nodes, const std::vector<T>& newList, TypeBrowserTreeNode::RemoveNodeCallback remove, TypeBrowserTreeNode::UpdateNodeCallback update, TypeBrowserTreeNode::InsertNodeCallback insert);
+
 public:
 	class TypeBrowserModel* model() const { return m_model; }
 	std::optional<std::shared_ptr<TypeBrowserTreeNode>> parent() const;
@@ -43,6 +46,7 @@ public:
 class BINARYNINJAUIAPI RootTreeNode : public TypeBrowserTreeNode
 {
 	std::shared_ptr<class BinaryViewTreeNode> m_viewNode;
+	std::map<TypeArchiveRef, std::shared_ptr<class TypeArchiveTreeNode>> m_archiveNodes;
 	std::map<TypeLibraryRef, std::shared_ptr<class TypeLibraryTreeNode>> m_libraryNodes;
 	std::shared_ptr<class PlatformTreeNode> m_platformNode;
 public:
@@ -115,6 +119,24 @@ public:
 };
 
 
+class BINARYNINJAUIAPI TypeArchiveTreeNode : public TypeSourceTreeNode
+{
+	TypeArchiveRef m_archive;
+
+public:
+	TypeArchiveTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, TypeArchiveRef archive);
+	virtual ~TypeArchiveTreeNode() = default;
+
+	const TypeArchiveRef& archive() const { return m_archive; }
+
+	virtual std::string text() const override;
+	virtual bool operator<(const TypeBrowserTreeNode& other) const override;
+	virtual bool filter(const std::string& filter) const override;
+
+	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
+};
+
+
 class BINARYNINJAUIAPI TypeLibraryTreeNode : public TypeSourceTreeNode
 {
 	TypeLibraryRef m_library;
@@ -151,7 +173,7 @@ public:
 };
 
 
-class BINARYNINJAUIAPI TypeBrowserModel : public QAbstractItemModel, public BinaryNinja::BinaryDataNotification
+class BINARYNINJAUIAPI TypeBrowserModel : public QAbstractItemModel, public BinaryNinja::BinaryDataNotification, public BinaryNinja::TypeArchiveNotification
 {
 	Q_OBJECT
 	BinaryViewRef m_data;
@@ -162,6 +184,7 @@ public:
 	TypeBrowserModel(BinaryViewRef data);
 	virtual ~TypeBrowserModel();
 	BinaryViewRef getData() { return m_data; }
+	std::shared_ptr<TypeBrowserTreeNode> getRootNode() { return m_rootNode; }
 
 	int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 	int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -180,7 +203,14 @@ public:
 	void OnTypeUndefined(BinaryNinja::BinaryView *data, const BinaryNinja::QualifiedName &name, BinaryNinja::Type *type) override;
 	void OnTypeReferenceChanged(BinaryNinja::BinaryView *data, const BinaryNinja::QualifiedName &name, BinaryNinja::Type *type) override;
 	void OnTypeFieldReferenceChanged(BinaryNinja::BinaryView *data, const BinaryNinja::QualifiedName &name, uint64_t offset) override;
+
+	void OnTypeAdded(const std::string& id, TypeRef definition) override;
+	void OnTypeUpdated(const std::string& id, TypeRef oldDefinition, TypeRef newDefinition) override;
+	void OnTypeRenamed(const std::string& id, const BinaryNinja::QualifiedName& oldName, const BinaryNinja::QualifiedName& newName) override;
+	void OnTypeDeleted(const std::string& id, TypeRef definition) override;
+
 public Q_SLOTS:
+	void markDirty();
 	void notifyRefresh();
 };
 
@@ -209,6 +239,7 @@ class BINARYNINJAUIAPI TypeBrowserView : public QFrame, public View, public Filt
 	ViewFrame* m_frame;
 	BinaryViewRef m_data;
 	class TypeBrowserContainer* m_container;
+	ContextMenuManager* m_contextMenuManager;
 
 	TypeBrowserModel* m_model;
 	TypeBrowserFilterModel* m_filterModel;
@@ -216,6 +247,10 @@ class BINARYNINJAUIAPI TypeBrowserView : public QFrame, public View, public Filt
 
 public:
 	TypeBrowserView(ViewFrame* frame, BinaryViewRef data, TypeBrowserContainer* container);
+
+	TypeBrowserContainer* getContainer() { return m_container; }
+	TypeBrowserModel* getModel() { return m_model; }
+	TypeBrowserFilterModel* getFilterModel() { return m_filterModel; }
 
 	virtual BinaryViewRef getData() override { return m_data; }
 	virtual uint64_t getCurrentOffset() override;
@@ -228,6 +263,7 @@ public:
 	virtual void hideEvent(QHideEvent *event) override;
 
 	virtual StatusBarWidget* getStatusBarWidget() override;
+	virtual QWidget* getHeaderOptionsWidget() override;
 
 	virtual void setFilter(const std::string& filter) override;
 	virtual void scrollToFirstItem() override;
@@ -237,8 +273,33 @@ public:
 
 	virtual void notifyRefresh() override;
 
+	std::vector<std::shared_ptr<TypeBrowserTreeNode>> selectedNodes() const;
+
+	// Menu actions
+	static void registerActions();
+	void bindActions();
+	void showContextMenu();
+	bool canCreateTypeArchive();
+	void createTypeArchive();
+	bool canOpenTypeArchive();
+	void openTypeArchive();
+	bool canDisconnectTypeArchive();
+	void disconnectTypeArchive();
+
 protected:
 	void itemSelected(const QModelIndex& index);
+	virtual void contextMenuEvent(QContextMenuEvent* event) override;
+};
+
+class BINARYNINJAUIAPI TypeBrowserOptionsIconWidget : public QWidget
+{
+public:
+	TypeBrowserOptionsIconWidget(TypeBrowserView* parent);
+
+private:
+	TypeBrowserView* m_view;
+
+	void showMenu();
 };
 
 class BINARYNINJAUIAPI TypeBrowserContainer : public QWidget, public ViewContainer
@@ -259,6 +320,7 @@ public:
 	TypeBrowserView* getTypeBrowserView() { return m_view; }
 	FilteredView* getFilter() { return m_filter; }
 	FilterEdit* getSeparateFilterEdit() { return m_separateEdit; }
+	void showContextMenu();
 
 protected:
 	virtual void focusInEvent(QFocusEvent* event) override;

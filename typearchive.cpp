@@ -248,7 +248,7 @@ std::unordered_map<std::string, QualifiedNameAndType> TypeArchive::GetTypes(std:
 		std::string id = types[i].id;
 		QualifiedNameAndType qnat;
 		qnat.name = QualifiedName::FromAPIObject(&types[i].name);
-		qnat.type = new Type(types[i].type);
+		qnat.type = new Type(BNNewTypeReference(types[i].type));
 		result.emplace(id, qnat);
 	}
 	BNFreeTypeIdList(types, count);
