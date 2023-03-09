@@ -2826,6 +2826,21 @@ class BinaryView:
 			core.BNFreeTypeLibraryList(libraries, count.value)
 
 	@property
+	def type_archives(self) -> List['typearchive.TypeArchive']:
+		"""List of connected type archives (read-only)"""
+		names = ctypes.POINTER(ctypes.c_char_p)()
+		archives = ctypes.POINTER(core.BNTypeArchiveHandle)()
+		count = core.BNBinaryViewGetTypeArchives(self.handle, names, archives)
+		result = []
+		try:
+			for i in range(0, count):
+				result.append(typearchive.TypeArchive(core.BNNewTypeArchiveReference(archives[i])))
+			return result
+		finally:
+			core.BNFreeStringList(names, count)
+			core.BNFreeTypeArchiveList(archives, count)
+
+	@property
 	def segments(self) -> List['Segment']:
 		"""List of segments (read-only)"""
 		count = ctypes.c_ulonglong(0)
@@ -7519,6 +7534,270 @@ class BinaryView:
 		name = _types.QualifiedName._from_core_struct(result_name[0])
 		core.BNFreeQualifiedName(result_name)
 		return lib, name
+
+	def connect_type_archive(self, archive: 'typearchive.TypeArchive'):
+		"""
+		Connect a given type archive to the owned analysis. Names from that archive will be cached in the mapping
+		but no types will actually be synced by calling this.
+		:param archive: New archive
+		"""
+		core.BNBinaryViewConnectTypeArchive(self.handle, archive.handle)
+
+	def disconnect_type_archive(self, archive: 'typearchive.TypeArchive'):
+		"""
+		Disconnect from a type archive, breaking all connections to types synced with the archive
+		:param archive: Archive to drop
+		"""
+		core.BNBinaryViewDisconnectTypeArchive(self.handle, archive.handle)
+
+	def get_type_archive(self, id: str) -> Optional['typearchive.TypeArchive']:
+		"""
+		Look up a connected archive by its id
+		:param id: Id of archive
+		:return: Archive, if one exists with that id. Otherwise None
+		"""
+		result = core.BNBinaryViewGetTypeArchive(self.handle, id)
+		if result is None:
+			return None
+		return typearchive.TypeArchive(result)
+
+	@property
+	def type_archive_type_names(self) -> Mapping['_types.QualifiedName', List[Tuple['typearchive.TypeArchive', str]]]:
+		"""
+		Get a list of all available type names in all connected archives, and their archive/type id pair
+		:return: name <-> [(archive, archive type id)] for all type names
+		"""
+		names = ctypes.POINTER(core.BNQualifiedName)()
+		name_count = core.BNBinaryViewGetTypeArchiveTypeNameList(self.handle, names)
+
+		result = {}
+		try:
+			for i in range(0, name_count):
+				name = _types.QualifiedName._from_core_struct(names[i])
+				result[name] = self.get_type_archives_for_type_name(name)
+			return result
+		finally:
+			core.BNFreeTypeNameList(names, name_count)
+
+	def get_type_archives_for_type_name(self, name: '_types.QualifiedNameType') -> List[Tuple['typearchive.TypeArchive', str]]:
+		"""
+		Get a list of all type archives that have a given type name
+		:return: (archive, archive type id) for all archives
+		"""
+		name = _types.QualifiedName(name)
+		archive_ids = ctypes.POINTER(ctypes.c_char_p)()
+		type_ids = ctypes.POINTER(ctypes.c_char_p)()
+		id_count = core.BNBinaryViewGetTypeArchiveTypeNames(self.handle, name._to_core_struct(), archive_ids, type_ids)
+		ids = []
+
+		type_archives = self.type_archives
+		type_archives_by_id = {}
+		for archive in type_archives:
+			type_archives_by_id[archive.id] = archive
+		try:
+			for j in range(0, id_count):
+				ids.append((type_archives_by_id[core.pyNativeStr(archive_ids[j])], core.pyNativeStr(type_ids[j])))
+			return ids
+		finally:
+			core.BNFreeStringList(archive_ids, id_count)
+			core.BNFreeStringList(type_ids, id_count)
+
+	@property
+	def synced_type_archive_types(self) -> Mapping['_types.QualifiedName', Tuple['typearchive.TypeArchive', str]]:
+		"""
+		Get a list of all types in the analysis that are synced with type archives
+		:return: Map of all analysis types to their corresponding archive / id
+		"""
+		result = {}
+
+		type_archives = self.type_archives
+		type_archives_by_id = {}
+		for archive in type_archives:
+			type_archives_by_id[archive.id] = archive
+
+		for type_id, (archive_id, archive_type_id) in self.synced_type_archive_type_ids.items():
+			result[self.get_type_name_by_id(type_id)] = (type_archives_by_id[archive_id], archive_type_id)
+		return result
+
+	@property
+	def synced_type_archive_type_ids(self) -> Mapping[str, Tuple[str, str]]:
+		"""
+		Get a list of all types in the analysis that are synced with type archives
+		:return: Map of all analysis types to their corresponding archive / id
+		"""
+
+		type_ids = ctypes.POINTER(ctypes.c_char_p)()
+		archive_ids = ctypes.POINTER(ctypes.c_char_p)()
+		archive_type_ids = ctypes.POINTER(ctypes.c_char_p)()
+		count = core.BNBinaryViewGetSyncedTypeArchiveTypes(self.handle, type_ids, archive_ids, archive_type_ids)
+
+		result = {}
+		try:
+			for i in range(0, count):
+				type_id = core.pyNativeStr(type_ids[i])
+				archive_id = core.pyNativeStr(archive_ids[i])
+				archive_type_id = core.pyNativeStr(archive_type_ids[i])
+				result[type_id] = (archive_id, archive_type_id)
+			return result
+		finally:
+			core.BNFreeStringList(type_ids, count)
+			core.BNFreeStringList(archive_ids, count)
+			core.BNFreeStringList(archive_type_ids, count)
+
+	def get_synced_types_by_archive(self, archive: 'typearchive.TypeArchive') -> Mapping['_types.QualifiedName', str]:
+		"""
+		Get a list of all types in the analysis that are synced with a specific type archive
+		:return: Map of all analysis types to their corresponding archive id
+		"""
+		result = {}
+
+		for type_id, archive_type_id in self.get_synced_type_ids_by_archive(archive.id).items():
+			result[self.get_type_name_by_id(type_id)] = archive_type_id
+		return result
+
+	def get_synced_type_ids_by_archive(self, archive_id: str) -> Mapping[str, str]:
+		"""
+		Get a list of all types in the analysis that are synced with a specific type archive
+		:return: Map of all analysis types to their corresponding archive id
+		"""
+
+		type_ids = ctypes.POINTER(ctypes.c_char_p)()
+		archive_type_ids = ctypes.POINTER(ctypes.c_char_p)()
+		count = core.BNBinaryViewGetSyncedTypesFromArchive(self.handle, archive_id, type_ids, archive_type_ids)
+
+		result = {}
+		try:
+			for i in range(0, count):
+				type_id = core.pyNativeStr(type_ids[i])
+				archive_type_id = core.pyNativeStr(archive_type_ids[i])
+				result[type_id] = archive_type_id
+			return result
+		finally:
+			core.BNFreeStringList(type_ids, count)
+			core.BNFreeStringList(archive_type_ids, count)
+
+	def get_synced_type_archive_type_target(self, name: '_types.QualifiedNameType') -> Optional[Tuple['typearchive.TypeArchive', str]]:
+		"""
+		Determine the target archive / type id of a given analysis type
+		:param name: Analysis type
+		:return: (archive, archive type id) if the type is synced. None otherwise.
+		"""
+		type_id = self.get_type_id(name)
+		result = self.get_synced_type_archive_type_target_by_id(type_id)
+		if result is None:
+			return None
+		return (self.get_type_archive(result[0]), result[1])
+
+	def get_synced_type_archive_type_target_by_id(self, type_id: str) -> Optional[Tuple[str, str]]:
+		"""
+		Determine the target archive / type id of a given analysis type
+		:param type_id: Analysis type id
+		:return: (archive id, archive type id) if the type is synced. None otherwise.
+		"""
+		archive_id = ctypes.c_char_p()
+		archive_type_id = ctypes.c_char_p()
+		if not core.BNBinaryViewGetSyncedTypeArchiveTypeTarget(self.handle, type_id, archive_id, archive_type_id):
+			return None
+		result = (core.pyNativeStr(archive_id.value), core.pyNativeStr(archive_type_id.value))
+		core.BNFreeString(archive_id)
+		core.BNFreeString(archive_type_id)
+		return result
+
+	def get_synced_type_archive_type_source(self, archive: 'typearchive.TypeArchive', archive_type_id: str) -> Optional['_types.QualifiedName']:
+		"""
+		Determine the local source type name for a given archive type
+		:param archive: Target type archive
+		:param archive_type_id: Id of target archive type
+		:return: Name of source analysis type, if this type is synced. None otherwise.
+		"""
+		result = self.get_synced_type_archive_type_source_by_id(archive.id, archive_type_id)
+		if result is None:
+			return None
+		return self.get_type_name_by_id(result)
+
+	def get_synced_type_archive_type_source_by_id(self, archive_id: str, archive_type_id: str) -> Optional[str]:
+		"""
+		Determine the local source type id for a given archive type
+		:param archive_id: Id of target type archive
+		:param archive_type_id: Id of target archive type
+		:return: Id of source analysis type, if this type is synced. None otherwise.
+		"""
+		type_id = ctypes.c_char_p()
+		if not core.BNBinaryViewGetSyncedTypeArchiveTypeSource(self.handle, archive_id, archive_type_id, type_id):
+			return None
+		result = core.pyNativeStr(type_id.value)
+		core.BNFreeString(type_id)
+		return result
+
+	def pull_from_type_archive(self, archive: 'typearchive.TypeArchive', name: '_types.QualifiedNameType') \
+			-> Optional[Tuple['_types.QualifiedName', '_types.Type', List['_types.QualifiedName']]]:
+		"""
+		Pull a type from a type archive, syncing with it and any dependencies
+		:param archive: Target type archive
+		:param name: Name of desired type in type archive
+		:return: (name, type, dependencies) tuple on success, None on failure
+		         Dependencies are a list of type names that were also pulled.
+		"""
+		archive_type_id = archive.get_type_id(name)
+		if archive_type_id is None:
+			return None
+		result = self.pull_from_type_archive_by_id(archive, archive_type_id)
+		if result is None:
+			return None
+
+		type_id = result[0]
+		dep_ids = result[1]
+
+		dependencies = []
+		for dep_id in dep_ids:
+			dependencies.append(self.get_type_name_by_id(dep_id))
+
+		return (self.get_type_name_by_id(type_id), self.get_type_by_id(type_id), dependencies)
+
+	def pull_from_type_archive_by_id(self, archive: 'typearchive.TypeArchive', archive_type_id: str) \
+			-> Optional[Tuple[str, List[str]]]:
+		"""
+		Pull a type from a type archive by id, syncing with it and any dependencies
+		:param archive: Target type archive
+		:param archive_type_id: Id of desired type in type archive
+		:return: (analysis type id, dependencies) tuple on success, None on failure
+		         Dependencies are a list of type ids that were also pulled.
+		"""
+		type_id = ctypes.c_char_p()
+		dependency_strs = ctypes.POINTER(ctypes.c_char_p)()
+		dependency_count = ctypes.c_size_t(0)
+		if not core.BNBinaryViewPullTypeArchiveType(self.handle, archive.id, archive_type_id, type_id, dependency_strs, dependency_count):
+			return None
+
+		result_id = core.pyNativeStr(type_id.value)
+		core.BNFreeString(type_id)
+
+		dependencies = []
+		for i in range(0, dependency_count.value):
+			dependencies.append(core.pyNativeStr(dependency_strs[i]))
+
+		core.BNFreeStringList(dependency_strs, dependency_count.value)
+		return (result_id, dependencies)
+
+	def push_to_type_archive(self, archive: 'typearchive.TypeArchive', name: '_types.QualifiedNameType') -> bool:
+		"""
+		Push a type into a type archive. The given type must already be defined in the BinaryView.
+		:param archive: Target type archive
+		:param name: Name of type in analysis
+		:return: True if successful
+		"""
+		type_id = self.get_type_id(name)
+		assert type_id is not None
+		return self.push_to_type_archive_by_id(type_id, archive.id)
+
+	def push_to_type_archive_by_id(self, archive_id: str, type_id: str) -> bool:
+		"""
+		Push a type into a type archive. The given type must already be defined in the BinaryView.
+		:param archive_id: Id of target type archive
+		:param type_id: Id of type in analysis
+		:return: True if successful
+		"""
+		return core.BNBinaryViewPushTypeArchiveType(self.handle, type_id, archive_id)
 
 	def register_platform_types(self, platform: '_platform.Platform') -> None:
 		"""

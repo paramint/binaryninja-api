@@ -5273,23 +5273,6 @@ namespace BinaryNinja {
 			\return All type names in a map
 		 */
 		std::unordered_map<QualifiedName, std::map<std::string, std::string>> GetTypeArchiveTypeNames() const;
-		/*!
-			Pull a type from a type archive, syncing with it and any dependencies
-			\param archiveId Id of archive
-			\param typeId Id of desired type
-			\param type [out] Definition of desired type
-			\param dependencies [out] List of extra types that are dependencies of the desired type that were also added
-			\return True if successful
-		 */
-		bool PullTypeArchiveType(const std::string& archiveId, const std::string& typeId, QualifiedNameAndType& type, std::vector<std::string>& dependencies);
-		/*!
-			Push an updated type into a type archive
-			\param archiveId Id of archive
-			\param typeId Id of pushed type
-			\param type New definition of type
-			\return True if successful
-		 */
-		bool PushTypeArchiveType(const std::string& archiveId, const std::string& typeId, const QualifiedNameAndType& type);
 
 		bool FindNextData(
 		    uint64_t start, const DataBuffer& data, uint64_t& result, BNFindFlag flags = FindCaseSensitive);

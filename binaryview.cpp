@@ -4037,38 +4037,6 @@ std::unordered_map<QualifiedName, std::map<std::string, std::string>> BinaryView
 }
 
 
-bool BinaryView::PullTypeArchiveType(const std::string& archiveId, const std::string& typeId, QualifiedNameAndType& type, std::vector<std::string>& dependencies)
-{
-	BNQualifiedNameAndType qnat;
-	char** dependencyStrs;
-	size_t dependencyCount;
-	if (!BNBinaryViewPullTypeArchiveType(m_object, archiveId.c_str(), typeId.c_str(), &qnat, &dependencyStrs, &dependencyCount))
-		return false;
-
-	type.type = new Type(BNNewTypeReference(qnat.type));
-	type.name = QualifiedName::FromAPIObject(&qnat.name);
-	BNFreeQualifiedNameAndType(&qnat);
-
-	for (size_t i = 0; i < dependencyCount; ++i)
-	{
-		dependencies.push_back(dependencyStrs[i]);
-	}
-	BNFreeStringList(dependencyStrs, dependencyCount);
-	return true;
-}
-
-
-bool BinaryView::PushTypeArchiveType(const std::string& archiveId, const std::string& typeId, const QualifiedNameAndType& type)
-{
-	BNQualifiedNameAndType qnat;
-	qnat.name = type.name.GetAPIObject();
-	qnat.type = type.type->GetObject();
-	bool result = BNBinaryViewPushTypeArchiveType(m_object, archiveId.c_str(), typeId.c_str(), &qnat);
-	QualifiedName::FreeAPIObject(&qnat.name);
-	return result;
-}
-
-
 bool BinaryView::FindNextData(uint64_t start, const DataBuffer& data, uint64_t& result, BNFindFlag flags)
 {
 	return BNFindNextData(m_object, start, data.GetBufferObject(), &result, flags);

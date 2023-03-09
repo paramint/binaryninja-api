@@ -42,6 +42,11 @@ class TypeArchive:
 	def __repr__(self):
 		return f"<type archive '{self.path}'>"
 
+	def __eq__(self, other):
+		if not isinstance(other, TypeArchive):
+			return False
+		return self.id == other.id
+
 	@staticmethod
 	def open(path: str) -> Optional['TypeArchive']:
 		"""
@@ -172,7 +177,7 @@ class TypeArchive:
 		if not core.BNRemoveTypeArchiveType(self.handle, id):
 			raise RuntimeError("BNRemoveTypeArchiveType")
 
-	def get_type_by_name(self, name: Union[str, ty_.QualifiedName], snapshot: Optional[str] = None) -> Optional[ty_.Type]:
+	def get_type_by_name(self, name: 'ty_.QualifiedNameType', snapshot: Optional[str] = None) -> Optional[ty_.Type]:
 		"""
 
 		:param QualifiedName name:
@@ -218,7 +223,7 @@ class TypeArchive:
 			return None
 		return qname
 
-	def get_type_id(self, name: Union[str, ty_.QualifiedName], snapshot: Optional[str] = None) -> Optional[str]:
+	def get_type_id(self, name: 'ty_.QualifiedNameType', snapshot: Optional[str] = None) -> Optional[str]:
 		"""
 
 		:param QualifiedName name:

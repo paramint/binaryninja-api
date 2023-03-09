@@ -6605,9 +6605,13 @@ extern "C"
 	BINARYNINJACOREAPI BNTypeArchive* BNBinaryViewGetTypeArchive(BNBinaryView* view, const char* id);
 	BINARYNINJACOREAPI size_t BNBinaryViewGetTypeArchives(BNBinaryView* view, char*** names, BNTypeArchive*** archives);
 	BINARYNINJACOREAPI size_t BNBinaryViewGetTypeArchiveTypeNameList(BNBinaryView* view, BNQualifiedName** names);
-	BINARYNINJACOREAPI size_t BNBinaryViewGetTypeArchiveTypeNames(BNBinaryView* view, BNQualifiedName* name, char*** archiveIds, char*** typeIds);
-	BINARYNINJACOREAPI bool BNBinaryViewPullTypeArchiveType(BNBinaryView* view, const char* archiveId, const char* typeId, BNQualifiedNameAndType* type, char*** dependencies, size_t* dependencyCount);
-	BINARYNINJACOREAPI bool BNBinaryViewPushTypeArchiveType(BNBinaryView* view, const char* archiveId, const char* typeId, const BNQualifiedNameAndType* type);
+	BINARYNINJACOREAPI size_t BNBinaryViewGetTypeArchiveTypeNames(BNBinaryView* view, BNQualifiedName* name, char*** archiveIds, char*** archiveTypeIds);
+	BINARYNINJACOREAPI size_t BNBinaryViewGetSyncedTypeArchiveTypes(BNBinaryView* view, char*** typeIds, char*** archiveIds, char*** archiveTypeIds);
+	BINARYNINJACOREAPI size_t BNBinaryViewGetSyncedTypesFromArchive(BNBinaryView* view, const char* archiveId, char*** typeIds, char*** archiveTypeIds);
+	BINARYNINJACOREAPI bool BNBinaryViewGetSyncedTypeArchiveTypeTarget(BNBinaryView* view, const char* typeId, char** archiveId, char** archiveTypeId);
+	BINARYNINJACOREAPI bool BNBinaryViewGetSyncedTypeArchiveTypeSource(BNBinaryView* view, const char* archiveId, const char* archiveTypeId, char** typeId);
+	BINARYNINJACOREAPI bool BNBinaryViewPullTypeArchiveType(BNBinaryView* view, const char* archiveId, const char* archiveTypeId, char** typeId, char*** dependencies, size_t* dependencyCount);
+	BINARYNINJACOREAPI bool BNBinaryViewPushTypeArchiveType(BNBinaryView* view, const char* typeId, const char* archiveId);
 
 #ifdef __cplusplus
 }
