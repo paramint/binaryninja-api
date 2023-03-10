@@ -4037,6 +4037,102 @@ std::unordered_map<QualifiedName, std::map<std::string, std::string>> BinaryView
 }
 
 
+std::unordered_map<std::string, std::pair<std::string, std::string>> BinaryView::GetSyncedTypeArchiveTypes() const
+{
+	char** typeIds;
+	char** archiveIds;
+	char** archiveTypeIds;
+	size_t count = BNBinaryViewGetSyncedTypeArchiveTypes(m_object, &typeIds, &archiveIds, &archiveTypeIds);
+
+	std::unordered_map<std::string, std::pair<std::string, std::string>> result;
+	for (size_t i = 0; i < count; i++)
+	{
+		result.insert({typeIds[i], {archiveIds[i], archiveTypeIds[i]}});
+	}
+	BNFreeStringList(typeIds, count);
+	BNFreeStringList(archiveIds, count);
+	BNFreeStringList(archiveTypeIds, count);
+	return result;
+}
+
+
+std::unordered_map<std::string, std::string> BinaryView::GetSyncedTypesFromArchive(const std::string& archive) const
+{
+	char** typeIds;
+	char** archiveTypeIds;
+	size_t count = BNBinaryViewGetSyncedTypesFromArchive(m_object, archive.c_str(), &typeIds, &archiveTypeIds);
+
+	std::unordered_map<std::string, std::string> result;
+	for (size_t i = 0; i < count; i++)
+	{
+		result.insert({typeIds[i], archiveTypeIds[i]});
+	}
+	BNFreeStringList(typeIds, count);
+	BNFreeStringList(archiveTypeIds, count);
+	return result;
+}
+
+
+std::optional<std::pair<std::string, std::string>> BinaryView::GetSyncedTypeArchiveTypeTarget(const std::string& id) const
+{
+	char* archiveId;
+	char* archiveTypeId;
+	if (!BNBinaryViewGetSyncedTypeArchiveTypeTarget(m_object, id.c_str(), &archiveId, &archiveTypeId))
+		return std::nullopt;
+	std::pair<std::string, std::string> result = std::make_pair(archiveId, archiveTypeId);
+	BNFreeString(archiveId);
+	BNFreeString(archiveTypeId);
+	return result;
+}
+
+
+std::optional<std::string> BinaryView::GetSyncedTypeArchiveTypeSource(const std::string& archiveId, const std::string& archiveTypeId) const
+{
+	char* typeId;
+	if (!BNBinaryViewGetSyncedTypeArchiveTypeSource(m_object, archiveId.c_str(), archiveTypeId.c_str(), &typeId))
+		return std::nullopt;
+	std::string result = typeId;
+	BNFreeString(typeId);
+	return result;
+}
+
+
+bool BinaryView::PullTypeArchiveType(const std::string& archiveId, const std::string& archiveTypeId, std::string& typeId, std::vector<std::string>& dependencies)
+{
+	char* apiTypeId;
+	char** apiDependencies;
+	size_t apiDependencyCount;
+	if (!BNBinaryViewPullTypeArchiveType(m_object, archiveId.c_str(), archiveTypeId.c_str(), &apiTypeId, &apiDependencies, &apiDependencyCount))
+		return false;
+	typeId = apiTypeId;
+	dependencies.clear();
+	for (size_t i = 0; i < apiDependencyCount; i++)
+	{
+		dependencies.push_back(apiDependencies[i]);
+	}
+	BNFreeString(apiTypeId);
+	BNFreeStringList(apiDependencies, apiDependencyCount);
+	return true;
+}
+
+
+bool BinaryView::PushTypeArchiveType(const std::string& archiveId, const std::string& typeId)
+{
+	return BNBinaryViewPushTypeArchiveType(m_object, archiveId.c_str(), typeId.c_str());
+}
+
+
+bool BinaryView::PushTypeArchiveTypes(const std::string& archiveId, const std::vector<std::string>& typeIds)
+{
+	std::vector<const char*> apiTypeIds;
+	for (auto& id: typeIds)
+	{
+		apiTypeIds.push_back(id.c_str());
+	}
+	return BNBinaryViewPushTypeArchiveTypes(m_object, archiveId.c_str(), apiTypeIds.data(), apiTypeIds.size());
+}
+
+
 bool BinaryView::FindNextData(uint64_t start, const DataBuffer& data, uint64_t& result, BNFindFlag flags)
 {
 	return BNFindNextData(m_object, start, data.GetBufferObject(), &result, flags);

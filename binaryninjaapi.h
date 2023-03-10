@@ -5274,6 +5274,53 @@ namespace BinaryNinja {
 		 */
 		std::unordered_map<QualifiedName, std::map<std::string, std::string>> GetTypeArchiveTypeNames() const;
 
+		/*!
+			Get a list of all types in the analysis that are synced with a specific type archive
+			\return Map of all analysis types to their corresponding archive id
+		 */
+		std::unordered_map<std::string, std::pair<std::string, std::string>> GetSyncedTypeArchiveTypes() const;
+		/*!
+		    Get a list of all types in the analysis that are synced with a specific type archive
+		    \return Map of all analysis types to their corresponding archive id
+		 */
+		std::unordered_map<std::string, std::string> GetSyncedTypesFromArchive(const std::string& archive) const;
+		/*!
+		    Determine the target archive / type id of a given analysis type
+		    \param id Id of analysis type
+		    \return Pair of archive id and archive type id, if this type is synced. std::nullopt otherwise.
+		 */
+		std::optional<std::pair<std::string, std::string>> GetSyncedTypeArchiveTypeTarget(const std::string& id) const;
+		/*!
+		    Determine the local source type for a given archive type
+		    \param archiveId Id of target archive
+		    \param archiveTypeId Id of target archive type
+		    \return Id of source analysis type, if this type is synced. std::nullopt otherwise.
+		 */
+		std::optional<std::string> GetSyncedTypeArchiveTypeSource(const std::string& archiveId, const std::string& archiveTypeId) const;
+		/*!
+		    Pull a type from a type archive, syncing with it and any dependencies
+		    \param archiveId Id of archive
+		    \param archiveTypeId Id of desired type
+		    \param typeId [out] Id of defined type in analysis
+		    \param dependencies [out] List of extra types that are dependencies of the desired type that were also added
+		    \return True if successful
+		 */
+		bool PullTypeArchiveType(const std::string& archiveId, const std::string& archiveTypeId, std::string& typeId, std::vector<std::string>& dependencies);
+		/*!
+			Push a type, and all its dependencies, into a type archive
+			\param archiveId Id of archive
+			\param typeId Id of type in analysis
+			\return True if successful
+		 */
+		bool PushTypeArchiveType(const std::string& archiveId, const std::string& typeId);
+		/*!
+		    Push a collection of updated types, and all their dependencies, into a type archive
+		    \param archiveId Id of archive
+		    \param typeIds List of ids of types in analysis
+		    \return True if successful
+		 */
+		bool PushTypeArchiveTypes(const std::string& archiveId, const std::vector<std::string>& typeIds);
+
 		bool FindNextData(
 		    uint64_t start, const DataBuffer& data, uint64_t& result, BNFindFlag flags = FindCaseSensitive);
 		bool FindNextText(uint64_t start, const std::string& data, uint64_t& result, Ref<DisassemblySettings> settings,
