@@ -7788,7 +7788,7 @@ class BinaryView:
 		"""
 		type_id = self.get_type_id(name)
 		assert type_id is not None
-		return self.push_to_type_archive_by_id(type_id, archive.id)
+		return self.push_to_type_archive_by_id(archive.id, type_id)
 
 	def push_to_type_archive_by_id(self, archive_id: str, type_id: str) -> bool:
 		"""
@@ -7797,7 +7797,7 @@ class BinaryView:
 		:param type_id: Id of type in analysis
 		:return: True if successful
 		"""
-		return core.BNBinaryViewPushTypeArchiveType(self.handle, type_id, archive_id)
+		return core.BNBinaryViewPushTypeArchiveType(self.handle, archive_id, type_id)
 
 	def register_platform_types(self, platform: '_platform.Platform') -> None:
 		"""

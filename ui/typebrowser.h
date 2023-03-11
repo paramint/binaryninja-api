@@ -24,6 +24,7 @@ protected:
 
 	TypeBrowserTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent);
 	virtual ~TypeBrowserTreeNode() = default;
+	void ensureGeneratedChildren();
 	virtual void generateChildren() = 0;
 	void updateChildIndices();
 
@@ -285,6 +286,10 @@ public:
 	void openTypeArchive();
 	bool canDisconnectTypeArchive();
 	void disconnectTypeArchive();
+	bool canPushSelectedTypes();
+	void pushSelectedTypes();
+	bool canPullSelectedTypes();
+	void pullSelectedTypes();
 
 protected:
 	void itemSelected(const QModelIndex& index);
