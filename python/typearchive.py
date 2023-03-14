@@ -35,6 +35,9 @@ class TypeArchive:
 		binaryninja._init_plugins()
 		self.handle: core.BNTypeArchiveHandle = core.handle_of_type(handle, core.BNTypeArchive)
 
+	def __hash__(self):
+		return hash(ctypes.addressof(self.handle.contents))
+
 	def __del__(self):
 		if core is not None:
 			core.BNFreeTypeArchiveReference(self.handle)

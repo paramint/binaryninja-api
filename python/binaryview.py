@@ -7699,8 +7699,8 @@ class BinaryView:
 		if not core.BNBinaryViewGetSyncedTypeArchiveTypeTarget(self.handle, type_id, archive_id, archive_type_id):
 			return None
 		result = (core.pyNativeStr(archive_id.value), core.pyNativeStr(archive_type_id.value))
-		core.BNFreeString(archive_id)
-		core.BNFreeString(archive_type_id)
+		core.free_string(archive_id)
+		core.free_string(archive_type_id)
 		return result
 
 	def get_synced_type_archive_type_source(self, archive: 'typearchive.TypeArchive', archive_type_id: str) -> Optional['_types.QualifiedName']:
@@ -7726,7 +7726,7 @@ class BinaryView:
 		if not core.BNBinaryViewGetSyncedTypeArchiveTypeSource(self.handle, archive_id, archive_type_id, type_id):
 			return None
 		result = core.pyNativeStr(type_id.value)
-		core.BNFreeString(type_id)
+		core.free_string(type_id)
 		return result
 
 	def pull_from_type_archive(self, archive: 'typearchive.TypeArchive', name: '_types.QualifiedNameType') \
@@ -7741,7 +7741,7 @@ class BinaryView:
 		archive_type_id = archive.get_type_id(name)
 		if archive_type_id is None:
 			return None
-		result = self.pull_from_type_archive_by_id(archive, archive_type_id)
+		result = self.pull_from_type_archive_by_id(archive.id, archive_type_id)
 		if result is None:
 			return None
 
@@ -7754,23 +7754,25 @@ class BinaryView:
 
 		return (self.get_type_name_by_id(type_id), self.get_type_by_id(type_id), dependencies)
 
-	def pull_from_type_archive_by_id(self, archive: 'typearchive.TypeArchive', archive_type_id: str) \
+	def pull_from_type_archive_by_id(self, archive_id: str, archive_type_id: str) \
 			-> Optional[Tuple[str, List[str]]]:
 		"""
 		Pull a type from a type archive by id, syncing with it and any dependencies
-		:param archive: Target type archive
+		:param archive_id: Target type archive id
 		:param archive_type_id: Id of desired type in type archive
 		:return: (analysis type id, dependencies) tuple on success, None on failure
 		         Dependencies are a list of type ids that were also pulled.
 		"""
+		assert archive_id is not None
+		assert archive_type_id is not None
 		type_id = ctypes.c_char_p()
 		dependency_strs = ctypes.POINTER(ctypes.c_char_p)()
 		dependency_count = ctypes.c_size_t(0)
-		if not core.BNBinaryViewPullTypeArchiveType(self.handle, archive.id, archive_type_id, type_id, dependency_strs, dependency_count):
+		if not core.BNBinaryViewPullTypeArchiveType(self.handle, archive_id, archive_type_id, type_id, dependency_strs, dependency_count):
 			return None
 
 		result_id = core.pyNativeStr(type_id.value)
-		core.BNFreeString(type_id)
+		core.free_string(type_id)
 
 		dependencies = []
 		for i in range(0, dependency_count.value):
