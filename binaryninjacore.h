@@ -6600,8 +6600,8 @@ extern "C"
 	BINARYNINJACOREAPI BNMetadata* BNTypeArchiveQueryMetadata(BNTypeArchive* archive, const char* key);
 	BINARYNINJACOREAPI bool BNTypeArchiveRemoveMetadata(BNTypeArchive* archive, const char* key);
 
-	BINARYNINJACOREAPI void BNBinaryViewConnectTypeArchive(BNBinaryView* view, BNTypeArchive* archive);
-	BINARYNINJACOREAPI void BNBinaryViewDisconnectTypeArchive(BNBinaryView* view, BNTypeArchive* archive);
+	BINARYNINJACOREAPI bool BNBinaryViewConnectTypeArchive(BNBinaryView* view, BNTypeArchive* archive);
+	BINARYNINJACOREAPI bool BNBinaryViewDisconnectTypeArchive(BNBinaryView* view, BNTypeArchive* archive);
 	BINARYNINJACOREAPI BNTypeArchive* BNBinaryViewGetTypeArchive(BNBinaryView* view, const char* id);
 	BINARYNINJACOREAPI size_t BNBinaryViewGetTypeArchives(BNBinaryView* view, char*** names, BNTypeArchive*** archives);
 	BINARYNINJACOREAPI size_t BNBinaryViewGetTypeArchiveTypeNameList(BNBinaryView* view, BNQualifiedName** names);

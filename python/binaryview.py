@@ -7541,14 +7541,16 @@ class BinaryView:
 		but no types will actually be synced by calling this.
 		:param archive: New archive
 		"""
-		core.BNBinaryViewConnectTypeArchive(self.handle, archive.handle)
+		if not core.BNBinaryViewConnectTypeArchive(self.handle, archive.handle):
+			raise RuntimeError("BNBinaryViewConnectTypeArchive")
 
 	def disconnect_type_archive(self, archive: 'typearchive.TypeArchive'):
 		"""
 		Disconnect from a type archive, breaking all connections to types synced with the archive
 		:param archive: Archive to drop
 		"""
-		core.BNBinaryViewDisconnectTypeArchive(self.handle, archive.handle)
+		if not core.BNBinaryViewDisconnectTypeArchive(self.handle, archive.handle):
+			raise RuntimeError("BNBinaryViewDisconnectTypeArchive")
 
 	def get_type_archive(self, id: str) -> Optional['typearchive.TypeArchive']:
 		"""
