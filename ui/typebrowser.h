@@ -66,8 +66,24 @@ protected:
 
 class BINARYNINJAUIAPI TypeTreeNode : public TypeBrowserTreeNode
 {
+public:
+	enum SourceType
+	{
+		None,
+		TypeLibrary,
+		TypeArchive,
+		Platform
+	};
+
+private:
 	BinaryNinja::QualifiedName m_name;
 	TypeRef m_type;
+
+	SourceType m_sourceType;
+	std::optional<TypeLibraryRef> m_sourceLibrary;
+	std::optional<TypeArchiveRef> m_sourceArchive;
+	std::optional<PlatformRef> m_sourcePlatform;
+	std::optional<BinaryNinja::QualifiedName> m_sourceOriginalName;
 
 public:
 	TypeTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, BinaryNinja::QualifiedName name, TypeRef type);
@@ -76,6 +92,12 @@ public:
 	const BinaryNinja::QualifiedName& name() const { return m_name; }
 	const TypeRef& type() const { return m_type; }
 	void setType(const TypeRef& type) { m_type = type; }
+
+	const SourceType& sourceType() const { return m_sourceType; }
+	const std::optional<TypeLibraryRef>& sourceLibrary() const { return m_sourceLibrary; }
+	const std::optional<TypeArchiveRef>& sourceArchive() const { return m_sourceArchive; }
+	const std::optional<PlatformRef>& sourcePlatform() const { return m_sourcePlatform; }
+	const std::optional<BinaryNinja::QualifiedName>& sourceOriginalName() const { return m_sourceOriginalName; }
 
 	virtual std::string text() const override;
 	virtual bool operator<(const TypeBrowserTreeNode& other) const override;
