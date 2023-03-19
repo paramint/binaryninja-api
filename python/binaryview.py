@@ -7646,18 +7646,18 @@ class BinaryView:
 			core.BNFreeStringList(archive_ids, count)
 			core.BNFreeStringList(archive_type_ids, count)
 
-	def get_synced_types_by_archive(self, archive: 'typearchive.TypeArchive') -> Mapping['_types.QualifiedName', str]:
+	def get_synced_types_from_archive(self, archive: 'typearchive.TypeArchive') -> Mapping['_types.QualifiedName', str]:
 		"""
 		Get a list of all types in the analysis that are synced with a specific type archive
 		:return: Map of all analysis types to their corresponding archive id
 		"""
 		result = {}
 
-		for type_id, archive_type_id in self.get_synced_type_ids_by_archive(archive.id).items():
+		for type_id, archive_type_id in self.get_synced_type_ids_from_archive(archive.id).items():
 			result[self.get_type_name_by_id(type_id)] = archive_type_id
 		return result
 
-	def get_synced_type_ids_by_archive(self, archive_id: str) -> Mapping[str, str]:
+	def get_synced_type_ids_from_archive(self, archive_id: str) -> Mapping[str, str]:
 		"""
 		Get a list of all types in the analysis that are synced with a specific type archive
 		:return: Map of all analysis types to their corresponding archive id
