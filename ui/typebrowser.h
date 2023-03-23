@@ -49,6 +49,7 @@ class BINARYNINJAUIAPI RootTreeNode : public TypeBrowserTreeNode
 	std::shared_ptr<class BinaryViewTreeNode> m_viewNode;
 	std::map<TypeArchiveRef, std::shared_ptr<class TypeArchiveTreeNode>> m_archiveNodes;
 	std::map<TypeLibraryRef, std::shared_ptr<class TypeLibraryTreeNode>> m_libraryNodes;
+	std::map<std::string, std::shared_ptr<class DebugInfoTreeNode>> m_debugInfoNodes;
 	std::shared_ptr<class PlatformTreeNode> m_platformNode;
 public:
 	RootTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent);
@@ -72,7 +73,9 @@ public:
 		None,
 		TypeLibrary,
 		TypeArchive,
-		Platform
+		DebugInfo,
+		Platform,
+		Other
 	};
 
 private:
@@ -82,7 +85,9 @@ private:
 	SourceType m_sourceType;
 	std::optional<TypeLibraryRef> m_sourceLibrary;
 	std::optional<TypeArchiveRef> m_sourceArchive;
+	std::optional<std::string> m_sourceDebugInfoParser;
 	std::optional<PlatformRef> m_sourcePlatform;
+	std::optional<std::string> m_sourceOtherName;
 	std::optional<BinaryNinja::QualifiedName> m_sourceOriginalName;
 
 public:
@@ -96,7 +101,9 @@ public:
 	const SourceType& sourceType() const { return m_sourceType; }
 	const std::optional<TypeLibraryRef>& sourceLibrary() const { return m_sourceLibrary; }
 	const std::optional<TypeArchiveRef>& sourceArchive() const { return m_sourceArchive; }
+	const std::optional<std::string>& sourceDebugInfoParser() const { return m_sourceDebugInfoParser; }
 	const std::optional<PlatformRef>& sourcePlatform() const { return m_sourcePlatform; }
+	const std::optional<std::string>& sourceOtherName() const { return m_sourceOtherName; }
 	const std::optional<BinaryNinja::QualifiedName>& sourceOriginalName() const { return m_sourceOriginalName; }
 
 	virtual std::string text() const override;
@@ -169,6 +176,26 @@ public:
 	virtual ~TypeLibraryTreeNode() = default;
 
 	const TypeLibraryRef& library() const { return m_library; }
+
+	virtual std::string text() const override;
+	virtual bool operator<(const TypeBrowserTreeNode& other) const override;
+	virtual bool filter(const std::string& filter) const override;
+
+	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
+};
+
+
+class BINARYNINJAUIAPI DebugInfoTreeNode : public TypeSourceTreeNode
+{
+	DebugInfoRef m_debugInfo;
+	std::string m_parserName;
+
+public:
+	DebugInfoTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, const std::string& parserName);
+	virtual ~DebugInfoTreeNode() = default;
+
+	const DebugInfoRef& debugInfo() const { return m_debugInfo; }
+	const std::string& parserName() const { return m_parserName; }
 
 	virtual std::string text() const override;
 	virtual bool operator<(const TypeBrowserTreeNode& other) const override;
