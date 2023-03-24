@@ -53,9 +53,9 @@ class TypeArchive:
 	@staticmethod
 	def open(path: str) -> Optional['TypeArchive']:
 		"""
-
-		:param path:
-		:return:
+		Open the Type Archive at the given path, if it exists, or create one if it does not.
+		:param path: Path to Type Archive file
+		:return: Type Archive, or None if it could not be loaded.
 		"""
 		handle = core.BNOpenTypeArchive(path)
 		if handle is None:
@@ -65,9 +65,9 @@ class TypeArchive:
 	@staticmethod
 	def lookup_by_id(id: str) -> Optional['TypeArchive']:
 		"""
-
-		:param id:
-		:return:
+		Get a reference to the Type Archive with the known id, if one exists.
+		:param id: Type Archive id
+		:return: Type archive, or None if it could not be found.
 		"""
 		handle = core.BNLookupTypeArchiveById(id)
 		if handle is None:
@@ -77,24 +77,24 @@ class TypeArchive:
 	@property
 	def path(self) -> Optional[str]:
 		"""
-
-		:return:
+		Get the path to the Type Archive's file
+		:return: File path
 		"""
 		return core.BNGetTypeArchivePath(self.handle)
 
 	@property
 	def id(self) -> Optional[str]:
 		"""
-
-		:return:
+		Get the guid for a Type Archive
+		:return: Guid string
 		"""
 		return core.BNGetTypeArchiveId(self.handle)
 
 	@property
 	def current_snapshot_id(self) -> str:
 		"""
-
-		:return:
+		Get the id of the current snapshot in the type archive
+		:return: Snapshot id
 		"""
 		result = core.BNGetTypeArchiveCurrentSnapshotId(self.handle)
 		if result is None:
@@ -104,8 +104,8 @@ class TypeArchive:
 	@property
 	def all_snapshot_ids(self) -> List[str]:
 		"""
-
-		:return:
+		Get a list of every snapshot's id
+		:return: All ids (including the empty first snapshot)
 		"""
 		count = ctypes.c_ulonglong(0)
 		ids = core.BNGetTypeArchiveAllSnapshotIds(self.handle, count)
@@ -121,9 +121,9 @@ class TypeArchive:
 
 	def get_snapshot_parent_id(self, snapshot: str) -> Optional[str]:
 		"""
-
-		:param snapshot:
-		:return:
+		Get the id of the parent to the given snapshot
+		:param snapshot: Child snapshot id
+		:return: Parent snapshot id, or None if the snapshot is a root
 		"""
 		result = core.BNGetTypeArchiveSnapshotParentId(self.handle, snapshot)
 		if result is None:
@@ -134,17 +134,20 @@ class TypeArchive:
 
 	def add_type(self, name: 'ty_.QualifiedNameType', type: 'ty_.Type') -> None:
 		"""
-
-		:param QualifiedName name:
-		:param Type t:
-		:rtype: None
+		Add named types to the type archive. Type must have all dependant named types added
+		prior to being added, or this function will fail.
+		If the type already exists, it will be overwritten.
+		:param name: Name of new type
+		:param type: Definition of new type
 		"""
 		self.add_types([(name, type)])
 
 	def add_types(self, new_types: List[Tuple['ty_.QualifiedNameType', 'ty_.Type']]) -> None:
 		"""
-
-		:param new_types:
+		Add named types to the type archive. Types must have all dependant named
+		types prior to being added, or this function will fail.
+		Types already existing with any added names will be overwritten.
+		:param new_types: Names and definitions of new types
 		"""
 		api_types = (core.BNQualifiedNameAndType * len(new_types))()
 		i = 0
@@ -163,18 +166,18 @@ class TypeArchive:
 
 	def rename_type(self, old_name: 'ty_.QualifiedNameType', new_name: 'ty_.QualifiedNameType') -> None:
 		"""
-
-		:param old_name:
-		:param new_name:
+		Change the name of an existing type in the type archive.
+		:param old_name: Old type name in archive
+		:param new_name: New type name
 		"""
 		id = self.get_type_id(old_name)
 		return self.rename_type_by_id(id, new_name)
 
 	def rename_type_by_id(self, id: str, new_name: 'ty_.QualifiedNameType') -> None:
 		"""
-
-		:param id:
-		:param new_name:
+		Change the name of an existing type in the type archive.
+		:param id: Old id of type in archive
+		:param new_name: New type name
 		"""
 		if not isinstance(new_name, ty_.QualifiedName):
 			new_name = ty_.QualifiedName(new_name)
@@ -183,8 +186,8 @@ class TypeArchive:
 
 	def remove_type(self, name: 'ty_.QualifiedNameType') -> None:
 		"""
-
-		:param name:
+		Remove an existing type in the type archive.
+		:param name: Type name
 		"""
 		id = self.get_type_id(name)
 		if id is None:
@@ -193,17 +196,18 @@ class TypeArchive:
 
 	def remove_type_by_id(self, id: str) -> None:
 		"""
-
-		:param id:
+		Remove an existing type in the type archive.
+		:param id: Type id
 		"""
 		if not core.BNRemoveTypeArchiveType(self.handle, id):
 			raise RuntimeError("BNRemoveTypeArchiveType")
 
 	def get_type_by_name(self, name: 'ty_.QualifiedNameType', snapshot: Optional[str] = None) -> Optional[ty_.Type]:
 		"""
-
-		:param QualifiedName name:
-		:rtype: Type
+		Retrieve a stored type in the archive
+		:param name: Type name
+		:param snapshot: Snapshot id to search for types, or None to search the latest snapshot
+		:return: Type, if it exists. Otherwise None
 		"""
 		if snapshot is None:
 			snapshot = self.current_snapshot_id
@@ -216,9 +220,10 @@ class TypeArchive:
 
 	def get_type_by_id(self, id: str, snapshot: Optional[str] = None) -> Optional[ty_.Type]:
 		"""
-
-		:param str id:
-		:rtype: Type
+		Retrieve a stored type in the archive by id
+		:param id: Type id
+		:param snapshot: Snapshot id to search for types, or None to search the latest snapshot
+		:return: Type, if it exists. Otherwise None
 		"""
 		if snapshot is None:
 			snapshot = self.current_snapshot_id
@@ -230,9 +235,10 @@ class TypeArchive:
 
 	def get_type_name_by_id(self, id: str, snapshot: Optional[str] = None) -> Optional['ty_.QualifiedName']:
 		"""
-
-		:param str id:
-		:rtype: Type
+		Retrieve a type's name by its id
+		:param id: Type id
+		:param snapshot: Snapshot id to search for types, or None to search the latest snapshot
+		:return: Type name, if it exists. Otherwise None
 		"""
 		if snapshot is None:
 			snapshot = self.current_snapshot_id
@@ -247,9 +253,10 @@ class TypeArchive:
 
 	def get_type_id(self, name: 'ty_.QualifiedNameType', snapshot: Optional[str] = None) -> Optional[str]:
 		"""
-
-		:param QualifiedName name:
-		:rtype: Type
+		Retrieve a type's id by its name
+		:param name: Type name
+		:param snapshot: Snapshot id to search for types, or None to search the latest snapshot
+		:return: Type id, if it exists. Otherwise None
 		"""
 		if snapshot is None:
 			snapshot = self.current_snapshot_id
@@ -265,24 +272,24 @@ class TypeArchive:
 	@property
 	def types(self) -> Dict[ty_.QualifiedName, ty_.Type]:
 		"""
-
-		:return:
+		Retrieve all stored types in the archive at the current snapshot
+		:return: Map of all types, by name
 		"""
 		return self.get_types()
 
 	@property
 	def types_and_ids(self) -> Dict[str, Tuple[ty_.QualifiedName, ty_.Type]]:
 		"""
-
-		:return:
+		Retrieve all stored types in the archive at the current snapshot
+		:return: Map of type id to type name and definition
 		"""
 		return self.get_types_and_ids()
 
 	def get_types(self, snapshot: Optional[str] = None) -> Dict[ty_.QualifiedName, ty_.Type]:
 		"""
-
-		:param snapshot:
-		:return:
+		Retrieve all stored types in the archive at a snapshot
+		:param snapshot: Snapshot id to search for types, or None to search the latest snapshot
+		:return: Map of all types, by name
 		"""
 		result = {}
 		for id, (name, type) in self.get_types_and_ids(snapshot).items():
@@ -291,9 +298,9 @@ class TypeArchive:
 
 	def get_types_and_ids(self, snapshot: Optional[str] = None) -> Dict[str, Tuple[ty_.QualifiedName, ty_.Type]]:
 		"""
-
-		:param snapshot:
-		:return:
+		Retrieve all stored types in the archive at a snapshot
+		:param snapshot: Snapshot id to search for types, or None to search the latest snapshot
+		:return: Map of type id to type name and definition
 		"""
 		if snapshot is None:
 			snapshot = self.current_snapshot_id
@@ -313,16 +320,16 @@ class TypeArchive:
 	@property
 	def type_ids(self) -> List[str]:
 		"""
-
-		:return:
+		Get a list of all types' ids in the archive at the current snapshot
+		:return: All type ids
 		"""
 		return self.get_type_ids()
 
 	def get_type_ids(self, snapshot: Optional[str] = None) -> List[str]:
 		"""
-
-		:param snapshot:
-		:return:
+		Get a list of all types' ids in the archive at a snapshot
+		:param snapshot: Snapshot id to search for types, or None to search the latest snapshot
+		:return: All type ids
 		"""
 		if snapshot is None:
 			snapshot = self.current_snapshot_id
@@ -340,16 +347,16 @@ class TypeArchive:
 	@property
 	def type_names(self) -> List['ty_.QualifiedName']:
 		"""
-
-		:return:
+		Get a list of all types' names in the archive at the current snapshot
+		:return: All type names
 		"""
 		return self.get_type_names()
 
 	def get_type_names(self, snapshot: Optional[str] = None) -> List['ty_.QualifiedName']:
 		"""
-
-		:param snapshot:
-		:return:
+		Get a list of all types' names in the archive at a snapshot
+		:param snapshot: Snapshot id to search for types, or None to search the latest snapshot
+		:return: All type names
 		"""
 		if snapshot is None:
 			snapshot = self.current_snapshot_id
@@ -367,16 +374,16 @@ class TypeArchive:
 	@property
 	def type_names_and_ids(self) -> Dict[str, 'ty_.QualifiedName']:
 		"""
-
-		:return:
+		Get a list of all types' names and ids in the archive at the current snapshot
+		:return: Mapping of all type ids to names
 		"""
 		return self.get_type_names_and_ids()
 
 	def get_type_names_and_ids(self, snapshot: Optional[str] = None) -> Dict[str, 'ty_.QualifiedName']:
 		"""
-
-		:param snapshot:
-		:return:
+		Get a list of all types' names and ids in the archive at a current snapshot
+		:param snapshot: Snapshot id to search for types, or None to search the latest snapshot
+		:return: Mapping of all type ids to names
 		"""
 		if snapshot is None:
 			snapshot = self.current_snapshot_id
@@ -397,10 +404,10 @@ class TypeArchive:
 
 	def get_outgoing_direct_references(self, id: str, snapshot: Optional[str] = None) -> List[str]:
 		"""
-
-		:param id:
-		:param snapshot:
-		:return:
+		Get all types a given type references directly
+		:param id: Source type id
+		:param snapshot: Snapshot id to search for types, or empty string to search the latest snapshot
+		:return: Target type ids
 		"""
 		if snapshot is None:
 			snapshot = self.current_snapshot_id
@@ -419,10 +426,10 @@ class TypeArchive:
 
 	def get_outgoing_recursive_references(self, id: str, snapshot: Optional[str] = None) -> List[str]:
 		"""
-
-		:param id:
-		:param snapshot:
-		:return:
+		Get all types a given type references, and any types that the referenced types reference
+		:param id: Source type id
+		:param snapshot: Snapshot id to search for types, or empty string to search the latest snapshot
+		:return: Target type ids
 		"""
 		if snapshot is None:
 			snapshot = self.current_snapshot_id
@@ -441,10 +448,10 @@ class TypeArchive:
 
 	def get_incoming_direct_references(self, id: str, snapshot: Optional[str] = None) -> List[str]:
 		"""
-
-		:param id:
-		:param snapshot:
-		:return:
+		Get all types that reference a given type
+		:param id: Target type id
+		:param snapshot: Snapshot id to search for types, or empty string to search the latest snapshot
+		:return: Source type ids
 		"""
 		if snapshot is None:
 			snapshot = self.current_snapshot_id
@@ -463,10 +470,10 @@ class TypeArchive:
 
 	def get_incoming_recursive_references(self, id: str, snapshot: Optional[str] = None) -> List[str]:
 		"""
-
-		:param id:
-		:param snapshot:
-		:return:
+		Get all types that reference a given type, and all types that reference them, recursively
+		:param id: Target type id
+		:param snapshot: Snapshot id to search for types, or empty string to search the latest snapshot
+		:return: Source type ids
 		"""
 		if snapshot is None:
 			snapshot = self.current_snapshot_id
@@ -486,13 +493,13 @@ class TypeArchive:
 
 	def query_metadata(self, key: str) -> Optional['metadata.MetadataValueType']:
 		"""
-
+		Look up a metadata entry in the archive
 		:param string key: key to query
-		:rtype: metadata associated with the key
+		:rtype: Metadata associated with the key, if it exists. Otherwise, None
 		:Example:
 
-			>>> lib.store_metadata("ordinals", {"9": "htons"})
-			>>> lib.query_metadata("ordinals")["9"]
+			>>> ta.store_metadata("ordinals", {"9": "htons"})
+			>>> ta.query_metadata("ordinals")["9"]
 			"htons"
 		"""
 		md_handle = core.BNTypeArchiveQueryMetadata(self.handle, key)
@@ -502,25 +509,24 @@ class TypeArchive:
 
 	def store_metadata(self, key: str, md: 'metadata.MetadataValueType') -> None:
 		"""
-
+		Store a key/value pair in the archive's metadata storage
 		:param string key: key value to associate the Metadata object with
 		:param Varies md: object to store.
-		:rtype: None
 		:Example:
 
-			>>> lib.store_metadata("ordinals", {"9": "htons"})
-			>>> lib.query_metadata("ordinals")["9"]
+			>>> ta.store_metadata("ordinals", {"9": "htons"})
+			>>> ta.query_metadata("ordinals")["9"]
 			"htons"
 		"""
 		if not isinstance(md, metadata.Metadata):
 			md = metadata.Metadata(md)
-		core.BNTypeArchiveStoreMetadata(self.handle, key, md.handle)
+		if not core.BNTypeArchiveStoreMetadata(self.handle, key, md.handle):
+			raise RuntimeError("BNTypeArchiveStoreMetadata")
 
 	def remove_metadata(self, key: str) -> None:
 		"""
-
+		Delete a given metadata entry in the archive
 		:param string key: key associated with metadata
-		:rtype: None
 		:Example:
 
 			>>> lib.store_metadata("integer", 1337)
