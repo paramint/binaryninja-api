@@ -228,7 +228,7 @@ class TypeArchive:
 			return None
 		return ty_.Type.create(t)
 
-	def get_type_name(self, id: str, snapshot: Optional[str] = None) -> Optional['ty_.QualifiedName']:
+	def get_type_name_by_id(self, id: str, snapshot: Optional[str] = None) -> Optional['ty_.QualifiedName']:
 		"""
 
 		:param str id:
