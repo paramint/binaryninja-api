@@ -161,7 +161,16 @@ class TypeArchive:
 		if not core.BNAddTypeArchiveTypes(self.handle, api_types, len(new_types)):
 			raise RuntimeError("BNAddTypeArchiveTypes")
 
-	def rename_type(self, id: str, new_name: 'ty_.QualifiedNameType') -> None:
+	def rename_type(self, old_name: 'ty_.QualifiedNameType', new_name: 'ty_.QualifiedNameType') -> None:
+		"""
+
+		:param old_name:
+		:param new_name:
+		"""
+		id = self.get_type_id(old_name)
+		return self.rename_type_by_id(id, new_name)
+
+	def rename_type_by_id(self, id: str, new_name: 'ty_.QualifiedNameType') -> None:
 		"""
 
 		:param id:
@@ -172,7 +181,17 @@ class TypeArchive:
 		if not core.BNRenameTypeArchiveType(self.handle, id, new_name._to_core_struct()):
 			raise RuntimeError("BNRenameTypeArchiveType")
 
-	def remove_type(self, id: str) -> None:
+	def remove_type(self, name: 'ty_.QualifiedNameType') -> None:
+		"""
+
+		:param name:
+		"""
+		id = self.get_type_id(name)
+		if id is None:
+			raise RuntimeError(f"Unknown type {name}")
+		self.remove_type_by_id(id)
+
+	def remove_type_by_id(self, id: str) -> None:
 		"""
 
 		:param id:
@@ -244,14 +263,33 @@ class TypeArchive:
 		return t
 
 	@property
-	def types(self) -> Dict[str, Tuple[ty_.QualifiedName, ty_.Type]]:
+	def types(self) -> Dict[ty_.QualifiedName, ty_.Type]:
 		"""
 
 		:return:
 		"""
 		return self.get_types()
 
-	def get_types(self, snapshot: Optional[str] = None) -> Dict[str, Tuple[ty_.QualifiedName, ty_.Type]]:
+	@property
+	def types_and_ids(self) -> Dict[str, Tuple[ty_.QualifiedName, ty_.Type]]:
+		"""
+
+		:return:
+		"""
+		return self.get_types_and_ids()
+
+	def get_types(self, snapshot: Optional[str] = None) -> Dict[ty_.QualifiedName, ty_.Type]:
+		"""
+
+		:param snapshot:
+		:return:
+		"""
+		result = {}
+		for id, (name, type) in self.get_types_and_ids(snapshot).items():
+			result[name] = type
+		return result
+
+	def get_types_and_ids(self, snapshot: Optional[str] = None) -> Dict[str, Tuple[ty_.QualifiedName, ty_.Type]]:
 		"""
 
 		:param snapshot:
