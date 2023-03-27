@@ -498,6 +498,7 @@ class TypeArchive:
 		:rtype: Metadata associated with the key, if it exists. Otherwise, None
 		:Example:
 
+			>>> ta: TypeArchive
 			>>> ta.store_metadata("ordinals", {"9": "htons"})
 			>>> ta.query_metadata("ordinals")["9"]
 			"htons"
@@ -514,6 +515,7 @@ class TypeArchive:
 		:param Varies md: object to store.
 		:Example:
 
+			>>> ta: TypeArchive
 			>>> ta.store_metadata("ordinals", {"9": "htons"})
 			>>> ta.query_metadata("ordinals")["9"]
 			"htons"
@@ -529,7 +531,8 @@ class TypeArchive:
 		:param string key: key associated with metadata
 		:Example:
 
-			>>> lib.store_metadata("integer", 1337)
-			>>> lib.remove_metadata("integer")
+			>>> ta: TypeArchive
+			>>> ta.store_metadata("integer", 1337)
+			>>> ta.remove_metadata("integer")
 		"""
 		core.BNTypeArchiveRemoveMetadata(self.handle, key)
