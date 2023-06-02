@@ -3973,15 +3973,15 @@ std::optional<std::pair<Ref<TypeLibrary>, QualifiedName>> BinaryView::LookupImpo
 }
 
 
-void BinaryView::ConnectTypeArchive(Ref<TypeArchive> archive)
+void BinaryView::AttachTypeArchive(Ref<TypeArchive> archive)
 {
-	BNBinaryViewConnectTypeArchive(m_object, archive->GetObject());
+	BNBinaryViewAttachTypeArchive(m_object, archive->GetObject());
 }
 
 
-void BinaryView::DisconnectTypeArchive(Ref<TypeArchive> archive)
+void BinaryView::DetachTypeArchive(Ref<TypeArchive> archive)
 {
-	BNBinaryViewDisconnectTypeArchive(m_object, archive->GetObject());
+	BNBinaryViewDetachTypeArchive(m_object, archive->GetObject());
 }
 
 
@@ -4037,12 +4037,12 @@ std::unordered_map<QualifiedName, std::map<std::string, std::string>> BinaryView
 }
 
 
-std::unordered_map<std::string, std::pair<std::string, std::string>> BinaryView::GetSyncedTypeArchiveTypes() const
+std::unordered_map<std::string, std::pair<std::string, std::string>> BinaryView::GetAssociatedTypeArchiveTypes() const
 {
 	char** typeIds;
 	char** archiveIds;
 	char** archiveTypeIds;
-	size_t count = BNBinaryViewGetSyncedTypeArchiveTypes(m_object, &typeIds, &archiveIds, &archiveTypeIds);
+	size_t count = BNBinaryViewGetAssociatedTypeArchiveTypes(m_object, &typeIds, &archiveIds, &archiveTypeIds);
 
 	std::unordered_map<std::string, std::pair<std::string, std::string>> result;
 	for (size_t i = 0; i < count; i++)
@@ -4056,11 +4056,11 @@ std::unordered_map<std::string, std::pair<std::string, std::string>> BinaryView:
 }
 
 
-std::unordered_map<std::string, std::string> BinaryView::GetSyncedTypesFromArchive(const std::string& archive) const
+std::unordered_map<std::string, std::string> BinaryView::GetAssociatedTypesFromArchive(const std::string& archive) const
 {
 	char** typeIds;
 	char** archiveTypeIds;
-	size_t count = BNBinaryViewGetSyncedTypesFromArchive(m_object, archive.c_str(), &typeIds, &archiveTypeIds);
+	size_t count = BNBinaryViewGetAssociatedTypesFromArchive(m_object, archive.c_str(), &typeIds, &archiveTypeIds);
 
 	std::unordered_map<std::string, std::string> result;
 	for (size_t i = 0; i < count; i++)
@@ -4073,11 +4073,11 @@ std::unordered_map<std::string, std::string> BinaryView::GetSyncedTypesFromArchi
 }
 
 
-std::optional<std::pair<std::string, std::string>> BinaryView::GetSyncedTypeArchiveTypeTarget(const std::string& id) const
+std::optional<std::pair<std::string, std::string>> BinaryView::GetAssociatedTypeArchiveTypeTarget(const std::string& id) const
 {
 	char* archiveId;
 	char* archiveTypeId;
-	if (!BNBinaryViewGetSyncedTypeArchiveTypeTarget(m_object, id.c_str(), &archiveId, &archiveTypeId))
+	if (!BNBinaryViewGetAssociatedTypeArchiveTypeTarget(m_object, id.c_str(), &archiveId, &archiveTypeId))
 		return std::nullopt;
 	std::pair<std::string, std::string> result = std::make_pair(archiveId, archiveTypeId);
 	BNFreeString(archiveId);
@@ -4086,10 +4086,10 @@ std::optional<std::pair<std::string, std::string>> BinaryView::GetSyncedTypeArch
 }
 
 
-std::optional<std::string> BinaryView::GetSyncedTypeArchiveTypeSource(const std::string& archiveId, const std::string& archiveTypeId) const
+std::optional<std::string> BinaryView::GetAssociatedTypeArchiveTypeSource(const std::string& archiveId, const std::string& archiveTypeId) const
 {
 	char* typeId;
-	if (!BNBinaryViewGetSyncedTypeArchiveTypeSource(m_object, archiveId.c_str(), archiveTypeId.c_str(), &typeId))
+	if (!BNBinaryViewGetAssociatedTypeArchiveTypeSource(m_object, archiveId.c_str(), archiveTypeId.c_str(), &typeId))
 		return std::nullopt;
 	std::string result = typeId;
 	BNFreeString(typeId);
@@ -4097,28 +4097,65 @@ std::optional<std::string> BinaryView::GetSyncedTypeArchiveTypeSource(const std:
 }
 
 
-bool BinaryView::PullTypeArchiveType(const std::string& archiveId, const std::string& archiveTypeId, std::string& typeId, std::vector<std::string>& dependencies)
+bool BinaryView::UpdateTypeArchiveTypes(const std::unordered_set<std::string>& typeIds, std::vector<std::string>& dependencies)
 {
-	char* apiTypeId;
+	std::vector<const char*> apiTypeIds;
+	for (const auto& typeId: typeIds)
+	{
+		apiTypeIds.push_back(typeId.c_str());
+	}
+
 	char** apiDependencies;
 	size_t apiDependencyCount;
-	if (!BNBinaryViewPullTypeArchiveType(m_object, archiveId.c_str(), archiveTypeId.c_str(), &apiTypeId, &apiDependencies, &apiDependencyCount))
+	if (!BNBinaryViewUpdateTypeArchiveTypes(m_object, apiTypeIds.data(), apiTypeIds.size(), &apiDependencies, &apiDependencyCount))
 		return false;
-	typeId = apiTypeId;
 	dependencies.clear();
 	for (size_t i = 0; i < apiDependencyCount; i++)
 	{
 		dependencies.push_back(apiDependencies[i]);
 	}
-	BNFreeString(apiTypeId);
 	BNFreeStringList(apiDependencies, apiDependencyCount);
 	return true;
 }
 
 
-bool BinaryView::PushTypeArchiveType(const std::string& archiveId, const std::string& typeId)
+bool BinaryView::PullTypeArchiveTypes(const std::string& archiveId, const std::vector<std::string>& archiveTypeIds, std::vector<std::string>& typeIds, std::vector<std::string>& dependencies)
 {
-	return BNBinaryViewPushTypeArchiveType(m_object, archiveId.c_str(), typeId.c_str());
+	std::vector<const char*> apiArchiveTypeIds;
+	for (const auto& archiveTypeId: archiveTypeIds)
+	{
+		apiArchiveTypeIds.push_back(archiveTypeId.c_str());
+	}
+
+	char** apiTypeIds;
+	size_t apiTypeIdCount;
+	char** apiDependencies;
+	size_t apiDependencyCount;
+	if (!BNBinaryViewPullTypeArchiveTypes(m_object, archiveId.c_str(), apiArchiveTypeIds.data(), apiArchiveTypeIds.size(), &apiTypeIds, &apiTypeIdCount, &apiDependencies, &apiDependencyCount))
+		return false;
+	for (size_t i = 0; i < apiTypeIdCount; i ++)
+	{
+		typeIds.push_back(apiTypeIds[i]);
+	}
+	dependencies.clear();
+	for (size_t i = 0; i < apiDependencyCount; i++)
+	{
+		dependencies.push_back(apiDependencies[i]);
+	}
+	BNFreeStringList(apiTypeIds, apiTypeIdCount);
+	BNFreeStringList(apiDependencies, apiDependencyCount);
+	return true;
+}
+
+
+bool BinaryView::CommitTypeArchiveTypes(const std::vector<std::string>& typeIds)
+{
+	std::vector<const char*> apiTypeIds;
+	for (auto& id: typeIds)
+	{
+		apiTypeIds.push_back(id.c_str());
+	}
+	return BNBinaryViewCommitTypeArchiveTypes(m_object, apiTypeIds.data(), apiTypeIds.size());
 }
 
 

@@ -5247,16 +5247,16 @@ namespace BinaryNinja {
 		 */
 		std::optional<std::pair<Ref<TypeLibrary>, QualifiedName>> LookupImportedTypeLibrary(const QualifiedName& name);
 		/*!
-			Connect a given type archive to the binary view. No types will actually be synced by calling this, just they
+			Attach a given type archive to the binary view. No types will actually be associated by calling this, just they
 			will become available.
 			\param archive New archive
 		 */
-		void ConnectTypeArchive(Ref<TypeArchive> archive);
+		void AttachTypeArchive(Ref<TypeArchive> archive);
 		/*!
-			Disconnect from a type archive, breaking all connections to types synced with the archive
+			Detach from a type archive, breaking all associations to types with the archive
 			\param archive Archive to remove
 		 */
-		void DisconnectTypeArchive(Ref<TypeArchive> archive);
+		void DetachTypeArchive(Ref<TypeArchive> archive);
 		/*!
 			Look up a connected archive by its id
 			\param id Id of archive
@@ -5275,49 +5275,61 @@ namespace BinaryNinja {
 		std::unordered_map<QualifiedName, std::map<std::string, std::string>> GetTypeArchiveTypeNames() const;
 
 		/*!
-			Get a list of all types in the analysis that are synced with a specific type archive
+			Get a list of all types in the analysis that are associated with a specific type archive
 			\return Map of all analysis types to their corresponding archive id
 		 */
-		std::unordered_map<std::string, std::pair<std::string, std::string>> GetSyncedTypeArchiveTypes() const;
+		std::unordered_map<std::string, std::pair<std::string, std::string>> GetAssociatedTypeArchiveTypes() const;
 		/*!
-		    Get a list of all types in the analysis that are synced with a specific type archive
+		    Get a list of all types in the analysis that are associated with a specific type archive
 		    \return Map of all analysis types to their corresponding archive id
 		 */
-		std::unordered_map<std::string, std::string> GetSyncedTypesFromArchive(const std::string& archive) const;
+		std::unordered_map<std::string, std::string> GetAssociatedTypesFromArchive(const std::string& archive) const;
 		/*!
 		    Determine the target archive / type id of a given analysis type
 		    \param id Id of analysis type
-		    \return Pair of archive id and archive type id, if this type is synced. std::nullopt otherwise.
+		    \return Pair of archive id and archive type id, if this type is associated. std::nullopt otherwise.
 		 */
-		std::optional<std::pair<std::string, std::string>> GetSyncedTypeArchiveTypeTarget(const std::string& id) const;
+		std::optional<std::pair<std::string, std::string>> GetAssociatedTypeArchiveTypeTarget(const std::string& id) const;
 		/*!
 		    Determine the local source type for a given archive type
 		    \param archiveId Id of target archive
 		    \param archiveTypeId Id of target archive type
-		    \return Id of source analysis type, if this type is synced. std::nullopt otherwise.
+		    \return Id of source analysis type, if this type is associated. std::nullopt otherwise.
 		 */
-		std::optional<std::string> GetSyncedTypeArchiveTypeSource(const std::string& archiveId, const std::string& archiveTypeId) const;
+		std::optional<std::string> GetAssociatedTypeArchiveTypeSource(const std::string& archiveId, const std::string& archiveTypeId) const;
 		/*!
-		    Pull a type from a type archive, syncing with it and any dependencies
-		    \param archiveId Id of archive
-		    \param archiveTypeId Id of desired type
-		    \param typeId [out] Id of defined type in analysis
-		    \param dependencies [out] List of extra types that are dependencies of the desired type that were also added
+		    Disassociate an associated type, so that it will no longer receive updates from its connected type archive
+		    \param typeId Id of type in analysis
 		    \return True if successful
 		 */
-		bool PullTypeArchiveType(const std::string& archiveId, const std::string& archiveTypeId, std::string& typeId, std::vector<std::string>& dependencies);
+		bool DisassociateTypeArchiveType(const std::string& typeId);
 		/*!
-			Push a type, and all its dependencies, into a type archive
-			\param archiveId Id of archive
-			\param typeId Id of type in analysis
+			Receive changes of associated types
+			\param typeIds Ids of desired types in analysis
+			\param dependencies [out] List of extra types that are dependencies of the desired types that were also added
 			\return True if successful
 		 */
-		bool PushTypeArchiveType(const std::string& archiveId, const std::string& typeId);
+		bool UpdateTypeArchiveTypes(const std::unordered_set<std::string>& typeIds, std::vector<std::string>& dependencies);
 		/*!
-		    Push a collection of updated types, and all their dependencies, into a type archive
-		    \param archiveId Id of archive
-		    \param typeIds List of ids of types in analysis
-		    \return True if successful
+			Pull a collection of new types from a type archive, associating with them and any dependencies
+			\param archiveId Id of archive
+			\param archiveTypeIds Ids of desired types
+			\param typeIds [out] Ids of defined types in analysis
+			\param dependencies [out] List of extra types that are dependencies of the desired types that were also added
+			\return True if successful
+		 */
+		bool PullTypeArchiveTypes(const std::string& archiveId, const std::vector<std::string>& archiveTypeId, std::vector<std::string>& typeId, std::vector<std::string>& dependencies);
+		/*!
+			Send changes of local associated types to archive
+			\param typeIds Ids of types to commit in analysis
+			\return True if successful
+		 */
+		bool CommitTypeArchiveTypes(const std::vector<std::string>& typeIds);
+		/*!
+			Push a collection of new types, and all their dependencies, into a type archive
+			\param archiveId Id of archive
+			\param typeIds List of ids of types in analysis
+			\return True if successful
 		 */
 		bool PushTypeArchiveTypes(const std::string& archiveId, const std::vector<std::string>& typeIds);
 
