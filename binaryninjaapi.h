@@ -4496,6 +4496,13 @@ namespace BinaryNinja {
 		*/
 		std::vector<Confidence<Ref<Type>>> GetTypesReferenced(const QualifiedName& type, uint64_t offset);
 
+		std::unordered_set<QualifiedName> GetOutgoingDirectTypeReferences(const QualifiedName& type);
+		std::unordered_set<QualifiedName> GetOutgoingRecursiveTypeReferences(const QualifiedName& type);
+		std::unordered_set<QualifiedName> GetOutgoingRecursiveTypeReferences(const std::unordered_set<QualifiedName>& types);
+		std::unordered_set<QualifiedName> GetIncomingDirectTypeReferences(const QualifiedName& type);
+		std::unordered_set<QualifiedName> GetIncomingRecursiveTypeReferences(const QualifiedName& type);
+		std::unordered_set<QualifiedName> GetIncomingRecursiveTypeReferences(const std::unordered_set<QualifiedName>& types);
+
 		Ref<Structure> CreateStructureBasedOnFieldAccesses(const QualifiedName& type); // Unimplemented!
 
 		/*! Returns a list of virtual addresses called by the call site in the ReferenceSource

@@ -4125,6 +4125,11 @@ extern "C"
 	BINARYNINJACOREAPI BNTypeWithConfidence* BNGetTypesReferenced(
 	    BNBinaryView* view, BNQualifiedName* type, uint64_t offset, size_t* count);
 
+	BINARYNINJACOREAPI BNQualifiedName* BNGetOutgoingDirectTypeReferences(BNBinaryView* view, BNQualifiedName* type, size_t* count);
+	BINARYNINJACOREAPI BNQualifiedName* BNGetOutgoingRecursiveTypeReferences(BNBinaryView* view, BNQualifiedName* types, size_t typeCount, size_t* count);
+	BINARYNINJACOREAPI BNQualifiedName* BNGetIncomingDirectTypeReferences(BNBinaryView* view, BNQualifiedName* type, size_t* count);
+	BINARYNINJACOREAPI BNQualifiedName* BNGetIncomingRecursiveTypeReferences(BNBinaryView* view, BNQualifiedName* types, size_t typeCount, size_t* count);
+
 	BINARYNINJACOREAPI void BNRegisterGlobalFunctionRecognizer(BNFunctionRecognizer* rec);
 
 	BINARYNINJACOREAPI bool BNGetStringAtAddress(BNBinaryView* view, uint64_t addr, BNStringReference* strRef);
