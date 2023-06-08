@@ -5311,34 +5311,21 @@ namespace BinaryNinja {
 		 */
 		bool DisassociateTypeArchiveType(const std::string& typeId);
 		/*!
-			Receive changes of associated types
-			\param typeIds Ids of desired types in analysis
-			\param dependencies [out] List of extra types that are dependencies of the desired types that were also added
+			Pull a collection of types from a type archive, associating with them and any dependencies
+			\param[in] archiveId Id of archive
+			\param[in] archiveTypeIds Ids of desired types
+			\param[out] updatedTypes List of types that were updated
 			\return True if successful
 		 */
-		bool UpdateTypeArchiveTypes(const std::unordered_set<std::string>& typeIds, std::vector<std::string>& dependencies);
+		bool PullTypeArchiveTypes(const std::string& archiveId, const std::unordered_set<std::string>& archiveTypeIds, std::unordered_map<std::string, std::string>& updatedTypes);
 		/*!
-			Pull a collection of new types from a type archive, associating with them and any dependencies
-			\param archiveId Id of archive
-			\param archiveTypeIds Ids of desired types
-			\param typeIds [out] Ids of defined types in analysis
-			\param dependencies [out] List of extra types that are dependencies of the desired types that were also added
+			Push a collection of types, and all their dependencies, into a type archive
+			\param[in] archiveId Id of archive
+			\param[in] typeIds List of ids of types in analysis
+			\param[out] updatedTypes List of types that were updated
 			\return True if successful
 		 */
-		bool PullTypeArchiveTypes(const std::string& archiveId, const std::vector<std::string>& archiveTypeId, std::vector<std::string>& typeId, std::vector<std::string>& dependencies);
-		/*!
-			Send changes of local associated types to archive
-			\param typeIds Ids of types to commit in analysis
-			\return True if successful
-		 */
-		bool CommitTypeArchiveTypes(const std::vector<std::string>& typeIds);
-		/*!
-			Push a collection of new types, and all their dependencies, into a type archive
-			\param archiveId Id of archive
-			\param typeIds List of ids of types in analysis
-			\return True if successful
-		 */
-		bool PushTypeArchiveTypes(const std::string& archiveId, const std::vector<std::string>& typeIds);
+		bool PushTypeArchiveTypes(const std::string& archiveId, const std::unordered_set<std::string>& typeIds, std::unordered_map<std::string, std::string>& updatedTypes);
 
 		bool FindNextData(
 		    uint64_t start, const DataBuffer& data, uint64_t& result, BNFindFlag flags = FindCaseSensitive);

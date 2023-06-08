@@ -4199,29 +4199,13 @@ std::optional<std::string> BinaryView::GetAssociatedTypeArchiveTypeSource(const 
 }
 
 
-bool BinaryView::UpdateTypeArchiveTypes(const std::unordered_set<std::string>& typeIds, std::vector<std::string>& dependencies)
+bool BinaryView::DisassociateTypeArchiveType(const std::string& typeId)
 {
-	std::vector<const char*> apiTypeIds;
-	for (const auto& typeId: typeIds)
-	{
-		apiTypeIds.push_back(typeId.c_str());
-	}
-
-	char** apiDependencies;
-	size_t apiDependencyCount;
-	if (!BNBinaryViewUpdateTypeArchiveTypes(m_object, apiTypeIds.data(), apiTypeIds.size(), &apiDependencies, &apiDependencyCount))
-		return false;
-	dependencies.clear();
-	for (size_t i = 0; i < apiDependencyCount; i++)
-	{
-		dependencies.push_back(apiDependencies[i]);
-	}
-	BNFreeStringList(apiDependencies, apiDependencyCount);
-	return true;
+	return BNBinaryViewDisassociateTypeArchiveType(m_object, typeId.c_str());
 }
 
 
-bool BinaryView::PullTypeArchiveTypes(const std::string& archiveId, const std::vector<std::string>& archiveTypeIds, std::vector<std::string>& typeIds, std::vector<std::string>& dependencies)
+bool BinaryView::PullTypeArchiveTypes(const std::string& archiveId, const std::unordered_set<std::string>& archiveTypeIds, std::unordered_map<std::string, std::string>& updatedTypes)
 {
 	std::vector<const char*> apiArchiveTypeIds;
 	for (const auto& archiveTypeId: archiveTypeIds)
@@ -4229,46 +4213,43 @@ bool BinaryView::PullTypeArchiveTypes(const std::string& archiveId, const std::v
 		apiArchiveTypeIds.push_back(archiveTypeId.c_str());
 	}
 
-	char** apiTypeIds;
-	size_t apiTypeIdCount;
-	char** apiDependencies;
-	size_t apiDependencyCount;
-	if (!BNBinaryViewPullTypeArchiveTypes(m_object, archiveId.c_str(), apiArchiveTypeIds.data(), apiArchiveTypeIds.size(), &apiTypeIds, &apiTypeIdCount, &apiDependencies, &apiDependencyCount))
+	char** apiUpdatedArchiveTypeIds;
+	char** apiUpdatedAnalysisTypeIds;
+	size_t apiUpdatedTypeCount;
+	if (!BNBinaryViewPullTypeArchiveTypes(m_object, archiveId.c_str(), apiArchiveTypeIds.data(), apiArchiveTypeIds.size(), &apiUpdatedArchiveTypeIds, &apiUpdatedAnalysisTypeIds, &apiUpdatedTypeCount))
 		return false;
-	for (size_t i = 0; i < apiTypeIdCount; i ++)
+	updatedTypes.clear();
+	for (size_t i = 0; i < apiUpdatedTypeCount; i++)
 	{
-		typeIds.push_back(apiTypeIds[i]);
+		updatedTypes.insert({apiUpdatedArchiveTypeIds[i], apiUpdatedAnalysisTypeIds[i]});
 	}
-	dependencies.clear();
-	for (size_t i = 0; i < apiDependencyCount; i++)
-	{
-		dependencies.push_back(apiDependencies[i]);
-	}
-	BNFreeStringList(apiTypeIds, apiTypeIdCount);
-	BNFreeStringList(apiDependencies, apiDependencyCount);
+	BNFreeStringList(apiUpdatedArchiveTypeIds, apiUpdatedTypeCount);
+	BNFreeStringList(apiUpdatedAnalysisTypeIds, apiUpdatedTypeCount);
 	return true;
 }
 
 
-bool BinaryView::CommitTypeArchiveTypes(const std::vector<std::string>& typeIds)
+bool BinaryView::PushTypeArchiveTypes(const std::string& archiveId, const std::unordered_set<std::string>& typeIds, std::unordered_map<std::string, std::string>& updatedTypes)
 {
 	std::vector<const char*> apiTypeIds;
-	for (auto& id: typeIds)
+	for (const auto& typeId: typeIds)
 	{
-		apiTypeIds.push_back(id.c_str());
+		apiTypeIds.push_back(typeId.c_str());
 	}
-	return BNBinaryViewCommitTypeArchiveTypes(m_object, apiTypeIds.data(), apiTypeIds.size());
-}
 
-
-bool BinaryView::PushTypeArchiveTypes(const std::string& archiveId, const std::vector<std::string>& typeIds)
-{
-	std::vector<const char*> apiTypeIds;
-	for (auto& id: typeIds)
+	char** apiUpdatedAnalysisTypeIds;
+	char** apiUpdatedArchiveTypeIds;
+	size_t apiUpdatedTypeCount;
+	if (!BNBinaryViewPushTypeArchiveTypes(m_object, archiveId.c_str(), apiTypeIds.data(), apiTypeIds.size(), &apiUpdatedAnalysisTypeIds, &apiUpdatedArchiveTypeIds, &apiUpdatedTypeCount))
+		return false;
+	updatedTypes.clear();
+	for (size_t i = 0; i < apiUpdatedTypeCount; i++)
 	{
-		apiTypeIds.push_back(id.c_str());
+		updatedTypes.insert({apiUpdatedAnalysisTypeIds[i], apiUpdatedArchiveTypeIds[i]});
 	}
-	return BNBinaryViewPushTypeArchiveTypes(m_object, archiveId.c_str(), apiTypeIds.data(), apiTypeIds.size());
+	BNFreeStringList(apiUpdatedAnalysisTypeIds, apiUpdatedTypeCount);
+	BNFreeStringList(apiUpdatedArchiveTypeIds, apiUpdatedTypeCount);
+	return true;
 }
 
 

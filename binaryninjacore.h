@@ -6616,10 +6616,8 @@ extern "C"
 	BINARYNINJACOREAPI bool BNBinaryViewGetAssociatedTypeArchiveTypeTarget(BNBinaryView* view, const char* typeId, char** archiveId, char** archiveTypeId);
 	BINARYNINJACOREAPI bool BNBinaryViewGetAssociatedTypeArchiveTypeSource(BNBinaryView* view, const char* archiveId, const char* archiveTypeId, char** typeId);
 	BINARYNINJACOREAPI bool BNBinaryViewDisassociateTypeArchiveType(BNBinaryView* view, const char* typeId);
-	BINARYNINJACOREAPI bool BNBinaryViewUpdateTypeArchiveTypes(BNBinaryView* view, const char* const* typeIds, size_t typeIdCount, char*** dependencies, size_t* dependencyCount);
-	BINARYNINJACOREAPI bool BNBinaryViewPullTypeArchiveTypes(BNBinaryView* view, const char* archiveId, const char* const* archiveTypeIds, size_t archiveTypeIdCount, char*** typeIds, size_t* typeIdCount, char*** dependencies, size_t* dependencyCount);
-	BINARYNINJACOREAPI bool BNBinaryViewCommitTypeArchiveTypes(BNBinaryView* view, const char* const* typeIds, size_t typeIdCount);
-	BINARYNINJACOREAPI bool BNBinaryViewPushTypeArchiveTypes(BNBinaryView* view, const char* archiveId, const char* const* typeIds, size_t typeIdCount);
+	BINARYNINJACOREAPI bool BNBinaryViewPullTypeArchiveTypes(BNBinaryView* view, const char* archiveId, const char* const* archiveTypeIds, size_t archiveTypeIdCount, char*** updatedArchiveTypeIds, char*** updatedAnalysisTypeIds,  size_t* updatedTypeCount);
+	BINARYNINJACOREAPI bool BNBinaryViewPushTypeArchiveTypes(BNBinaryView* view, const char* archiveId, const char* const* typeIds, size_t typeIdCount, char*** updatedAnalysisTypeIds, char*** updatedArchiveTypeIds,  size_t* updatedTypeCount);
 
 #ifdef __cplusplus
 }
