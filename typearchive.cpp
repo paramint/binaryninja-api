@@ -182,9 +182,9 @@ bool TypeArchive::RenameType(const std::string& id, const QualifiedName& newName
 }
 
 
-bool TypeArchive::RemoveType(const std::string& id) noexcept(false)
+bool TypeArchive::DeleteType(const std::string& id) noexcept(false)
 {
-	return BNRemoveTypeArchiveType(m_object, id.c_str());
+	return BNDeleteTypeArchiveType(m_object, id.c_str());
 }
 
 

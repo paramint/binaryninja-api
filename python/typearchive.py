@@ -184,23 +184,23 @@ class TypeArchive:
 		if not core.BNRenameTypeArchiveType(self.handle, id, new_name._to_core_struct()):
 			raise RuntimeError("BNRenameTypeArchiveType")
 
-	def remove_type(self, name: 'ty_.QualifiedNameType') -> None:
+	def delete_type(self, name: 'ty_.QualifiedNameType') -> None:
 		"""
-		Remove an existing type in the type archive.
+		Delete an existing type in the type archive.
 		:param name: Type name
 		"""
 		id = self.get_type_id(name)
 		if id is None:
 			raise RuntimeError(f"Unknown type {name}")
-		self.remove_type_by_id(id)
+		self.delete_type_by_id(id)
 
-	def remove_type_by_id(self, id: str) -> None:
+	def delete_type_by_id(self, id: str) -> None:
 		"""
-		Remove an existing type in the type archive.
+		Delete an existing type in the type archive.
 		:param id: Type id
 		"""
-		if not core.BNRemoveTypeArchiveType(self.handle, id):
-			raise RuntimeError("BNRemoveTypeArchiveType")
+		if not core.BNDeleteTypeArchiveType(self.handle, id):
+			raise RuntimeError("BNDeleteTypeArchiveType")
 
 	def get_type_by_name(self, name: 'ty_.QualifiedNameType', snapshot: Optional[str] = None) -> Optional[ty_.Type]:
 		"""

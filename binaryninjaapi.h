@@ -15987,12 +15987,12 @@ namespace BinaryNinja {
 		bool RenameType(const std::string& id, const QualifiedName& newName) noexcept(false);
 
 		/*!
-		    Remove an existing type in the type archive.
+		    Delete an existing type in the type archive.
 		    \param id Type id
 		    \throws DatabaseException if an exception occurs
 		    \return True if successful
 		 */
-		bool RemoveType(const std::string& id) noexcept(false);
+		bool DeleteType(const std::string& id) noexcept(false);
 
 		/*!
 		    Retrieve a stored type in the archive by id
