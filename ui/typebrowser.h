@@ -254,10 +254,10 @@ public:
 	void OnTypeReferenceChanged(BinaryNinja::BinaryView *data, const BinaryNinja::QualifiedName &name, BinaryNinja::Type *type) override;
 	void OnTypeFieldReferenceChanged(BinaryNinja::BinaryView *data, const BinaryNinja::QualifiedName &name, uint64_t offset) override;
 
-	void OnTypeAdded(const std::string& id, TypeRef definition) override;
-	void OnTypeUpdated(const std::string& id, TypeRef oldDefinition, TypeRef newDefinition) override;
-	void OnTypeRenamed(const std::string& id, const BinaryNinja::QualifiedName& oldName, const BinaryNinja::QualifiedName& newName) override;
-	void OnTypeDeleted(const std::string& id, TypeRef definition) override;
+	void OnTypeAdded(TypeArchiveRef archive, const std::string& id, TypeRef definition) override;
+	void OnTypeUpdated(TypeArchiveRef archive, const std::string& id, TypeRef oldDefinition, TypeRef newDefinition) override;
+	void OnTypeRenamed(TypeArchiveRef archive, const std::string& id, const BinaryNinja::QualifiedName& oldName, const BinaryNinja::QualifiedName& newName) override;
+	void OnTypeDeleted(TypeArchiveRef archive, const std::string& id, TypeRef definition) override;
 
 public Q_SLOTS:
 	void markDirty();

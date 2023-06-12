@@ -2990,12 +2990,12 @@ extern "C"
 	struct BNTypeArchiveNotification
 	{
 		void* context;
-		void (*viewConnected)(void* ctxt, BNBinaryView* view);
-		void (*viewDisconnected)(void* ctxt, BNBinaryView* view);
-		void (*typeAdded)(void* ctxt, const char* id, BNType* definition);
-		void (*typeUpdated)(void* ctxt, const char* id, BNType* oldDefinition, BNType* newDefinition);
-		void (*typeRenamed)(void* ctxt, const char* id, const BNQualifiedName* oldName, const BNQualifiedName* newName);
-		void (*typeDeleted)(void* ctxt, const char* id, BNType* definition);
+		void (*viewAttached)(void* ctxt, BNTypeArchive* archive, BNBinaryView* view);
+		void (*viewDetached)(void* ctxt, BNTypeArchive* archive, BNBinaryView* view);
+		void (*typeAdded)(void* ctxt, BNTypeArchive* archive, const char* id, BNType* definition);
+		void (*typeUpdated)(void* ctxt, BNTypeArchive* archive, const char* id, BNType* oldDefinition, BNType* newDefinition);
+		void (*typeRenamed)(void* ctxt, BNTypeArchive* archive, const char* id, const BNQualifiedName* oldName, const BNQualifiedName* newName);
+		void (*typeDeleted)(void* ctxt, BNTypeArchive* archive, const char* id, BNType* definition);
 	};
 
 	BINARYNINJACOREAPI char* BNAllocString(const char* contents);

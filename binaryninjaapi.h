@@ -15820,12 +15820,12 @@ namespace BinaryNinja {
 	{
 		BNTypeArchiveNotification m_callbacks;
 
-		static void OnViewConnectedCallback(void* ctx, BNBinaryView* view);
-		static void OnViewDisconnectedCallback(void* ctx, BNBinaryView* view);
-		static void OnTypeAddedCallback(void* ctx, const char* id, BNType* definition);
-		static void OnTypeUpdatedCallback(void* ctx, const char* id, BNType* oldDefinition, BNType* newDefinition);
-		static void OnTypeRenamedCallback(void* ctx, const char* id, const BNQualifiedName* oldName, const BNQualifiedName* newName);
-		static void OnTypeDeletedCallback(void* ctx, const char* id, BNType* definition);
+		static void OnViewAttachedCallback(void* ctx, BNTypeArchive* archive, BNBinaryView* view);
+		static void OnViewDetachedCallback(void* ctx, BNTypeArchive* archive, BNBinaryView* view);
+		static void OnTypeAddedCallback(void* ctx, BNTypeArchive* archive, const char* id, BNType* definition);
+		static void OnTypeUpdatedCallback(void* ctx, BNTypeArchive* archive, const char* id, BNType* oldDefinition, BNType* newDefinition);
+		static void OnTypeRenamedCallback(void* ctx, BNTypeArchive* archive, const char* id, const BNQualifiedName* oldName, const BNQualifiedName* newName);
+		static void OnTypeDeletedCallback(void* ctx, BNTypeArchive* archive, const char* id, BNType* definition);
 
 	public:
 		TypeArchiveNotification();
@@ -15835,40 +15835,48 @@ namespace BinaryNinja {
 
 		/*!
 		    Called when a new view is connected to the type archive.
+		    \param archive
 		    \param view
 		 */
-		virtual void OnViewConnected(Ref<BinaryView> view)
+		virtual void OnViewAttached(Ref<TypeArchive> archive, Ref<BinaryView> view)
 		{
+			(void)archive;
 			(void)view;
 		}
 
 		/*!
 		    Called when a previously connected view is disconnected.
+		    \param archive
 		    \param view
 		 */
-		virtual void OnViewDisconnected(Ref<BinaryView> view)
+		virtual void OnViewDetached(Ref<TypeArchive> archive, Ref<BinaryView> view)
 		{
+			(void)archive;
 			(void)view;
 		}
 
 		/*!
 		    Called when a type is added to the archive
+		    \param archive
 		    \param id Id of type added
 		    \param definition Definition of type
 		 */
-		virtual void OnTypeAdded(const std::string& id, Ref<Type> definition)
+		virtual void OnTypeAdded(Ref<TypeArchive> archive, const std::string& id, Ref<Type> definition)
 		{
+			(void)archive;
 			(void)id;
 		}
 
 		/*!
 		    Called when a type in the archive is updated to a new definition
+		    \param archive
 		    \param id Id of type
 		    \param oldDefinition Previous definition
 		    \param newDefinition Current definition
 		 */
-		virtual void OnTypeUpdated(const std::string& id, Ref<Type> oldDefinition, Ref<Type> newDefinition)
+		virtual void OnTypeUpdated(Ref<TypeArchive> archive, const std::string& id, Ref<Type> oldDefinition, Ref<Type> newDefinition)
 		{
+			(void)archive;
 			(void)id;
 			(void)oldDefinition;
 			(void)newDefinition;
@@ -15876,23 +15884,27 @@ namespace BinaryNinja {
 
 		/*!
 		    Called when a type in the archive is renamed
+		    \param archive
 		    \param id Type id
 		    \param oldName Previous name
 		    \param newName Current name
 		 */
-		virtual void OnTypeRenamed(const std::string& id, const QualifiedName& oldName, const QualifiedName& newName)
+		virtual void OnTypeRenamed(Ref<TypeArchive> archive, const std::string& id, const QualifiedName& oldName, const QualifiedName& newName)
 		{
+			(void)archive;
 			(void)oldName;
 			(void)newName;
 		}
 
 		/*!
 		    Called when a type in the archive is deleted from the archive
+		    \param archive
 		    \param id Id of type deleted
 		    \param definition Definition of type deleted
 		 */
-		virtual void OnTypeDeleted(const std::string& id, Ref<Type> definition)
+		virtual void OnTypeDeleted(Ref<TypeArchive> archive, const std::string& id, Ref<Type> definition)
 		{
+			(void)archive;
 			(void)id;
 			(void)definition;
 		}

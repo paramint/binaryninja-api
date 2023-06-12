@@ -4,61 +4,67 @@
 using namespace BinaryNinja;
 
 
-void TypeArchiveNotification::OnViewConnectedCallback(void* ctx, BNBinaryView* view)
+void TypeArchiveNotification::OnViewAttachedCallback(void* ctx, BNTypeArchive* archive, BNBinaryView* view)
 {
 	TypeArchiveNotification* notify = reinterpret_cast<TypeArchiveNotification*>(ctx);
+	Ref<TypeArchive> cppArchive = new TypeArchive(BNNewTypeArchiveReference(archive));
 	Ref<BinaryView> cppView = new BinaryView(BNNewViewReference(view));
-	notify->OnViewConnected(cppView);
+	notify->OnViewAttached(cppArchive, cppView);
 }
 
 
-void TypeArchiveNotification::OnViewDisconnectedCallback(void* ctx, BNBinaryView* view)
+void TypeArchiveNotification::OnViewDetachedCallback(void* ctx, BNTypeArchive* archive, BNBinaryView* view)
 {
 	TypeArchiveNotification* notify = reinterpret_cast<TypeArchiveNotification*>(ctx);
+	Ref<TypeArchive> cppArchive = new TypeArchive(BNNewTypeArchiveReference(archive));
 	Ref<BinaryView> cppView = new BinaryView(BNNewViewReference(view));
-	notify->OnViewDisconnected(cppView);
+	notify->OnViewDetached(cppArchive, cppView);
 }
 
 
-void TypeArchiveNotification::OnTypeAddedCallback(void* ctx, const char* id, BNType* definition)
+void TypeArchiveNotification::OnTypeAddedCallback(void* ctx, BNTypeArchive* archive, const char* id, BNType* definition)
 {
 	TypeArchiveNotification* notify = reinterpret_cast<TypeArchiveNotification*>(ctx);
+	Ref<TypeArchive> cppArchive = new TypeArchive(BNNewTypeArchiveReference(archive));
 	Ref<Type> cppDefinition = new Type(BNNewTypeReference(definition));
-	notify->OnTypeAdded(id, cppDefinition);
+	notify->OnTypeAdded(cppArchive, id, cppDefinition);
 }
 
 
-void TypeArchiveNotification::OnTypeUpdatedCallback(void* ctx, const char* id, BNType* oldDefinition, BNType* newDefinition)
+void TypeArchiveNotification::OnTypeUpdatedCallback(void* ctx, BNTypeArchive* archive, const char* id, BNType* oldDefinition, BNType* newDefinition)
 {
 	TypeArchiveNotification* notify = reinterpret_cast<TypeArchiveNotification*>(ctx);
+	Ref<TypeArchive> cppArchive = new TypeArchive(BNNewTypeArchiveReference(archive));
 	Ref<Type> cppOldDefinition = new Type(BNNewTypeReference(oldDefinition));
 	Ref<Type> cppNewDefinition = new Type(BNNewTypeReference(newDefinition));
-	notify->OnTypeUpdated(id, cppOldDefinition, cppNewDefinition);
+	notify->OnTypeUpdated(cppArchive, id, cppOldDefinition, cppNewDefinition);
 }
 
 
-void TypeArchiveNotification::OnTypeRenamedCallback(void* ctx, const char* id, const BNQualifiedName* oldName, const BNQualifiedName* newName)
+void TypeArchiveNotification::OnTypeRenamedCallback(void* ctx, BNTypeArchive* archive, const char* id, const BNQualifiedName* oldName, const BNQualifiedName* newName)
 {
 	TypeArchiveNotification* notify = reinterpret_cast<TypeArchiveNotification*>(ctx);
+	Ref<TypeArchive> cppArchive = new TypeArchive(BNNewTypeArchiveReference(archive));
 	QualifiedName appOldName = QualifiedName::FromAPIObject(oldName);
 	QualifiedName appNewName = QualifiedName::FromAPIObject(newName);
-	notify->OnTypeRenamed(id, oldName, newName);
+	notify->OnTypeRenamed(cppArchive, id, oldName, newName);
 }
 
 
-void TypeArchiveNotification::OnTypeDeletedCallback(void* ctx, const char* id, BNType* definition)
+void TypeArchiveNotification::OnTypeDeletedCallback(void* ctx, BNTypeArchive* archive, const char* id, BNType* definition)
 {
 	TypeArchiveNotification* notify = reinterpret_cast<TypeArchiveNotification*>(ctx);
+	Ref<TypeArchive> cppArchive = new TypeArchive(BNNewTypeArchiveReference(archive));
 	Ref<Type> cppDefinition = new Type(BNNewTypeReference(definition));
-	notify->OnTypeDeleted(id, cppDefinition);
+	notify->OnTypeDeleted(cppArchive, id, cppDefinition);
 }
 
 
 TypeArchiveNotification::TypeArchiveNotification()
 {
 	m_callbacks.context = this;
-	m_callbacks.viewConnected = OnViewConnectedCallback;
-	m_callbacks.viewDisconnected = OnViewDisconnectedCallback;
+	m_callbacks.viewAttached = OnViewAttachedCallback;
+	m_callbacks.viewDetached = OnViewDetachedCallback;
 	m_callbacks.typeAdded = OnTypeAddedCallback;
 	m_callbacks.typeUpdated = OnTypeUpdatedCallback;
 	m_callbacks.typeRenamed = OnTypeRenamedCallback;
