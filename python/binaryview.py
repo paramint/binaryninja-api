@@ -7842,7 +7842,7 @@ class BinaryView:
 			return None
 
 		results = {}
-		for (archive_type_id, analysis_type_id) in result:
+		for (archive_type_id, analysis_type_id) in result.items():
 			results[archive.get_type_name_by_id(archive_type_id)] = (self.get_type_name_by_id(analysis_type_id), self.get_type_by_id(analysis_type_id))
 
 		return results
@@ -7884,16 +7884,16 @@ class BinaryView:
 		"""
 		analysis_type_ids = []
 		for name in names:
-			analysis_type_id = archive.get_type_id(name)
+			analysis_type_id = self.get_type_id(name)
 			if analysis_type_id is None:
 				return None
 			analysis_type_ids.append(analysis_type_id)
-		result = self.push_from_type_archive_by_id(archive.id, analysis_type_ids)
+		result = self.push_to_type_archive_by_id(archive.id, analysis_type_ids)
 		if result is None:
 			return None
 
 		results = {}
-		for (analysis_type_id, archive_type_id) in result:
+		for (analysis_type_id, archive_type_id) in result.items():
 			results[self.get_type_name_by_id(analysis_type_id)] = (archive.get_type_name_by_id(archive_type_id), archive.get_type_by_id(archive_type_id))
 
 		return results
