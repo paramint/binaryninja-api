@@ -19,21 +19,25 @@
 # IN THE SOFTWARE.
 
 import ctypes
+import traceback
 from typing import Optional, List, Dict, Union, Tuple
 
 # Binary Ninja components
 import binaryninja
 from . import _binaryninjacore as core
 from . import types as ty_
+from . import log
 from . import metadata
 from . import platform
 from . import architecture
+from . import binaryview
 
 
 class TypeArchive:
 	def __init__(self, handle: core.BNTypeArchiveHandle):
 		binaryninja._init_plugins()
 		self.handle: core.BNTypeArchiveHandle = core.handle_of_type(handle, core.BNTypeArchive)
+		self._notifications = {}
 
 	def __hash__(self):
 		return hash(ctypes.addressof(self.handle.contents))
@@ -490,7 +494,6 @@ class TypeArchive:
 		finally:
 			core.BNFreeStringList(ids, count.value)
 
-
 	def query_metadata(self, key: str) -> Optional['metadata.MetadataValueType']:
 		"""
 		Look up a metadata entry in the archive
@@ -536,3 +539,144 @@ class TypeArchive:
 			>>> ta.remove_metadata("integer")
 		"""
 		core.BNTypeArchiveRemoveMetadata(self.handle, key)
+
+	def register_notification(self, notify: 'TypeArchiveNotification') -> None:
+		"""
+		Register a notification listener
+		:param notify: Object to receive notifications
+		"""
+		cb = TypeArchiveNotificationCallbacks(self, notify)
+		cb._register()
+		self._notifications[notify] = cb
+
+	def unregister_notification(self, notify: 'TypeArchiveNotification') -> None:
+		"""
+		Unregister a notification listener
+		:param notify: Object to no longer receive notifications
+		"""
+		if notify in self._notifications:
+			self._notifications[notify]._unregister()
+			del self._notifications[notify]
+
+
+class TypeArchiveNotification:
+	def __init__(self):
+		pass
+
+	def view_attached(self, archive: 'TypeArchive', view: 'binaryview.BinaryView') -> None:
+		"""
+		Called when a new view attaches to the type archive.
+		:param archive: Source Type archive
+		:param view: View attaching the archive
+		"""
+		pass
+
+	def view_detached(self, archive: 'TypeArchive', view: 'binaryview.BinaryView') -> None:
+		"""
+		Called when a view that has previously attached the archive detaches it
+		:param archive: Source Type archive
+		:param view: View detaching the archive
+		"""
+		pass
+
+	def type_added(self, archive: 'TypeArchive', id: str, definition: 'ty_.Type') -> None:
+		"""
+		Called when a type is added to the archive
+		:param archive: Source Type archive
+		:param id: Id of type added
+		:param definition: Definition of type
+		"""
+		pass
+
+	def type_updated(self, archive: 'TypeArchive', id: str, old_definition: 'ty_.Type', new_definition: 'ty_.Type') -> None:
+		"""
+		Called when a type in the archive is updated to a new definition
+		:param archive: Source Type archive
+		:param id: Id of type
+		:param old_definition: Previous definition
+		:param new_definition: Current definition
+		"""
+		pass
+
+	def type_renamed(self, archive: 'TypeArchive', id: str, old_name: 'ty_.QualifiedName', new_name: 'ty_.QualifiedName') -> None:
+		"""
+		Called when a type in the archive is renamed
+		:param archive: Source Type archive
+		:param id: Type id
+		:param old_name: Previous name
+		:param new_name: Current name
+		"""
+		pass
+
+	def type_deleted(self, archive: 'TypeArchive', id: str, definition: 'ty_.Type') -> None:
+		"""
+		Called when a type in the archive is deleted from the archive
+		:param archive: Source Type archive
+		:param id: Id of type deleted
+		:param definition: Definition of type deleted
+		"""
+		pass
+
+
+class TypeArchiveNotificationCallbacks:
+	def __init__(self, archive: 'TypeArchive', notify: 'TypeArchiveNotification'):
+		self._archive = archive
+		self._notify = notify
+		self._cb = core.BNTypeArchiveNotification()
+		self._cb.context = 0
+		self._cb.viewAttached = self._cb.viewAttached.__class__(self._view_attached)
+		self._cb.viewDetached = self._cb.viewDetached.__class__(self._view_detached)
+		self._cb.typeAdded = self._cb.typeAdded.__class__(self._type_added)
+		self._cb.typeUpdated = self._cb.typeUpdated.__class__(self._type_updated)
+		self._cb.typeRenamed = self._cb.typeRenamed.__class__(self._type_renamed)
+		self._cb.typeDeleted = self._cb.typeDeleted.__class__(self._type_deleted)
+
+	def _register(self) -> None:
+		core.BNRegisterTypeArchiveNotification(self._archive.handle, self._cb)
+
+	def _unregister(self) -> None:
+		core.BNUnregisterTypeArchiveNotification(self._archive.handle, self._cb)
+
+	def _view_attached(self, ctxt, archive: ctypes.POINTER(core.BNTypeArchive), view: ctypes.POINTER(core.BNBinaryView)) -> None:
+		try:
+			self._notify.view_attached(self._archive, binaryview.BinaryView(handle=core.BNNewViewReference(view)))
+		except:
+			log.log_error(traceback.format_exc())
+
+	def _view_detached(self, ctxt, archive: ctypes.POINTER(core.BNTypeArchive), view: ctypes.POINTER(core.BNBinaryView)) -> None:
+		try:
+			self._notify.view_detached(self._archive, binaryview.BinaryView(handle=core.BNNewViewReference(view)))
+		except:
+			log.log_error(traceback.format_exc())
+
+	def _type_added(self, ctxt, archive: ctypes.POINTER(core.BNTypeArchive), id: ctypes.c_char_p, definition: ctypes.POINTER(core.BNType)) -> None:
+		try:
+			self._notify.type_added(self._archive, core.pyNativeStr(id), ty_.Type(handle=core.BNNewTypeReference(definition)))
+		except:
+			log.log_error(traceback.format_exc())
+
+	def _type_updated(self, ctxt, archive: ctypes.POINTER(core.BNTypeArchive), id: ctypes.c_char_p, old_definition: ctypes.POINTER(core.BNType), new_definition: ctypes.POINTER(core.BNType)) -> None:
+		try:
+			self._notify.type_updated(self._archive, core.pyNativeStr(id), ty_.Type(handle=core.BNNewTypeReference(old_definition)), ty_.Type(handle=core.BNNewTypeReference(new_definition)))
+		except:
+			log.log_error(traceback.format_exc())
+
+	def _type_renamed(self, ctxt, archive: ctypes.POINTER(core.BNTypeArchive), id: ctypes.c_char_p, old_name: ctypes.POINTER(core.BNQualifiedName), new_name: ctypes.POINTER(core.BNQualifiedName)) -> None:
+		try:
+			self._notify.type_renamed(self._archive, core.pyNativeStr(id), ty_.QualifiedName._from_core_struct(old_name.contents), ty_.QualifiedName._from_core_struct(new_name.contents))
+		except:
+			log.log_error(traceback.format_exc())
+
+	def _type_deleted(self, ctxt, archive: ctypes.POINTER(core.BNTypeArchive), id: ctypes.c_char_p, definition: ctypes.POINTER(core.BNType)) -> None:
+		try:
+			self._notify.type_deleted(self._archive, core.pyNativeStr(id), ty_.Type(handle=core.BNNewTypeReference(definition)))
+		except:
+			log.log_error(traceback.format_exc())
+
+	@property
+	def archive(self) -> 'TypeArchive':
+		return self._archive
+
+	@property
+	def notify(self) -> 'TypeArchiveNotification':
+		return self._notify
