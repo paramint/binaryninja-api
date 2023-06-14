@@ -331,14 +331,30 @@ public:
 	void showContextMenu();
 	bool canCreateTypeArchive();
 	void createTypeArchive();
-	bool canOpenTypeArchive();
-	void openTypeArchive();
-	bool canDisconnectTypeArchive();
-	void disconnectTypeArchive();
+	bool canAttachTypeArchive();
+	void attachTypeArchive();
+	bool canDetachTypeArchive();
+	void detachTypeArchive();
+
+	bool canSyncSelectedTypes();
+	void syncSelectedTypes();
 	bool canPushSelectedTypes();
 	void pushSelectedTypes();
 	bool canPullSelectedTypes();
 	void pullSelectedTypes();
+	bool canRevertSelectedTypes();
+	void revertSelectedTypes();
+	bool canDisassociateSelectedTypes();
+	void disassociateSelectedTypes();
+
+	bool canCreateNewTypes();
+	void createNewTypes();
+	bool canRenameTypes();
+	void renameTypes();
+	bool canDeleteTypes();
+	void deleteTypes();
+	bool canChangeTypes();
+	void changeTypes();
 
 protected:
 	void itemSelected(const QModelIndex& index);
