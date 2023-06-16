@@ -29,6 +29,7 @@ use crate::{
 };
 
 use lazy_static::lazy_static;
+use std::ptr::null_mut;
 use std::{
     borrow::Cow,
     collections::HashSet,
@@ -1227,17 +1228,22 @@ impl fmt::Debug for Type {
         if let Ok(lock) = TYPE_DEBUG_BV.lock() {
             if let Some(bv) = &*lock {
                 let mut count: usize = 0;
+                let container = unsafe { BNGetAnalysisTypeContainer(bv.handle) };
                 let lines: *mut BNTypeDefinitionLine = unsafe {
                     BNGetTypeLines(
                         self.handle,
-                        bv.handle,
+                        container,
                         "".as_ptr() as *const c_char,
+                        null_mut(),
                         80,
                         false,
                         BNTokenEscapingType::NoTokenEscapingType,
                         &mut count as *mut usize,
                     )
                 };
+                unsafe {
+                    BNFreeTypeContainer(container);
+                }
 
                 if lines.is_null() {
                     return Err(fmt::Error);

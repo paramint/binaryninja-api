@@ -2630,8 +2630,8 @@ extern "C"
 			BNPlatform* platform, BNTokenEscapingType escaping, char** result);
 		bool (*getTypeStringAfterName)(void* ctxt, BNType* type,
 			BNPlatform* platform, BNTokenEscapingType escaping, char** result);
-		bool (*getTypeLines)(void* ctxt, BNType* type, BNBinaryView* data,
-			BNQualifiedName* name, int lineWidth, bool collapsed,
+		bool (*getTypeLines)(void* ctxt, BNType* type, BNTypeContainer* types, BNQualifiedName* name,
+			BNPlatform* platform, int lineWidth, bool collapsed,
 			BNTokenEscapingType escaping, BNTypeDefinitionLine** result, size_t* resultCount);
 		bool (*printAllTypes)(void* ctxt, BNQualifiedName* names, BNType** types, size_t typeCount,
 			BNBinaryView* data, int lineWidth, BNTokenEscapingType escaping, char** result);
@@ -5457,7 +5457,7 @@ extern "C"
 
 	BINARYNINJACOREAPI bool BNAddTypeMemberTokens(BNType* type, BNBinaryView* data, BNInstructionTextToken** tokens,
 	    size_t* tokenCount, int64_t offset, char*** nameList, size_t* nameCount, size_t size, bool indirect);
-	BINARYNINJACOREAPI BNTypeDefinitionLine* BNGetTypeLines(BNType* type, BNBinaryView* data, const char* name, int lineWidth, bool collapsed, BNTokenEscapingType escaping, size_t* count);
+	BINARYNINJACOREAPI BNTypeDefinitionLine* BNGetTypeLines(BNType* type, BNTypeContainer* types, const char* name, BNPlatform* platform, int lineWidth, bool collapsed, BNTokenEscapingType escaping, size_t* count);
 	BINARYNINJACOREAPI void BNFreeTypeDefinitionLineList(BNTypeDefinitionLine* list, size_t count);
 
 	BINARYNINJACOREAPI BNQualifiedName BNTypeBuilderGetTypeName(BNTypeBuilder* nt);
@@ -5560,7 +5560,7 @@ extern "C"
 	BINARYNINJACOREAPI BNStructureMember* BNGetStructureMembers(BNStructure* s, size_t* count);
 	BINARYNINJACOREAPI void BNFreeStructureMemberList(BNStructureMember* members, size_t count);
 	BINARYNINJACOREAPI BNInheritedStructureMember* BNGetStructureMembersIncludingInherited(
-		BNStructure* s, BNBinaryView* view, size_t* count);
+		BNStructure* s, BNTypeContainer* types, size_t* count);
 	BINARYNINJACOREAPI void BNFreeInheritedStructureMemberList(BNInheritedStructureMember* members, size_t count);
 	BINARYNINJACOREAPI BNInheritedStructureMember* BNGetMemberIncludingInheritedAtOffset(BNStructure* s,
 		BNBinaryView* view, int64_t offset);
@@ -5729,9 +5729,9 @@ extern "C"
 	BINARYNINJACOREAPI bool BNGetTypePrinterTypeStringAfterName(BNTypePrinter* printer,
 		BNType* type, BNPlatform* platform, BNTokenEscapingType escaping, char** result);
 	BINARYNINJACOREAPI bool BNGetTypePrinterTypeLines(BNTypePrinter* printer,
-		BNType* type, BNBinaryView* data,
-		BNQualifiedName* name, int lineWidth, bool collapsed,
-		BNTokenEscapingType escaping, BNTypeDefinitionLine** result, size_t* resultCount);
+		BNType* type, BNTypeContainer* types, BNQualifiedName* name, BNPlatform* platform,
+		int lineWidth, bool collapsed, BNTokenEscapingType escaping,
+		BNTypeDefinitionLine** result, size_t* resultCount);
 	BINARYNINJACOREAPI bool BNTypePrinterPrintAllTypes(BNTypePrinter* printer, BNQualifiedName* names, BNType** types,
 		size_t typeCount, BNBinaryView* data, int lineWidth, BNTokenEscapingType escaping, char** result);
 	BINARYNINJACOREAPI bool BNTypePrinterDefaultPrintAllTypes(BNTypePrinter* printer, BNQualifiedName* names, BNType** types,

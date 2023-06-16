@@ -32,6 +32,7 @@ TypeContainer::TypeContainer(BNTypeContainer* container): m_object(container)
 TypeContainer::TypeContainer(TypeContainer&& other)
 {
 	m_object = std::move(other.m_object);
+	other.m_object = nullptr;
 }
 
 
@@ -59,6 +60,7 @@ TypeContainer& TypeContainer::operator=(const TypeContainer& other)
 TypeContainer& TypeContainer::operator=(TypeContainer&& other)
 {
 	m_object = std::move(other.m_object);
+	other.m_object = nullptr;
 	return *this;
 }
 
