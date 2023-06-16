@@ -2364,7 +2364,7 @@ impl CoreArrayProvider for QualifiedNameAndType {
 }
 unsafe impl CoreOwnedArrayProvider for QualifiedNameAndType {
     unsafe fn free(raw: *mut Self::Raw, count: usize, _context: &Self::Context) {
-        BNFreeTypeList(raw, count);
+        BNFreeTypeAndNameList(raw, count);
     }
 }
 

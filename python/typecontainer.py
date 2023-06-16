@@ -120,9 +120,7 @@ class TypeContainer:
 
 		core.BNFreeTypeNameList(result_names, result_count.value)
 		core.BNFreeStringList(result_ids, result_count.value)
-		# why does BNFreeTypeList take QualifiedNameAndType* ???
-		# why is this the only one that does this???
-		core.BNComponentFreeReferencedTypes(result_types, result_count.value)
+		core.BNFreeTypeList(result_types, result_count.value)
 		return result
 
 	def get_type_by_name(self, type_name: 'ty_.QualifiedNameType') -> Optional['ty_.Type']:

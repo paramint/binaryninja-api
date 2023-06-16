@@ -262,7 +262,7 @@ class Platform(metaclass=_PlatformMetaClass):
 		for i in range(0, count.value):
 			name = types.QualifiedName._from_core_struct(type_list[i].name)
 			result[name] = types.Type.create(core.BNNewTypeReference(type_list[i].type), platform=self)
-		core.BNFreeTypeList(type_list, count.value)
+		core.BNFreeTypeAndNameList(type_list, count.value)
 		return result
 
 	@property
@@ -275,7 +275,7 @@ class Platform(metaclass=_PlatformMetaClass):
 		for i in range(0, count.value):
 			name = types.QualifiedName._from_core_struct(type_list[i].name)
 			result[name] = types.Type.create(core.BNNewTypeReference(type_list[i].type), platform=self)
-		core.BNFreeTypeList(type_list, count.value)
+		core.BNFreeTypeAndNameList(type_list, count.value)
 		return result
 
 	@property
@@ -288,7 +288,7 @@ class Platform(metaclass=_PlatformMetaClass):
 		for i in range(0, count.value):
 			name = types.QualifiedName._from_core_struct(type_list[i].name)
 			result[name] = types.Type.create(core.BNNewTypeReference(type_list[i].type), platform=self)
-		core.BNFreeTypeList(type_list, count.value)
+		core.BNFreeTypeAndNameList(type_list, count.value)
 		return result
 
 	@property

@@ -3725,7 +3725,7 @@ map<QualifiedName, Ref<Type>> BinaryView::GetTypes()
 		result[name] = new Type(BNNewTypeReference(types[i].type));
 	}
 
-	BNFreeTypeList(types, count);
+	BNFreeTypeAndNameList(types, count);
 	return result;
 }
 
@@ -3742,7 +3742,7 @@ vector<pair<QualifiedName, Ref<Type>>> BinaryView::GetDependencySortedTypes()
 		result.emplace_back(name, new Type(BNNewTypeReference(types[i].type)));
 	}
 
-	BNFreeTypeList(types, count);
+	BNFreeTypeAndNameList(types, count);
 	return result;
 }
 

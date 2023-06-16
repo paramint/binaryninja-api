@@ -1747,7 +1747,7 @@ class TypeMapping(collections.abc.Mapping):  # type: ignore
 
 	def __del__(self):
 		if core is not None and self._type_list is not None:
-			core.BNFreeTypeList(self._type_list, len(self))
+			core.BNFreeTypeAndNameList(self._type_list, len(self))
 
 	def __getitem__(self, key):
 		if self._type_cache is None:

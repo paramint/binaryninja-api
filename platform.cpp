@@ -284,7 +284,7 @@ map<QualifiedName, Ref<Type>> Platform::GetTypes()
 		result[name] = new Type(BNNewTypeReference(types[i].type));
 	}
 
-	BNFreeTypeList(types, count);
+	BNFreeTypeAndNameList(types, count);
 	return result;
 }
 
@@ -301,7 +301,7 @@ map<QualifiedName, Ref<Type>> Platform::GetVariables()
 		result[name] = new Type(BNNewTypeReference(types[i].type));
 	}
 
-	BNFreeTypeList(types, count);
+	BNFreeTypeAndNameList(types, count);
 	return result;
 }
 
@@ -318,7 +318,7 @@ map<QualifiedName, Ref<Type>> Platform::GetFunctions()
 		result[name] = new Type(BNNewTypeReference(types[i].type));
 	}
 
-	BNFreeTypeList(types, count);
+	BNFreeTypeAndNameList(types, count);
 	return result;
 }
 
