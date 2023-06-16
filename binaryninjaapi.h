@@ -5123,6 +5123,7 @@ namespace BinaryNinja {
 		bool ParseTypesFromSource(const std::string& text, const std::vector<std::string>& options, const std::vector<std::string>& includeDirs, TypeParserResult& result,
 		    std::string& errors, const std::set<QualifiedName>& typesAllowRedefinition = {});
 
+		class TypeContainer GetTypeContainer();
 		std::map<QualifiedName, Ref<Type>> GetTypes();
 		/*! List of all types, sorted such that types are after all types on which they depend
 
@@ -15966,6 +15967,8 @@ namespace BinaryNinja {
 		 */
 		std::string GetSnapshotParentId(const std::string& id) const noexcept(false);
 
+		class TypeContainer GetTypeContainer() const noexcept(false);
+
 		/*!
 		    Add named types to the type archive. Types must have all dependant named
 		    types prior to being added, or this function will fail.
@@ -16131,6 +16134,35 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		 */
 		void RemoveMetadata(const std::string& key) noexcept(false);
+	};
+
+	class TypeContainer
+	{
+		BNTypeContainer* m_object;
+
+	public:
+		explicit TypeContainer(BNTypeContainer* container);
+		explicit TypeContainer(TypeContainer&& other);
+		~TypeContainer();
+		TypeContainer(const TypeContainer& other);
+		TypeContainer& operator=(const TypeContainer& other);
+		TypeContainer& operator=(TypeContainer&& other);
+
+		std::optional<std::unordered_map<QualifiedName, std::string>> AddTypes(
+		const std::vector<std::pair<QualifiedName, Ref<Type>>>& types,
+			std::function<bool(size_t, size_t)> progress = {});
+		bool RenameType(const std::string& typeId, const QualifiedName& newName);
+		bool DeleteType(const std::string& typeId);
+
+		std::optional<std::string> GetTypeId(const QualifiedName& typeName) const;
+		std::optional<QualifiedName> GetTypeName(const std::string& typeId) const;
+		std::optional<Ref<Type>> GetTypeById(const std::string& typeId) const;
+		std::optional<std::unordered_map<std::string, std::pair<QualifiedName, Ref<Type>>>> GetTypes() const;
+
+		std::optional<Ref<Type>> GetTypeByName(const QualifiedName& typeName) const;
+		std::optional<std::unordered_set<std::string>> GetTypeIds() const;
+		std::optional<std::unordered_set<QualifiedName>> GetTypeNames() const;
+		std::optional<std::unordered_map<std::string, QualifiedName>> GetTypeNamesAndIds() const;
 	};
 
 	/*!

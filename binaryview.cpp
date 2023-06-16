@@ -3713,6 +3713,12 @@ bool BinaryView::ParseTypesFromSource(const string& source, const vector<string>
 }
 
 
+TypeContainer BinaryView::GetTypeContainer()
+{
+	return TypeContainer(BNGetAnalysisTypeContainer(m_object));
+}
+
+
 map<QualifiedName, Ref<Type>> BinaryView::GetTypes()
 {
 	size_t count;
