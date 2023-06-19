@@ -4465,6 +4465,13 @@ extern "C"
 	BINARYNINJACOREAPI bool BNTypeContainerGetTypeIds(BNTypeContainer* container, char*** typeIds, size_t* count);
 	BINARYNINJACOREAPI bool BNTypeContainerGetTypeNames(BNTypeContainer* container, BNQualifiedName** typeNames, size_t* count);
 	BINARYNINJACOREAPI bool BNTypeContainerGetTypeNamesAndIds(BNTypeContainer* container, char*** typeIds, BNQualifiedName** typeNames, size_t* count);
+	BINARYNINJACOREAPI bool BNTypeContainerParseTypesFromSource(BNTypeContainer* container,
+		const char* source, const char* fileName, BNPlatform* platform,
+		const char* const* options, size_t optionCount,
+		const char* const* includeDirs, size_t includeDirCount,
+		const char* autoTypeSource, BNTypeParserResult* result,
+		BNTypeParserError** errors, size_t* errorCount
+	);
 
 	BINARYNINJACOREAPI BNTagType* BNCreateTagType(BNBinaryView* view);
 	BINARYNINJACOREAPI BNTagType* BNNewTagTypeReference(BNTagType* tagType);

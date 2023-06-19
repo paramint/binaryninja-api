@@ -18,17 +18,12 @@ class BINARYNINJAUIAPI CreateTypeDialog : public QDialog
 	DialogTextEdit* m_code;
 	QTextEdit* m_errors;
 
-	BinaryViewRef m_data;
 	BinaryNinja::TypeContainer m_container;
 	PlatformRef m_platform;
 	std::vector<BinaryNinja::ParsedType> m_results;
 	std::set<BinaryNinja::QualifiedName> m_typesAllowRedefinition;
 
-	void init(const QString& title, const QString& definition);
-
   public:
-	CreateTypeDialog(QWidget* parent, BinaryViewRef data, const QString& title, const QString& definition,
-	    const std::set<BinaryNinja::QualifiedName>& typesAllowRedefinition = {});
 	CreateTypeDialog(QWidget* parent, const BinaryNinja::TypeContainer& container, PlatformRef platform, const QString& title, const QString& definition,
 	    const std::set<BinaryNinja::QualifiedName>& typesAllowRedefinition = {});
 	static CreateTypeDialog* createWithType(QWidget* parent, const BinaryNinja::TypeContainer& container, PlatformRef platform, BinaryNinja::QualifiedName name, TypeRef type);

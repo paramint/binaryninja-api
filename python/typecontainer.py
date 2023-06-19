@@ -25,6 +25,8 @@ from typing import Optional, Mapping, Callable, List, Tuple
 import binaryninja
 from . import _binaryninjacore as core
 from . import types as ty_
+from . import platform
+from . import typeparser
 
 
 ProgressFuncType = Callable[[int, int], bool]
@@ -176,3 +178,46 @@ class TypeContainer:
 		core.BNFreeTypeNameList(result_names, result_count.value)
 		core.BNFreeStringList(result_ids, result_count.value)
 		return result
+
+	def parse_types_from_source(self, source: str, file_name: str, platform: 'platform.Platform',
+			options: Optional[List[str]] = None, include_dirs: Optional[List[str]] = None,
+			auto_type_source: str = ""
+	) -> Tuple[Optional['typeparser.TypeParserResult'], List['typeparser.TypeParserError']]:
+		if options is None:
+			options = []
+		if include_dirs is None:
+			include_dirs = []
+
+		options_cpp = (ctypes.c_char_p * len(options))()
+		for (i, s) in enumerate(options):
+			options_cpp[i] = core.cstr(s)
+
+		include_dirs_cpp = (ctypes.c_char_p * len(include_dirs))()
+		for (i, s) in enumerate(include_dirs):
+			include_dirs_cpp[i] = core.cstr(s)
+
+		result_cpp = core.BNTypeParserResult()
+		errors_cpp = ctypes.POINTER(core.BNTypeParserError)()
+		error_count = ctypes.c_size_t()
+
+		success = core.BNTypeContainerParseTypesFromSource(
+			self.handle, source, file_name, platform.handle,
+			options_cpp, len(options),
+			include_dirs_cpp, len(include_dirs), auto_type_source,
+			result_cpp, errors_cpp, error_count
+		)
+
+		if success:
+			result = typeparser.TypeParserResult._from_core_struct(result_cpp)
+		else:
+			result = None
+		core.BNFreeTypeParserResult(result_cpp)
+
+		errors = []
+		for i in range(error_count.value):
+			errors.append(typeparser.TypeParserError._from_core_struct(errors_cpp[i]))
+		core.BNFreeTypeParserErrors(errors_cpp, error_count.value)
+
+		return result, errors
+
+

@@ -16176,6 +16176,17 @@ namespace BinaryNinja {
 		std::optional<std::unordered_set<std::string>> GetTypeIds() const;
 		std::optional<std::unordered_set<QualifiedName>> GetTypeNames() const;
 		std::optional<std::unordered_map<std::string, QualifiedName>> GetTypeNamesAndIds() const;
+
+		bool ParseTypesFromSource(
+			const std::string& text,
+			const std::string& fileName,
+			Ref<Platform> platform,
+			const std::vector<std::string>& options,
+			const std::vector<std::string>& includeDirs,
+			const std::string& autoTypeSource,
+			TypeParserResult& result,
+			std::vector<TypeParserError>& errors
+		);
 	};
 
 	/*!
