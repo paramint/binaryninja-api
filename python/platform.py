@@ -30,6 +30,7 @@ from . import typeparser
 from . import callingconvention
 from . import typelibrary
 from . import architecture
+from . import typecontainer
 
 
 class _PlatformMetaClass(type):
@@ -358,6 +359,10 @@ class Platform(metaclass=_PlatformMetaClass):
 		new_addr.value = addr
 		result = core.BNGetAssociatedPlatformByAddress(self.handle, new_addr)
 		return Platform(handle=result), new_addr.value
+
+	@property
+	def type_container(self) -> 'typecontainer.TypeContainer':
+		return typecontainer.TypeContainer(core.BNGetPlatformTypeContainer(self.handle))
 
 	def get_type_by_name(self, name):
 		name = types.QualifiedName(name)._to_core_struct()

@@ -115,6 +115,12 @@ Ref<Metadata> TypeLibrary::QueryMetadata(const std::string& key)
 }
 
 
+TypeContainer TypeLibrary::GetTypeContainer()
+{
+	return TypeContainer(BNGetTypeLibraryTypeContainer(m_object));
+}
+
+
 void TypeLibrary::SetGuid(const std::string& guid)
 {
 	BNSetTypeLibraryGuid(m_object, guid.c_str());

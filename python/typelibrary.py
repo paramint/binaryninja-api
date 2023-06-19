@@ -28,6 +28,7 @@ from . import types
 from . import metadata
 from . import platform
 from . import architecture
+from . import typecontainer
 
 
 class TypeLibrary:
@@ -280,6 +281,15 @@ class TypeLibrary:
 			>>> lib.remove_metadata("integer")
 		"""
 		core.BNTypeLibraryRemoveMetadata(self.handle, key)
+
+	@property
+	def type_container(self) -> 'typecontainer.TypeContainer':
+		"""
+		`type_container` returns a TypeContainer interface for interacting with the type library.
+
+		:return: TypeContainer interface
+		"""
+		return typecontainer.TypeContainer(core.BNGetTypeLibraryTypeContainer(self.handle))
 
 	def add_named_object(self, name: 'types.QualifiedName', type: 'types.Type') -> None:
 		"""

@@ -13654,6 +13654,7 @@ namespace BinaryNinja {
 
 		std::vector<Ref<TypeLibrary>> GetTypeLibrariesByName(const std::string& name);
 
+		TypeContainer GetTypeContainer();
 
 		Ref<Type> GetTypeByName(const QualifiedName& name);
 		Ref<Type> GetVariableByName(const QualifiedName& name);
@@ -15284,6 +15285,8 @@ namespace BinaryNinja {
 
 		std::vector<std::string> GetParsers() const;
 
+		TypeContainer GetTypeContainer(const std::string& parserName);
+
 		std::vector<NameAndType> GetTypes(const std::string& parserName = "") const;
 		std::vector<DebugFunctionInfo> GetFunctions(const std::string& parserName = "") const;
 		std::vector<DataVariableAndName> GetDataVariables(const std::string& parserName = "") const;
@@ -15705,6 +15708,12 @@ namespace BinaryNinja {
 			\param guid
 		*/
 		void SetGuid(const std::string& guid);
+
+		/*! Get a TypeContainer interface for this type library
+
+			\return Container interface
+		 */
+		TypeContainer GetTypeContainer();
 
 		/*! Direct extracts a reference to a contained object -- when attempting to extract types from a library
 			into a BinaryView, consider using BinaryView::ImportTypeLibraryObject instead.

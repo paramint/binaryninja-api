@@ -374,6 +374,12 @@ vector<Ref<TypeLibrary>> Platform::GetTypeLibrariesByName(const std::string& nam
 }
 
 
+TypeContainer Platform::GetTypeContainer()
+{
+	return TypeContainer(BNGetPlatformTypeContainer(m_object));
+}
+
+
 Ref<Type> Platform::GetTypeByName(const QualifiedName& name)
 {
 	BNQualifiedName nameObj = name.GetAPIObject();
