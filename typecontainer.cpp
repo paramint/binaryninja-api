@@ -65,6 +65,15 @@ TypeContainer& TypeContainer::operator=(TypeContainer&& other)
 }
 
 
+std::string TypeContainer::GetName() const
+{
+	char* name = BNTypeContainerGetName(m_object);
+	std::string result = name;
+	BNFreeString(name);
+	return result;
+}
+
+
 std::optional<std::unordered_map<QualifiedName, std::string>> TypeContainer::AddTypes(
 	const std::vector<std::pair<QualifiedName, Ref<Type>>>& types,
 	std::function<bool(size_t, size_t)> progress)

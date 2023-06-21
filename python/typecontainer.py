@@ -42,7 +42,11 @@ class TypeContainer:
 			core.BNFreeTypeContainer(self.handle)
 
 	def __repr__(self):
-		return f"<type container>"
+		return f"<type container {self.name}>"
+
+	@property
+	def name(self) -> str:
+		return core.BNTypeContainerGetName(self.handle)
 
 	def add_types(self, types: Mapping['ty_.QualifiedNameType', 'ty_.Type'], progress_func: Optional[ProgressFuncType] = None) -> Optional[Mapping['ty_.QualifiedName', str]]:
 		api_names = (core.BNQualifiedName * len(types))()
