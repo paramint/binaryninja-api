@@ -2,10 +2,13 @@
 
 #include <QtWidgets/QTreeView>
 #include <QtCore/QSortFilterProxyModel>
+#include <QtGui/QStandardItemModel>
+#include <QtWidgets/QItemDelegate>
 #include <memory>
 #include "sidebar.h"
 #include "viewframe.h"
 #include "filter.h"
+#include "progresstask.h"
 
 
 class BINARYNINJAUIAPI TypeBrowserTreeNode : public std::enable_shared_from_this<TypeBrowserTreeNode>
@@ -37,10 +40,26 @@ public:
 	const std::vector<std::shared_ptr<TypeBrowserTreeNode>>& children();
 	int indexOfChild(std::shared_ptr<TypeBrowserTreeNode> child) const;
 
-	virtual std::string text() const = 0;
-	virtual bool operator<(const TypeBrowserTreeNode& other) const = 0;
+	virtual std::string text(int column) const = 0;
+	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const = 0;
 	virtual bool filter(const std::string& filter) const = 0;
 	virtual void updateChildren(RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert);
+};
+
+
+class BINARYNINJAUIAPI EmptyTreeNode : public TypeBrowserTreeNode
+{
+public:
+	EmptyTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent);
+	virtual ~EmptyTreeNode() = default;
+
+	virtual std::string text(int column) const override;
+	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
+	virtual bool filter(const std::string& filter) const override;
+
+protected:
+	virtual void generateChildren() override;
+	virtual void updateChildren(RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
 };
 
 
@@ -55,8 +74,8 @@ public:
 	RootTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent);
 	virtual ~RootTreeNode() = default;
 
-	virtual std::string text() const override;
-	virtual bool operator<(const TypeBrowserTreeNode& other) const override;
+	virtual std::string text(int column) const override;
+	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
 	virtual bool filter(const std::string& filter) const override;
 
 protected:
@@ -106,8 +125,8 @@ public:
 	const std::optional<std::string>& sourceOtherName() const { return m_sourceOtherName; }
 	const std::optional<BinaryNinja::QualifiedName>& sourceOriginalName() const { return m_sourceOriginalName; }
 
-	virtual std::string text() const override;
-	virtual bool operator<(const TypeBrowserTreeNode& other) const override;
+	virtual std::string text(int column) const override;
+	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
 	virtual bool filter(const std::string& filter) const override;
 
 protected:
@@ -141,8 +160,8 @@ public:
 
 	const BinaryViewRef& view() const { return m_view; }
 
-	virtual std::string text() const override;
-	virtual bool operator<(const TypeBrowserTreeNode& other) const override;
+	virtual std::string text(int column) const override;
+	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
 	virtual bool filter(const std::string& filter) const override;
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
@@ -159,8 +178,8 @@ public:
 
 	const TypeArchiveRef& archive() const { return m_archive; }
 
-	virtual std::string text() const override;
-	virtual bool operator<(const TypeBrowserTreeNode& other) const override;
+	virtual std::string text(int column) const override;
+	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
 	virtual bool filter(const std::string& filter) const override;
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
@@ -177,8 +196,8 @@ public:
 
 	const TypeLibraryRef& library() const { return m_library; }
 
-	virtual std::string text() const override;
-	virtual bool operator<(const TypeBrowserTreeNode& other) const override;
+	virtual std::string text(int column) const override;
+	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
 	virtual bool filter(const std::string& filter) const override;
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
@@ -197,8 +216,8 @@ public:
 	const DebugInfoRef& debugInfo() const { return m_debugInfo; }
 	const std::string& parserName() const { return m_parserName; }
 
-	virtual std::string text() const override;
-	virtual bool operator<(const TypeBrowserTreeNode& other) const override;
+	virtual std::string text(int column) const override;
+	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
 	virtual bool filter(const std::string& filter) const override;
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
@@ -215,12 +234,15 @@ public:
 
 	const PlatformRef& platform() const { return m_platform; }
 
-	virtual std::string text() const override;
-	virtual bool operator<(const TypeBrowserTreeNode& other) const override;
+	virtual std::string text(int column) const override;
+	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
 	virtual bool filter(const std::string& filter) const override;
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
 };
+
+
+//-----------------------------------------------------------------------------
 
 
 class BINARYNINJAUIAPI TypeBrowserModel : public QAbstractItemModel, public BinaryNinja::BinaryDataNotification, public BinaryNinja::TypeArchiveNotification
@@ -228,6 +250,7 @@ class BINARYNINJAUIAPI TypeBrowserModel : public QAbstractItemModel, public Bina
 	Q_OBJECT
 	BinaryViewRef m_data;
 	std::shared_ptr<TypeBrowserTreeNode> m_rootNode;
+	mutable std::recursive_mutex m_rootNodeMutex;
 	bool m_needsUpdate;
 
 public:
@@ -235,6 +258,8 @@ public:
 	virtual ~TypeBrowserModel();
 	BinaryViewRef getData() { return m_data; }
 	std::shared_ptr<TypeBrowserTreeNode> getRootNode() { return m_rootNode; }
+
+	void startUpdate();
 
 	int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 	int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -283,6 +308,20 @@ public:
 };
 
 
+class BINARYNINJAUIAPI TypeBrowserItemDelegate : public QItemDelegate
+{
+	QFont m_font;
+	QFont m_monospaceFont;
+	int m_baseline, m_charWidth, m_charHeight, m_charOffset;
+	class TypeBrowserView* m_view;
+
+public:
+	TypeBrowserItemDelegate(class TypeBrowserView* view);
+	virtual QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+	virtual void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+};
+
+
 class BINARYNINJAUIAPI TypeBrowserView : public QFrame, public View, public FilterTarget
 {
 	Q_OBJECT
@@ -293,7 +332,12 @@ class BINARYNINJAUIAPI TypeBrowserView : public QFrame, public View, public Filt
 
 	TypeBrowserModel* m_model;
 	TypeBrowserFilterModel* m_filterModel;
+	QStandardItemModel* m_loadingModel;
 	QTreeView* m_tree;
+	TypeBrowserItemDelegate* m_delegate;
+	bool m_updatedWidths;
+
+	QTimer* m_filterTimer;
 
 public:
 	TypeBrowserView(ViewFrame* frame, BinaryViewRef data, TypeBrowserContainer* container);
