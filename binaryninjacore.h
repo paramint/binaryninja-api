@@ -2988,7 +2988,7 @@ extern "C"
 		void (*licenseStatusChanged)(void* ctxt, bool stillValid);
 	} BNEnterpriseServerCallbacks;
 
-	struct BNTypeArchiveNotification
+	typedef struct BNTypeArchiveNotification
 	{
 		void* context;
 		void (*viewAttached)(void* ctxt, BNTypeArchive* archive, BNBinaryView* view);
@@ -2997,7 +2997,7 @@ extern "C"
 		void (*typeUpdated)(void* ctxt, BNTypeArchive* archive, const char* id, BNType* oldDefinition, BNType* newDefinition);
 		void (*typeRenamed)(void* ctxt, BNTypeArchive* archive, const char* id, const BNQualifiedName* oldName, const BNQualifiedName* newName);
 		void (*typeDeleted)(void* ctxt, BNTypeArchive* archive, const char* id, BNType* definition);
-	};
+	} BNTypeArchiveNotification;
 
 	BINARYNINJACOREAPI char* BNAllocString(const char* contents);
 	BINARYNINJACOREAPI void BNFreeString(char* str);
