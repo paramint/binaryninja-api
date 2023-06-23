@@ -7698,7 +7698,10 @@ class BinaryView:
 			type_archives_by_id[archive.id] = archive
 
 		for type_id, (archive_id, archive_type_id) in self.associated_type_archive_type_ids.items():
-			result[self.get_type_name_by_id(type_id)] = (type_archives_by_id[archive_id], archive_type_id)
+			name = self.get_type_name_by_id(type_id)
+			if name is None:
+				continue
+			result[name] = (type_archives_by_id[archive_id], archive_type_id)
 		return result
 
 	@property
@@ -7734,7 +7737,10 @@ class BinaryView:
 		result = {}
 
 		for type_id, archive_type_id in self.get_associated_type_ids_from_archive(archive.id).items():
-			result[self.get_type_name_by_id(type_id)] = archive_type_id
+			name = self.get_type_name_by_id(type_id)
+			if name is None:
+				continue
+			result[name] = archive_type_id
 		return result
 
 	def get_associated_type_ids_from_archive(self, archive_id: str) -> Mapping[str, str]:
@@ -7765,6 +7771,8 @@ class BinaryView:
 		:return: (archive, archive type id) if the type is associated. None otherwise.
 		"""
 		type_id = self.get_type_id(name)
+		if type_id == '':
+			return None
 		result = self.get_associated_type_archive_type_target_by_id(type_id)
 		if result is None:
 			return None
@@ -7793,6 +7801,8 @@ class BinaryView:
 		:return: Name of source analysis type, if this type is associated. None otherwise.
 		"""
 		archive_type_id = archive.get_type_id(archive_type)
+		if archive_type_id is None:
+			return None
 		result = self.get_associated_type_archive_type_source_by_id(archive.id, archive_type_id)
 		if result is None:
 			return None
@@ -7819,6 +7829,8 @@ class BinaryView:
 		:return: True if successful
 		"""
 		type_id = self.get_type_id(type)
+		if type_id == '':
+			return False
 		return self.disassociate_type_archive_type_by_id(type_id)
 
 	def disassociate_type_archive_type_by_id(self, type_id: str) -> bool:
