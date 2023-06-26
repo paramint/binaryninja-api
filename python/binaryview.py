@@ -7841,7 +7841,7 @@ class BinaryView:
 		"""
 		return core.BNBinaryViewDisassociateTypeArchiveType(self.handle, type_id)
 
-	def pull_from_type_archive(self, archive: 'typearchive.TypeArchive', names: List['_types.QualifiedNameType']) \
+	def pull_types_from_archive(self, archive: 'typearchive.TypeArchive', names: List['_types.QualifiedNameType']) \
 			-> Optional[Mapping['_types.QualifiedName', Tuple['_types.QualifiedName', '_types.Type']]]:
 		"""
 		Pull types from a type archive, updating them and any dependencies
@@ -7855,7 +7855,7 @@ class BinaryView:
 			if archive_type_id is None:
 				return None
 			archive_type_ids.append(archive_type_id)
-		result = self.pull_from_type_archive_by_id(archive.id, archive_type_ids)
+		result = self.pull_types_from_archive_by_id(archive.id, archive_type_ids)
 		if result is None:
 			return None
 
@@ -7865,7 +7865,7 @@ class BinaryView:
 
 		return results
 
-	def pull_from_type_archive_by_id(self, archive_id: str, archive_type_ids: List[str]) \
+	def pull_types_from_archive_by_id(self, archive_id: str, archive_type_ids: List[str]) \
 			-> Optional[Mapping[str, str]]:
 		"""
 		Pull types from a type archive by id, updating them and any dependencies
@@ -7892,7 +7892,7 @@ class BinaryView:
 			core.BNFreeStringList(updated_archive_type_strs, updated_type_count.value)
 			core.BNFreeStringList(updated_analysis_type_strs, updated_type_count.value)
 
-	def push_to_type_archive(self, archive: 'typearchive.TypeArchive', names: List['_types.QualifiedNameType']) \
+	def push_types_to_archive(self, archive: 'typearchive.TypeArchive', names: List['_types.QualifiedNameType']) \
 			-> Optional[Mapping['_types.QualifiedName', Tuple['_types.QualifiedName', '_types.Type']]]:
 		"""
 		Push a collection of types, and all their dependencies, into a type archive
@@ -7906,7 +7906,7 @@ class BinaryView:
 			if analysis_type_id is None:
 				return None
 			analysis_type_ids.append(analysis_type_id)
-		result = self.push_to_type_archive_by_id(archive.id, analysis_type_ids)
+		result = self.push_types_to_archive_by_id(archive.id, analysis_type_ids)
 		if result is None:
 			return None
 
@@ -7916,7 +7916,7 @@ class BinaryView:
 
 		return results
 
-	def push_to_type_archive_by_id(self, archive_id: str, type_ids: List[str]) \
+	def push_types_to_archive_by_id(self, archive_id: str, type_ids: List[str]) \
 			-> Optional[Mapping[str, str]]:
 		"""
 		Push a collection of types, and all their dependencies, into a type archive
