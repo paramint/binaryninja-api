@@ -4,6 +4,7 @@
 #include <QtCore/QSortFilterProxyModel>
 #include <QtGui/QStandardItemModel>
 #include <QtWidgets/QItemDelegate>
+#include <QtWidgets/QTextEdit>
 #include <memory>
 #include "sidebar.h"
 #include "viewframe.h"
@@ -330,12 +331,21 @@ class BINARYNINJAUIAPI TypeBrowserView : public QFrame, public View, public Filt
 	class TypeBrowserContainer* m_container;
 	ContextMenuManager* m_contextMenuManager;
 
+	QSplitter* m_splitter;
+
 	TypeBrowserModel* m_model;
 	TypeBrowserFilterModel* m_filterModel;
 	QStandardItemModel* m_loadingModel;
 	QTreeView* m_tree;
 	TypeBrowserItemDelegate* m_delegate;
 	bool m_updatedWidths;
+
+	class TypesContainer* m_typeEditor;
+
+	QWidget* m_plaintextTypeEditor;
+	QTextEdit* m_typeEditorDefinition;
+	QTextEdit* m_typeEditorArguments;
+	QTextEdit* m_typeEditorErrors;
 
 	QTimer* m_filterTimer;
 
@@ -401,7 +411,8 @@ public:
 	void changeTypes();
 
 protected:
-	void itemSelected(const QModelIndex& index);
+	void itemSelected(const QItemSelection& selected, const QItemSelection& deselected);
+	void itemDoubleClicked(const QModelIndex& index);
 	virtual void contextMenuEvent(QContextMenuEvent* event) override;
 };
 
