@@ -15970,24 +15970,24 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Snapshot id
 		 */
-		std::string GetCurrentSnapshotId() const noexcept(false);
+		std::string GetCurrentSnapshotId() const;
 
 		/*!
 		    Get a list of every snapshot's id
 		    \throws DatabaseException if an exception occurs
 		    \return All ids (including the empty first snapshot)
 		 */
-		std::vector<std::string> GetAllSnapshotIds() const noexcept(false);
+		std::vector<std::string> GetAllSnapshotIds() const;
 
 		/*!
-		    Get the id of the parent to the given snapshot
+		    Get the ids of the parents to the given snapshot
 		    \param id Child snapshot id
 		    \throws DatabaseException if an exception occurs
-		    \return Parent snapshot id, or empty string if the snapshot is a root
+		    \return Parent snapshot ids, or empty vector if the snapshot is a root
 		 */
-		std::string GetSnapshotParentId(const std::string& id) const noexcept(false);
+		std::vector<std::string> GetSnapshotParentIds(const std::string& id) const;
 
-		class TypeContainer GetTypeContainer() const noexcept(false);
+		class TypeContainer GetTypeContainer() const;
 
 		/*!
 		    Add named types to the type archive. Types must have all dependant named
@@ -15998,7 +15998,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return True if the types were added
 		 */
-		bool AddTypes(const std::vector<QualifiedNameAndType>& types) noexcept(false);
+		bool AddTypes(const std::vector<QualifiedNameAndType>& types);
 
 		/*!
 		    Change the name of an existing type in the type archive.
@@ -16007,7 +16007,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return True if successful
 		 */
-		bool RenameType(const std::string& id, const QualifiedName& newName) noexcept(false);
+		bool RenameType(const std::string& id, const QualifiedName& newName);
 
 		/*!
 		    Delete an existing type in the type archive.
@@ -16015,7 +16015,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return True if successful
 		 */
-		bool DeleteType(const std::string& id) noexcept(false);
+		bool DeleteType(const std::string& id);
 
 		/*!
 		    Retrieve a stored type in the archive by id
@@ -16024,7 +16024,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Type, if it exists. Otherwise nullptr
 		 */
-		Ref<Type> GetTypeById(const std::string& id, std::string snapshot = "") const noexcept(false);
+		Ref<Type> GetTypeById(const std::string& id, std::string snapshot = "") const;
 
 		/*!
 		    Retrieve a stored type in the archive
@@ -16033,7 +16033,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Type, if it exists. Otherwise nullptr
 		 */
-		Ref<Type> GetTypeByName(const QualifiedName& name, std::string snapshot = "") const noexcept(false);
+		Ref<Type> GetTypeByName(const QualifiedName& name, std::string snapshot = "") const;
 
 		/*!
 		    Retrieve a type's id by its name
@@ -16042,7 +16042,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Type id, if it exists. Otherwise empty string
 		 */
-		std::string GetTypeId(const QualifiedName& name, std::string snapshot = "") const noexcept(false);
+		std::string GetTypeId(const QualifiedName& name, std::string snapshot = "") const;
 
 		/*!
 		    Retrieve a type's name by its id
@@ -16051,7 +16051,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Type name, if it exists. Otherwise empty string
 		 */
-		QualifiedName GetTypeName(const std::string& id, std::string snapshot = "") const noexcept(false);
+		QualifiedName GetTypeName(const std::string& id, std::string snapshot = "") const;
 
 		/*!
 		    Retrieve all stored types in the archive
@@ -16059,7 +16059,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return All types
 		 */
-		std::unordered_map<std::string, QualifiedNameAndType> GetTypes(std::string snapshot = "") const noexcept(false);
+		std::unordered_map<std::string, QualifiedNameAndType> GetTypes(std::string snapshot = "") const;
 
 		/*!
 		    Get a list of all types' ids currently in the archive
@@ -16067,7 +16067,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return All type ids
 		 */
-		std::vector<std::string> GetTypeIds(std::string snapshot = "") const noexcept(false);
+		std::vector<std::string> GetTypeIds(std::string snapshot = "") const;
 
 		/*!
 		    Get a list of all types' names currently in the archive
@@ -16075,7 +16075,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return All type names
 		 */
-		std::vector<QualifiedName> GetTypeNames(std::string snapshot = "") const noexcept(false);
+		std::vector<QualifiedName> GetTypeNames(std::string snapshot = "") const;
 
 		/*!
 		    Get a list of all types' names and ids currently in the archive
@@ -16083,7 +16083,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return All type names and ids
 		 */
-		std::unordered_map<std::string, QualifiedName> GetTypeNamesAndIds(std::string snapshot = "") const noexcept(false);
+		std::unordered_map<std::string, QualifiedName> GetTypeNamesAndIds(std::string snapshot = "") const;
 
 		/*!
 		    Get all types a given type references directly
@@ -16092,7 +16092,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Target type ids
 		 */
-		std::unordered_set<std::string> GetOutgoingDirectTypeReferences(const std::string& id, std::string snapshot = "") const noexcept(false);
+		std::unordered_set<std::string> GetOutgoingDirectTypeReferences(const std::string& id, std::string snapshot = "") const;
 
 		/*!
 		    Get all types a given type references, and any types that the referenced types reference
@@ -16101,7 +16101,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Target type ids
 		 */
-		std::unordered_set<std::string> GetOutgoingRecursiveTypeReferences(const std::string& id, std::string snapshot = "") const noexcept(false);
+		std::unordered_set<std::string> GetOutgoingRecursiveTypeReferences(const std::string& id, std::string snapshot = "") const;
 
 		/*!
 		    Get all types that reference a given type
@@ -16110,7 +16110,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Source type ids
 		 */
-		std::unordered_set<std::string> GetIncomingDirectTypeReferences(const std::string& id, std::string snapshot = "") const noexcept(false);
+		std::unordered_set<std::string> GetIncomingDirectTypeReferences(const std::string& id, std::string snapshot = "") const;
 
 		/*!
 		    Get all types that reference a given type, and all types that reference them, recursively
@@ -16119,7 +16119,7 @@ namespace BinaryNinja {
 		    \throws DatabaseException if an exception occurs
 		    \return Source type ids
 		 */
-		std::unordered_set<std::string> GetIncomingRecursiveTypeReferences(const std::string& id, std::string snapshot = "") const noexcept(false);
+		std::unordered_set<std::string> GetIncomingRecursiveTypeReferences(const std::string& id, std::string snapshot = "") const;
 
 		/*!
 		    Register a notification listener
@@ -16139,21 +16139,35 @@ namespace BinaryNinja {
 		    \param value Metadata value
 		    \throws DatabaseException if an exception occurs
 		 */
-		void StoreMetadata(const std::string& key, Ref<Metadata> value) noexcept(false);
+		void StoreMetadata(const std::string& key, Ref<Metadata> value);
 
 		/*!
 		    Look up a metadata entry in the archive
 		    \param key Metadata key
 		    \return Metadata value, if it exists. Otherwise, nullptr
 		 */
-		Ref<Metadata> QueryMetadata(const std::string& key) const noexcept(false);
+		Ref<Metadata> QueryMetadata(const std::string& key) const;
 
 		/*!
 		    Delete a given metadata entry in the archive
 		    \param key Metadata key
 		    \throws DatabaseException if an exception occurs
 		 */
-		void RemoveMetadata(const std::string& key) noexcept(false);
+		void RemoveMetadata(const std::string& key);
+
+		/*!
+		    Turn a given snapshot into a data stream
+		    \param snapshot Snapshot id
+		    \return Buffer containing serialized snapshot data
+		 */
+		DataBuffer SerializeSnapshot(const std::string& snapshot) const;
+
+		/*!
+		    Take a serialized snapshot data stream and create a new snapshot from it
+		    \param data Snapshot data
+		    \return String of created snapshot id
+		 */
+		std::string DeserializeSnapshot(const DataBuffer& data);
 	};
 
 	class TypeContainer

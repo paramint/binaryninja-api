@@ -133,23 +133,23 @@ std::string TypeArchive::GetPath() const
 }
 
 
-std::string TypeArchive::GetCurrentSnapshotId() const noexcept(false)
+std::string TypeArchive::GetCurrentSnapshotId() const
 {
 	char* str = BNGetTypeArchiveCurrentSnapshotId(m_object);
 	if (!str)
-		throw DatabaseException("BNGetTypeArchiveCurrentSnapshotId");
+		throw ExceptionWithStackTrace("BNGetTypeArchiveCurrentSnapshotId");
 	std::string result(str);
 	BNFreeString(str);
 	return result;
 }
 
 
-std::vector<std::string> TypeArchive::GetAllSnapshotIds() const noexcept(false)
+std::vector<std::string> TypeArchive::GetAllSnapshotIds() const
 {
 	size_t count = 0;
 	char** ids = BNGetTypeArchiveAllSnapshotIds(m_object, &count);
 	if (!ids)
-		throw DatabaseException("BNGetTypeArchiveAllSnapshotIds");
+		throw ExceptionWithStackTrace("BNGetTypeArchiveAllSnapshotIds");
 
 	std::vector<std::string> result;
 	for (size_t i = 0; i < count; i ++)
@@ -162,24 +162,31 @@ std::vector<std::string> TypeArchive::GetAllSnapshotIds() const noexcept(false)
 }
 
 
-std::string TypeArchive::GetSnapshotParentId(const std::string& id) const noexcept(false)
+std::vector<std::string> TypeArchive::GetSnapshotParentIds(const std::string& id) const
 {
-	char* str = BNGetTypeArchiveSnapshotParentId(m_object, id.c_str());
-	if (!str)
-		throw DatabaseException("BNGetTypeArchiveSnapshotParentId");
-	std::string result(str);
-	BNFreeString(str);
+	size_t count = 0;
+	char** ids = BNGetTypeArchiveSnapshotParentIds(m_object, id.c_str(), &count);
+	if (!ids)
+		throw ExceptionWithStackTrace("BNGetTypeArchiveSnapshotParentIds");
+
+	std::vector<std::string> result;
+	for (size_t i = 0; i < count; i ++)
+	{
+		result.push_back(ids[i]);
+	}
+
+	BNFreeStringList(ids, count);
 	return result;
 }
 
 
-TypeContainer TypeArchive::GetTypeContainer() const noexcept(false)
+TypeContainer TypeArchive::GetTypeContainer() const
 {
 	return TypeContainer(BNGetTypeArchiveTypeContainer(m_object));
 }
 
 
-bool TypeArchive::AddTypes(const std::vector<QualifiedNameAndType>& types) noexcept(false)
+bool TypeArchive::AddTypes(const std::vector<QualifiedNameAndType>& types)
 {
 	std::vector<BNQualifiedNameAndType> apiTypes;
 	for (auto& type : types)
@@ -198,7 +205,7 @@ bool TypeArchive::AddTypes(const std::vector<QualifiedNameAndType>& types) noexc
 }
 
 
-bool TypeArchive::RenameType(const std::string& id, const QualifiedName& newName) noexcept(false)
+bool TypeArchive::RenameType(const std::string& id, const QualifiedName& newName)
 {
 	BNQualifiedName qname = newName.GetAPIObject();
 	bool result = BNRenameTypeArchiveType(m_object, id.c_str(), &qname);
@@ -207,13 +214,13 @@ bool TypeArchive::RenameType(const std::string& id, const QualifiedName& newName
 }
 
 
-bool TypeArchive::DeleteType(const std::string& id) noexcept(false)
+bool TypeArchive::DeleteType(const std::string& id)
 {
 	return BNDeleteTypeArchiveType(m_object, id.c_str());
 }
 
 
-Ref<Type> TypeArchive::GetTypeById(const std::string& id, std::string snapshot) const noexcept(false)
+Ref<Type> TypeArchive::GetTypeById(const std::string& id, std::string snapshot) const
 {
 	if (snapshot.empty())
 		snapshot = GetCurrentSnapshotId();
@@ -224,7 +231,7 @@ Ref<Type> TypeArchive::GetTypeById(const std::string& id, std::string snapshot) 
 }
 
 
-Ref<Type> TypeArchive::GetTypeByName(const QualifiedName& name, std::string snapshot) const noexcept(false)
+Ref<Type> TypeArchive::GetTypeByName(const QualifiedName& name, std::string snapshot) const
 {
 	if (snapshot.empty())
 		snapshot = GetCurrentSnapshotId();
@@ -237,7 +244,7 @@ Ref<Type> TypeArchive::GetTypeByName(const QualifiedName& name, std::string snap
 }
 
 
-std::string TypeArchive::GetTypeId(const QualifiedName& name, std::string snapshot) const noexcept(false)
+std::string TypeArchive::GetTypeId(const QualifiedName& name, std::string snapshot) const
 {
 	if (snapshot.empty())
 		snapshot = GetCurrentSnapshotId();
@@ -253,7 +260,7 @@ std::string TypeArchive::GetTypeId(const QualifiedName& name, std::string snapsh
 }
 
 
-QualifiedName TypeArchive::GetTypeName(const std::string& id, std::string snapshot) const noexcept(false)
+QualifiedName TypeArchive::GetTypeName(const std::string& id, std::string snapshot) const
 {
 	if (snapshot.empty())
 		snapshot = GetCurrentSnapshotId();
@@ -264,14 +271,14 @@ QualifiedName TypeArchive::GetTypeName(const std::string& id, std::string snapsh
 }
 
 
-std::unordered_map<std::string, QualifiedNameAndType> TypeArchive::GetTypes(std::string snapshot) const noexcept(false)
+std::unordered_map<std::string, QualifiedNameAndType> TypeArchive::GetTypes(std::string snapshot) const
 {
 	if (snapshot.empty())
 	snapshot = GetCurrentSnapshotId();
 	size_t count = 0;
 	BNQualifiedNameTypeAndId* types = BNGetTypeArchiveTypes(m_object, snapshot.c_str(), &count);
 	if (!types)
-		throw DatabaseException("BNGetTypeArchiveTypes");
+		throw ExceptionWithStackTrace("BNGetTypeArchiveTypes");
 
 	std::unordered_map<std::string, QualifiedNameAndType> result;
 	for (size_t i = 0; i < count; ++i)
@@ -287,14 +294,14 @@ std::unordered_map<std::string, QualifiedNameAndType> TypeArchive::GetTypes(std:
 }
 
 
-std::vector<std::string> TypeArchive::GetTypeIds(std::string snapshot) const noexcept(false)
+std::vector<std::string> TypeArchive::GetTypeIds(std::string snapshot) const
 {
 	if (snapshot.empty())
 		snapshot = GetCurrentSnapshotId();
 	size_t count = 0;
 	char** ids = BNGetTypeArchiveTypeIds(m_object, snapshot.c_str(), &count);
 	if (!ids)
-		throw DatabaseException("BNGetTypeArchiveTypeIds");
+		throw ExceptionWithStackTrace("BNGetTypeArchiveTypeIds");
 
 	std::vector<std::string> result;
 	for (size_t i = 0; i < count; ++i)
@@ -306,14 +313,14 @@ std::vector<std::string> TypeArchive::GetTypeIds(std::string snapshot) const noe
 }
 
 
-std::vector<QualifiedName> TypeArchive::GetTypeNames(std::string snapshot) const noexcept(false)
+std::vector<QualifiedName> TypeArchive::GetTypeNames(std::string snapshot) const
 {
 	if (snapshot.empty())
 		snapshot = GetCurrentSnapshotId();
 	size_t count = 0;
 	BNQualifiedName* names = BNGetTypeArchiveTypeNames(m_object, snapshot.c_str(), &count);
 	if (!names)
-		throw DatabaseException("BNGetTypeArchiveTypeNames");
+		throw ExceptionWithStackTrace("BNGetTypeArchiveTypeNames");
 
 	std::vector<QualifiedName> result;
 	for (size_t i = 0; i < count; ++i)
@@ -325,7 +332,7 @@ std::vector<QualifiedName> TypeArchive::GetTypeNames(std::string snapshot) const
 }
 
 
-std::unordered_map<std::string, QualifiedName> TypeArchive::GetTypeNamesAndIds(std::string snapshot) const noexcept(false)
+std::unordered_map<std::string, QualifiedName> TypeArchive::GetTypeNamesAndIds(std::string snapshot) const
 {
 	if (snapshot.empty())
 		snapshot = GetCurrentSnapshotId();
@@ -333,7 +340,7 @@ std::unordered_map<std::string, QualifiedName> TypeArchive::GetTypeNamesAndIds(s
 	char** ids = nullptr;
 	size_t count = 0;
 	if (!BNGetTypeArchiveTypeNamesAndIds(m_object, snapshot.c_str(), &names, &ids, &count))
-		throw DatabaseException("BNGetTypeArchiveTypeNamesAndIds");
+		throw ExceptionWithStackTrace("BNGetTypeArchiveTypeNamesAndIds");
 
 	std::unordered_map<std::string, QualifiedName> result;
 	for (size_t i = 0; i < count; ++i)
@@ -346,14 +353,14 @@ std::unordered_map<std::string, QualifiedName> TypeArchive::GetTypeNamesAndIds(s
 }
 
 
-std::unordered_set<std::string> TypeArchive::GetOutgoingDirectTypeReferences(const std::string& id, std::string snapshot) const noexcept(false)
+std::unordered_set<std::string> TypeArchive::GetOutgoingDirectTypeReferences(const std::string& id, std::string snapshot) const
 {
 	if (snapshot.empty())
 		snapshot = GetCurrentSnapshotId();
 	size_t count = 0;
 	char** ids = BNGetTypeArchiveOutgoingDirectTypeReferences(m_object, id.c_str(), snapshot.c_str(), &count);
 	if (!ids)
-		throw DatabaseException("BNGetTypeArchiveOutgoingDirectTypeReferences");
+		throw ExceptionWithStackTrace("BNGetTypeArchiveOutgoingDirectTypeReferences");
 
 	std::unordered_set<std::string> result;
 	for (size_t i = 0; i < count; ++i)
@@ -365,14 +372,14 @@ std::unordered_set<std::string> TypeArchive::GetOutgoingDirectTypeReferences(con
 }
 
 
-std::unordered_set<std::string> TypeArchive::GetOutgoingRecursiveTypeReferences(const std::string& id, std::string snapshot) const noexcept(false)
+std::unordered_set<std::string> TypeArchive::GetOutgoingRecursiveTypeReferences(const std::string& id, std::string snapshot) const
 {
 	if (snapshot.empty())
 		snapshot = GetCurrentSnapshotId();
 	size_t count = 0;
 	char** ids = BNGetTypeArchiveOutgoingRecursiveTypeReferences(m_object, id.c_str(), snapshot.c_str(), &count);
 	if (!ids)
-		throw DatabaseException("BNGetTypeArchiveOutgoingRecursiveTypeReferences");
+		throw ExceptionWithStackTrace("BNGetTypeArchiveOutgoingRecursiveTypeReferences");
 
 	std::unordered_set<std::string> result;
 	for (size_t i = 0; i < count; ++i)
@@ -384,14 +391,14 @@ std::unordered_set<std::string> TypeArchive::GetOutgoingRecursiveTypeReferences(
 }
 
 
-std::unordered_set<std::string> TypeArchive::GetIncomingDirectTypeReferences(const std::string& id, std::string snapshot) const noexcept(false)
+std::unordered_set<std::string> TypeArchive::GetIncomingDirectTypeReferences(const std::string& id, std::string snapshot) const
 {
 	if (snapshot.empty())
 		snapshot = GetCurrentSnapshotId();
 	size_t count = 0;
 	char** ids = BNGetTypeArchiveIncomingDirectTypeReferences(m_object, id.c_str(), snapshot.c_str(), &count);
 	if (!ids)
-		throw DatabaseException("BNGetTypeArchiveIncomingDirectTypeReferences");
+		throw ExceptionWithStackTrace("BNGetTypeArchiveIncomingDirectTypeReferences");
 
 	std::unordered_set<std::string> result;
 	for (size_t i = 0; i < count; ++i)
@@ -403,14 +410,14 @@ std::unordered_set<std::string> TypeArchive::GetIncomingDirectTypeReferences(con
 }
 
 
-std::unordered_set<std::string> TypeArchive::GetIncomingRecursiveTypeReferences(const std::string& id, std::string snapshot) const noexcept(false)
+std::unordered_set<std::string> TypeArchive::GetIncomingRecursiveTypeReferences(const std::string& id, std::string snapshot) const
 {
 	if (snapshot.empty())
 		snapshot = GetCurrentSnapshotId();
 	size_t count = 0;
 	char** ids = BNGetTypeArchiveIncomingRecursiveTypeReferences(m_object, id.c_str(), snapshot.c_str(), &count);
 	if (!ids)
-		throw DatabaseException("BNGetTypeArchiveIncomingRecursiveTypeReferences");
+		throw ExceptionWithStackTrace("BNGetTypeArchiveIncomingRecursiveTypeReferences");
 
 	std::unordered_set<std::string> result;
 	for (size_t i = 0; i < count; ++i)
@@ -434,14 +441,14 @@ void TypeArchive::UnregisterNotification(TypeArchiveNotification* notification)
 }
 
 
-void TypeArchive::StoreMetadata(const std::string& key, Ref<Metadata> value) noexcept(false)
+void TypeArchive::StoreMetadata(const std::string& key, Ref<Metadata> value)
 {
 	if (!BNTypeArchiveStoreMetadata(m_object, key.c_str(), value->GetObject()))
-		throw DatabaseException("BNTypeArchiveStoreMetadata");
+		throw ExceptionWithStackTrace("BNTypeArchiveStoreMetadata");
 }
 
 
-Ref<Metadata> TypeArchive::QueryMetadata(const std::string& key) const noexcept(false)
+Ref<Metadata> TypeArchive::QueryMetadata(const std::string& key) const
 {
 	BNMetadata* metadata = BNTypeArchiveQueryMetadata(m_object, key.c_str());
 	if (!metadata)
@@ -450,9 +457,28 @@ Ref<Metadata> TypeArchive::QueryMetadata(const std::string& key) const noexcept(
 }
 
 
-void TypeArchive::RemoveMetadata(const std::string& key) noexcept(false)
+void TypeArchive::RemoveMetadata(const std::string& key)
 {
 	if (!BNTypeArchiveRemoveMetadata(m_object, key.c_str()))
-		throw DatabaseException("BNTypeArchiveRemoveMetadata");
+		throw ExceptionWithStackTrace("BNTypeArchiveRemoveMetadata");
 }
 
+
+DataBuffer TypeArchive::SerializeSnapshot(const std::string& snapshot) const
+{
+	BNDataBuffer* buffer = BNTypeArchiveSerializeSnapshot(m_object, snapshot.c_str());
+	if (!buffer)
+		throw ExceptionWithStackTrace("BNTypeArchiveSerializeSnapshot");
+	return DataBuffer(buffer);
+}
+
+
+std::string TypeArchive::DeserializeSnapshot(const DataBuffer& data)
+{
+	char* id = BNTypeArchiveDeserializeSnapshot(m_object, data.GetBufferObject());
+	if (!id)
+		throw ExceptionWithStackTrace("BNTypeArchiveDeserializeSnapshot");
+	std::string result = id;
+	BNFreeString(id);
+	return result;
+}

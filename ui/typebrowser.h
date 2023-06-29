@@ -442,9 +442,12 @@ public:
 	TypeBrowserContainer(ViewFrame* frame, BinaryViewRef data, class TypeBrowserSidebarWidget* parent);
 	virtual View* getView() override { return m_view; }
 
+	ViewFrame* getViewFrame() { return m_frame; }
+	BinaryViewRef getData() { return m_data; }
 	TypeBrowserView* getTypeBrowserView() { return m_view; }
 	FilteredView* getFilter() { return m_filter; }
 	FilterEdit* getSeparateFilterEdit() { return m_separateEdit; }
+	class TypeBrowserSidebarWidget* getSidebarWidget() { return m_sidebarWidget; }
 	void showContextMenu();
 
 protected:

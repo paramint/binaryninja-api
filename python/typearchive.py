@@ -28,6 +28,7 @@ from . import _binaryninjacore as core
 from . import types as ty_
 from . import log
 from . import metadata
+from . import databuffer
 from . import platform
 from . import architecture
 from . import binaryview
@@ -123,18 +124,23 @@ class TypeArchive:
 		finally:
 			core.BNFreeStringList(ids, count.value)
 
-	def get_snapshot_parent_id(self, snapshot: str) -> Optional[str]:
+	def get_snapshot_parent_ids(self, snapshot: str) -> Optional[List[str]]:
 		"""
-		Get the id of the parent to the given snapshot
+		Get the ids of the parents to the given snapshot
 		:param snapshot: Child snapshot id
-		:return: Parent snapshot id, or None if the snapshot is a root
+		:return: Parent snapshot ids, or empty list if the snapshot is a root
 		"""
-		result = core.BNGetTypeArchiveSnapshotParentId(self.handle, snapshot)
-		if result is None:
-			raise RuntimeError("BNGetTypeArchiveSnapshotParentId")
-		if result == "":
-			return None
-		return result
+		count = ctypes.c_size_t(0)
+		ids = core.BNGetTypeArchiveSnapshotParentIds(self.handle, snapshot, count)
+		if ids is None:
+			raise RuntimeError("BNGetTypeArchiveAllSnapshotIds")
+		result = []
+		try:
+			for i in range(0, count.value):
+				result.append(core.pyNativeStr(ids[i]))
+			return result
+		finally:
+			core.BNFreeStringList(ids, count.value)
 
 	def add_type(self, name: 'ty_.QualifiedNameType', type: 'ty_.Type') -> None:
 		"""
@@ -539,6 +545,29 @@ class TypeArchive:
 			>>> ta.remove_metadata("integer")
 		"""
 		core.BNTypeArchiveRemoveMetadata(self.handle, key)
+
+	def serialize_snapshot(self, snapshot: str) -> 'databuffer.DataBuffer':
+		"""
+		Turn a given snapshot into a data stream
+		:param snapshot: Snapshot id
+		:return: Buffer containing serialized snapshot data
+		"""
+		result = core.BNTypeArchiveSerializeSnapshot(self.handle, snapshot)
+		if not result:
+			raise RuntimeError("BNTypeArchiveDeserializeSnapshot")
+		return databuffer.DataBuffer(handle=result)
+
+	def deserialize_snapshot(self, data: 'databuffer.DataBufferInputType') -> str:
+		"""
+		Take a serialized snapshot data stream and create a new snapshot from it
+		:param data: Snapshot data
+		:return: String of created snapshot id
+		"""
+		buffer = databuffer.DataBuffer(data)
+		result = core.BNTypeArchiveDeserializeSnapshot(self.handle, buffer.handle)
+		if not result:
+			raise RuntimeError("BNTypeArchiveDeserializeSnapshot")
+		return result
 
 	def register_notification(self, notify: 'TypeArchiveNotification') -> None:
 		"""
