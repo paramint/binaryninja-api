@@ -7764,11 +7764,11 @@ class BinaryView:
 			core.BNFreeStringList(type_ids, count)
 			core.BNFreeStringList(archive_type_ids, count)
 
-	def get_associated_type_archive_type_target(self, name: '_types.QualifiedNameType') -> Optional[Tuple['typearchive.TypeArchive', str]]:
+	def get_associated_type_archive_type_target(self, name: '_types.QualifiedNameType') -> Optional[Tuple['typearchive.TypeArchive', '_types.QualifiedName']]:
 		"""
-		Determine the target archive / type id of a given analysis type
+		Determine the target archive / type name of a given analysis type
 		:param name: Analysis type
-		:return: (archive, archive type id) if the type is associated. None otherwise.
+		:return: (archive, archive type name) if the type is associated. None otherwise.
 		"""
 		type_id = self.get_type_id(name)
 		if type_id == '':
@@ -7776,7 +7776,9 @@ class BinaryView:
 		result = self.get_associated_type_archive_type_target_by_id(type_id)
 		if result is None:
 			return None
-		return (self.get_type_archive(result[0]), result[1])
+		archive_id, type_id = result
+		archive = self.get_type_archive(archive_id)
+		return archive, archive.get_type_name_by_id(type_id)
 
 	def get_associated_type_archive_type_target_by_id(self, type_id: str) -> Optional[Tuple[str, str]]:
 		"""
