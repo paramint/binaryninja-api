@@ -5257,14 +5257,15 @@ namespace BinaryNinja {
 		/*!
 			Attach a given type archive to the binary view. No types will actually be associated by calling this, just they
 			will become available.
-			\param archive New archive
+			\param id Expected id of archive
+			\param path Path to archive
 		 */
-		void AttachTypeArchive(Ref<TypeArchive> archive);
+		Ref<TypeArchive> AttachTypeArchive(const std::string& id, const std::string& path);
 		/*!
 			Detach from a type archive, breaking all associations to types with the archive
-			\param archive Archive to remove
+			\param id Id of archive to detach
 		 */
-		void DetachTypeArchive(Ref<TypeArchive> archive);
+		void DetachTypeArchive(const std::string& id);
 		/*!
 			Look up a connected archive by its id
 			\param id Id of archive

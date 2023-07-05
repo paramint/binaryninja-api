@@ -6637,8 +6637,8 @@ extern "C"
 	BINARYNINJACOREAPI BNDataBuffer* BNTypeArchiveSerializeSnapshot(BNTypeArchive* archive, const char* snapshot);
 	BINARYNINJACOREAPI char* BNTypeArchiveDeserializeSnapshot(BNTypeArchive* archive, BNDataBuffer* buffer);
 
-	BINARYNINJACOREAPI bool BNBinaryViewAttachTypeArchive(BNBinaryView* view, BNTypeArchive* archive);
-	BINARYNINJACOREAPI bool BNBinaryViewDetachTypeArchive(BNBinaryView* view, BNTypeArchive* archive);
+	BINARYNINJACOREAPI BNTypeArchive* BNBinaryViewAttachTypeArchive(BNBinaryView* view, const char* id, const char* path);
+	BINARYNINJACOREAPI bool BNBinaryViewDetachTypeArchive(BNBinaryView* view, const char* id);
 	BINARYNINJACOREAPI BNTypeArchive* BNBinaryViewGetTypeArchive(BNBinaryView* view, const char* id);
 	BINARYNINJACOREAPI size_t BNBinaryViewGetTypeArchives(BNBinaryView* view, char*** names, BNTypeArchive*** archives);
 	BINARYNINJACOREAPI size_t BNBinaryViewGetTypeArchiveTypeNameList(BNBinaryView* view, BNQualifiedName** names);

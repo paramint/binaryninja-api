@@ -4081,15 +4081,18 @@ std::optional<std::pair<Ref<TypeLibrary>, QualifiedName>> BinaryView::LookupImpo
 }
 
 
-void BinaryView::AttachTypeArchive(Ref<TypeArchive> archive)
+Ref<TypeArchive> BinaryView::AttachTypeArchive(const string& id, const string& path)
 {
-	BNBinaryViewAttachTypeArchive(m_object, archive->GetObject());
+	BNTypeArchive* archive = BNBinaryViewAttachTypeArchive(m_object, id.c_str(), path.c_str());
+	if (!archive)
+		return nullptr;
+	return new TypeArchive(archive);
 }
 
 
-void BinaryView::DetachTypeArchive(Ref<TypeArchive> archive)
+void BinaryView::DetachTypeArchive(const string& id)
 {
-	BNBinaryViewDetachTypeArchive(m_object, archive->GetObject());
+	BNBinaryViewDetachTypeArchive(m_object, id.c_str());
 }
 
 

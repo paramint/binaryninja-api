@@ -7621,15 +7621,32 @@ class BinaryView:
 		Names from that archive will be cached in the mapping but no types will actually be associated by calling this.
 		:param archive: New archive
 		"""
-		if not core.BNBinaryViewAttachTypeArchive(self.handle, archive.handle):
+		self.attach_type_archive_by_id(archive.id, archive.path)
+
+	def attach_type_archive_by_id(self, id: str, path: str) -> 'typearchive.TypeArchive':
+		"""
+		Attach a given type archive to the owned analysis and try to connect to it.
+		Names from that archive will be cached in the mapping but no types will actually be associated by calling this.
+		:param id: Id of type archive to attach
+		"""
+		archive = core.BNBinaryViewAttachTypeArchive(self.handle, id, path)
+		if not archive:
 			raise RuntimeError("BNBinaryViewAttachTypeArchive")
+		return typearchive.TypeArchive(handle=archive)
 
 	def detach_type_archive(self, archive: 'typearchive.TypeArchive'):
 		"""
 		Detach from a type archive, breaking all associations to types with the archive
+		:param id: Id of type archive to detach
+		"""
+		self.detach_type_archive_by_id(archive.id)
+
+	def detach_type_archive_by_id(self, id: str):
+		"""
+		Detach from a type archive, breaking all associations to types with the archive
 		:param archive: Archive to detach
 		"""
-		if not core.BNBinaryViewDetachTypeArchive(self.handle, archive.handle):
+		if not core.BNBinaryViewDetachTypeArchive(self.handle, id):
 			raise RuntimeError("BNBinaryViewDetachTypeArchive")
 
 	def get_type_archive(self, id: str) -> Optional['typearchive.TypeArchive']:
