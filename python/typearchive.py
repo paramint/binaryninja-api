@@ -653,8 +653,6 @@ class TypeArchiveNotificationCallbacks:
 		self._notify = notify
 		self._cb = core.BNTypeArchiveNotification()
 		self._cb.context = 0
-		self._cb.viewAttached = self._cb.viewAttached.__class__(self._view_attached)
-		self._cb.viewDetached = self._cb.viewDetached.__class__(self._view_detached)
 		self._cb.typeAdded = self._cb.typeAdded.__class__(self._type_added)
 		self._cb.typeUpdated = self._cb.typeUpdated.__class__(self._type_updated)
 		self._cb.typeRenamed = self._cb.typeRenamed.__class__(self._type_renamed)

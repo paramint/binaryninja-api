@@ -23,24 +23,6 @@
 using namespace BinaryNinja;
 
 
-void TypeArchiveNotification::OnViewAttachedCallback(void* ctx, BNTypeArchive* archive, BNBinaryView* view)
-{
-	TypeArchiveNotification* notify = reinterpret_cast<TypeArchiveNotification*>(ctx);
-	Ref<TypeArchive> cppArchive = new TypeArchive(BNNewTypeArchiveReference(archive));
-	Ref<BinaryView> cppView = new BinaryView(BNNewViewReference(view));
-	notify->OnViewAttached(cppArchive, cppView);
-}
-
-
-void TypeArchiveNotification::OnViewDetachedCallback(void* ctx, BNTypeArchive* archive, BNBinaryView* view)
-{
-	TypeArchiveNotification* notify = reinterpret_cast<TypeArchiveNotification*>(ctx);
-	Ref<TypeArchive> cppArchive = new TypeArchive(BNNewTypeArchiveReference(archive));
-	Ref<BinaryView> cppView = new BinaryView(BNNewViewReference(view));
-	notify->OnViewDetached(cppArchive, cppView);
-}
-
-
 void TypeArchiveNotification::OnTypeAddedCallback(void* ctx, BNTypeArchive* archive, const char* id, BNType* definition)
 {
 	TypeArchiveNotification* notify = reinterpret_cast<TypeArchiveNotification*>(ctx);
@@ -82,8 +64,6 @@ void TypeArchiveNotification::OnTypeDeletedCallback(void* ctx, BNTypeArchive* ar
 TypeArchiveNotification::TypeArchiveNotification()
 {
 	m_callbacks.context = this;
-	m_callbacks.viewAttached = OnViewAttachedCallback;
-	m_callbacks.viewDetached = OnViewDetachedCallback;
 	m_callbacks.typeAdded = OnTypeAddedCallback;
 	m_callbacks.typeUpdated = OnTypeUpdatedCallback;
 	m_callbacks.typeRenamed = OnTypeRenamedCallback;

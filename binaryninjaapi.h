@@ -2425,6 +2425,7 @@ namespace BinaryNinja {
 	class Section;
 	class Segment;
 	class Component;
+	class TypeArchive;
 
 	/*!
 
@@ -2478,6 +2479,10 @@ namespace BinaryNinja {
 		static void ComponentFunctionRemovedCallback(void* ctxt, BNBinaryView* data, BNComponent* component, BNFunction* function);
 		static void ComponentDataVariableAddedCallback(void* ctxt, BNBinaryView* data, BNComponent* component, BNDataVariable* var);
 		static void ComponentDataVariableRemovedCallback(void* ctxt, BNBinaryView* data, BNComponent* component, BNDataVariable* var);
+		static void TypeArchiveAttachedCallback(void* ctxt, BNBinaryView* data, const char* id, const char* path);
+		static void TypeArchiveDetachedCallback(void* ctxt, BNBinaryView* data, const char* id, const char* path);
+		static void TypeArchiveConnectedCallback(void* ctxt, BNBinaryView* data, BNTypeArchive* archive);
+		static void TypeArchiveDisconnectedCallback(void* ctxt, BNBinaryView* data, BNTypeArchive* archive);
 
 	  public:
 
@@ -2828,6 +2833,31 @@ namespace BinaryNinja {
 			(void)component;
 			(void)var;
 		}
+
+
+		virtual void OnTypeArchiveAttached(BinaryView* data, const std::string& id, const std::string& path)
+		{
+			(void)data;
+			(void)id;
+			(void)path;
+		}
+		virtual void OnTypeArchiveDetached(BinaryView* data, const std::string& id, const std::string& path)
+		{
+			(void)data;
+			(void)id;
+			(void)path;
+		}
+		virtual void OnTypeArchiveConnected(BinaryView* data, TypeArchive* archive)
+		{
+			(void)data;
+			(void)archive;
+		}
+		virtual void OnTypeArchiveDisconnected(BinaryView* data, TypeArchive* archive)
+		{
+			(void)data;
+			(void)archive;
+		}
+
 	};
 
 	/*!
@@ -15842,8 +15872,6 @@ namespace BinaryNinja {
 	{
 		BNTypeArchiveNotification m_callbacks;
 
-		static void OnViewAttachedCallback(void* ctx, BNTypeArchive* archive, BNBinaryView* view);
-		static void OnViewDetachedCallback(void* ctx, BNTypeArchive* archive, BNBinaryView* view);
 		static void OnTypeAddedCallback(void* ctx, BNTypeArchive* archive, const char* id, BNType* definition);
 		static void OnTypeUpdatedCallback(void* ctx, BNTypeArchive* archive, const char* id, BNType* oldDefinition, BNType* newDefinition);
 		static void OnTypeRenamedCallback(void* ctx, BNTypeArchive* archive, const char* id, const BNQualifiedName* oldName, const BNQualifiedName* newName);
@@ -15854,28 +15882,6 @@ namespace BinaryNinja {
 		virtual ~TypeArchiveNotification() = default;
 
 		BNTypeArchiveNotification* GetCallbacks() { return &m_callbacks; }
-
-		/*!
-		    Called when a new view is connected to the type archive.
-		    \param archive
-		    \param view
-		 */
-		virtual void OnViewAttached(Ref<TypeArchive> archive, Ref<BinaryView> view)
-		{
-			(void)archive;
-			(void)view;
-		}
-
-		/*!
-		    Called when a previously connected view is disconnected.
-		    \param archive
-		    \param view
-		 */
-		virtual void OnViewDetached(Ref<TypeArchive> archive, Ref<BinaryView> view)
-		{
-			(void)archive;
-			(void)view;
-		}
 
 		/*!
 		    Called when a type is added to the archive

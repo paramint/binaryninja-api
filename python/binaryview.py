@@ -173,6 +173,10 @@ class NotificationType(IntFlag):
 	ComponentFunctionRemoved = 1 << 36
 	ComponentDataVariableAdded = 1 << 37
 	ComponentDataVariableRemoved = 1 << 38
+	TypeArchiveAttached = 1 << 39
+	TypeArchiveDetached = 1 << 40
+	TypeArchiveConnected = 1 << 41
+	TypeArchiveDisconnected = 1 << 42
 	BinaryDataUpdates = DataWritten | DataInserted | DataRemoved
 	FunctionLifetime = FunctionAdded | FunctionRemoved
 	FunctionUpdates = FunctionLifetime | FunctionUpdated
@@ -385,7 +389,17 @@ class BinaryDataNotification:
 	def component_data_var_removed(self, view: 'BinaryView', _component: component.Component, var: 'DataVariable'):
 		pass
 
+	def type_archive_attached(self, view: 'BinaryView', id: str, path: str):
+		pass
 
+	def type_archive_detached(self, view: 'BinaryView', id: str, path: str):
+		pass
+
+	def type_archive_connected(self, view: 'BinaryView', archive: 'typearchive.TypeArchive'):
+		pass
+
+	def type_archive_disconnected(self, view: 'BinaryView', archive: 'typearchive.TypeArchive'):
+		pass
 
 
 class StringReference:
@@ -634,6 +648,11 @@ class BinaryDataNotificationCallbacks:
 			self._cb.componentFunctionRemoved = self._cb.componentFunctionRemoved.__class__(self._component_function_removed)
 			self._cb.componentDataVariableAdded = self._cb.componentDataVariableAdded.__class__(self._component_data_variable_added)
 			self._cb.componentDataVariableRemoved = self._cb.componentDataVariableRemoved.__class__(self._component_data_variable_removed)
+
+			self._cb.typeArchiveAttached = self._cb.typeArchiveAttached.__class__(self._type_archive_attached)
+			self._cb.typeArchiveDetached = self._cb.typeArchiveDetached.__class__(self._type_archive_detached)
+			self._cb.typeArchiveConnected = self._cb.typeArchiveConnected.__class__(self._type_archive_connected)
+			self._cb.typeArchiveDisconnected = self._cb.typeArchiveDisconnected.__class__(self._type_archive_disconnected)
 		else:
 			if notify.notifications & NotificationType.NotificationBarrier:
 				self._cb.notificationBarrier = self._cb.notificationBarrier.__class__(self._notification_barrier)
@@ -713,6 +732,15 @@ class BinaryDataNotificationCallbacks:
 				self._cb.componentDataVariableAdded = self._cb.componentDataVariableAdded.__class__(self._component_data_variable_added)
 			if notify.notifications & NotificationType.ComponentDataVariableRemoved:
 				self._cb.componentDataVariableRemoved = self._cb.componentDataVariableRemoved.__class__(self._component_data_variable_removed)
+
+			if notify.notifications & NotificationType.TypeArchiveAttached:
+				self._cb.typeArchiveAttached = self._cb.typeArchiveAttached.__class__(self._type_archive_attached)
+			if notify.notifications & NotificationType.TypeArchiveDetached:
+				self._cb.typeArchiveDetached = self._cb.typeArchiveDetached.__class__(self._type_archive_detached)
+			if notify.notifications & NotificationType.TypeArchiveConnected:
+				self._cb.typeArchiveConnected = self._cb.typeArchiveConnected.__class__(self._type_archive_connected)
+			if notify.notifications & NotificationType.TypeArchiveDisconnected:
+				self._cb.typeArchiveDisconnected = self._cb.typeArchiveDisconnected.__class__(self._type_archive_disconnected)
 
 	def _register(self) -> None:
 		core.BNRegisterDataNotification(self._view.handle, self._cb)
@@ -1083,6 +1111,33 @@ class BinaryDataNotificationCallbacks:
 			self._notify.component_data_var_removed(self._view, result, DataVariable.from_core_struct(var, self._view))
 		except:
 			log_error(traceback.format_exc())
+
+	def _type_archive_attached(self, ctxt, view: core.BNBinaryView, id: ctypes.c_char_p, path: ctypes.c_char_p):
+		try:
+			self._notify.type_archive_attached(self._view, core.pyNativeStr(id), core.pyNativeStr(path))
+		except:
+			log_error(traceback.format_exc())
+
+	def _type_archive_detached(self, ctxt, view: core.BNBinaryView, id: ctypes.c_char_p, path: ctypes.c_char_p):
+		try:
+			self._notify.type_archive_detached(self._view, core.pyNativeStr(id), core.pyNativeStr(path))
+		except:
+			log_error(traceback.format_exc())
+
+	def _type_archive_connected(self, ctxt, view: core.BNBinaryView, archive: core.BNTypeArchive):
+		try:
+			py_archive = typearchive.TypeArchive(handle=core.BNNewTypeArchiveReference(archive))
+			self._notify.type_archive_connected(self._view, py_archive)
+		except:
+			log_error(traceback.format_exc())
+
+	def _type_archive_disconnected(self, ctxt, view: core.BNBinaryView, archive: core.BNTypeArchive):
+		try:
+			py_archive = typearchive.TypeArchive(handle=core.BNNewTypeArchiveReference(archive))
+			self._notify.type_archive_disconnected(self._view, py_archive)
+		except:
+			log_error(traceback.format_exc())
+
 
 	@property
 	def view(self) -> 'BinaryView':

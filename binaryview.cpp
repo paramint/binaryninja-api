@@ -408,6 +408,39 @@ void BinaryDataNotification::ComponentDataVariableRemovedCallback(void* ctxt, BN
 }
 
 
+void BinaryDataNotification::TypeArchiveAttachedCallback(void* ctxt, BNBinaryView* data, const char* id, const char* path)
+{
+	BinaryDataNotification* notify = (BinaryDataNotification*)ctxt;
+	Ref<BinaryView> view = new BinaryView(BNNewViewReference(data));
+	notify->OnTypeArchiveAttached(view, id, path);
+}
+
+
+void BinaryDataNotification::TypeArchiveDetachedCallback(void* ctxt, BNBinaryView* data, const char* id, const char* path)
+{
+	BinaryDataNotification* notify = (BinaryDataNotification*)ctxt;
+	Ref<BinaryView> view = new BinaryView(BNNewViewReference(data));
+	notify->OnTypeArchiveDetached(view, id, path);
+}
+
+
+void BinaryDataNotification::TypeArchiveConnectedCallback(void* ctxt, BNBinaryView* data, BNTypeArchive* archive)
+{
+	BinaryDataNotification* notify = (BinaryDataNotification*)ctxt;
+	Ref<BinaryView> view = new BinaryView(BNNewViewReference(data));
+	Ref<TypeArchive> apiArchive = new TypeArchive(BNNewTypeArchiveReference(archive));
+	notify->OnTypeArchiveConnected(view, apiArchive);
+}
+
+
+void BinaryDataNotification::TypeArchiveDisconnectedCallback(void* ctxt, BNBinaryView* data, BNTypeArchive* archive)
+{
+	BinaryDataNotification* notify = (BinaryDataNotification*)ctxt;
+	Ref<BinaryView> view = new BinaryView(BNNewViewReference(data));
+	Ref<TypeArchive> apiArchive = new TypeArchive(BNNewTypeArchiveReference(archive));
+	notify->OnTypeArchiveDisconnected(view, apiArchive);
+}
+
 BinaryDataNotification::BinaryDataNotification()
 {
 	m_callbacks.context = this;
@@ -450,6 +483,10 @@ BinaryDataNotification::BinaryDataNotification()
 	m_callbacks.componentFunctionRemoved = ComponentFunctionRemovedCallback;
 	m_callbacks.componentDataVariableAdded = ComponentDataVariableAddedCallback;
 	m_callbacks.componentDataVariableRemoved = ComponentDataVariableRemovedCallback;
+	m_callbacks.typeArchiveAttached = TypeArchiveAttachedCallback;
+	m_callbacks.typeArchiveDetached = TypeArchiveDetachedCallback;
+	m_callbacks.typeArchiveConnected = TypeArchiveConnectedCallback;
+	m_callbacks.typeArchiveDisconnected = TypeArchiveDisconnectedCallback;
 }
 
 

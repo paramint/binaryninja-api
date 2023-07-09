@@ -1483,6 +1483,10 @@ extern "C"
 		void (*componentFunctionRemoved)(void*ctxt, BNBinaryView* view, BNComponent* component, BNFunction* function);
 		void (*componentDataVariableAdded)(void*ctxt, BNBinaryView* view, BNComponent* component, BNDataVariable* var);
 		void (*componentDataVariableRemoved)(void*ctxt, BNBinaryView* view, BNComponent* component, BNDataVariable* var);
+		void (*typeArchiveAttached)(void* ctxt, BNBinaryView* view, const char* id, const char* path);
+		void (*typeArchiveDetached)(void* ctxt, BNBinaryView* view, const char* id, const char* path);
+		void (*typeArchiveConnected)(void* ctxt, BNBinaryView* view, BNTypeArchive* archive);
+		void (*typeArchiveDisconnected)(void* ctxt, BNBinaryView* view, BNTypeArchive* archive);
 	} BNBinaryDataNotification;
 
 	typedef struct BNFileAccessor
@@ -2991,8 +2995,6 @@ extern "C"
 	typedef struct BNTypeArchiveNotification
 	{
 		void* context;
-		void (*viewAttached)(void* ctxt, BNTypeArchive* archive, BNBinaryView* view);
-		void (*viewDetached)(void* ctxt, BNTypeArchive* archive, BNBinaryView* view);
 		void (*typeAdded)(void* ctxt, BNTypeArchive* archive, const char* id, BNType* definition);
 		void (*typeUpdated)(void* ctxt, BNTypeArchive* archive, const char* id, BNType* oldDefinition, BNType* newDefinition);
 		void (*typeRenamed)(void* ctxt, BNTypeArchive* archive, const char* id, const BNQualifiedName* oldName, const BNQualifiedName* newName);
@@ -6608,6 +6610,7 @@ extern "C"
 	BINARYNINJACOREAPI void BNFreeTypeArchiveList(BNTypeArchive** archives, size_t count);
 	BINARYNINJACOREAPI BNTypeArchive* BNOpenTypeArchive(const char* path);
 	BINARYNINJACOREAPI BNTypeArchive* BNLookupTypeArchiveById(const char* id);
+	BINARYNINJACOREAPI void BNCloseTypeArchive(const char* id);
 	BINARYNINJACOREAPI char* BNGetTypeArchiveId(BNTypeArchive* archive);
 	BINARYNINJACOREAPI char* BNGetTypeArchivePath(BNTypeArchive* archive);
 	BINARYNINJACOREAPI char* BNGetTypeArchiveCurrentSnapshotId(BNTypeArchive* archive);
