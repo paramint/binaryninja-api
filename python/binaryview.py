@@ -7808,14 +7808,14 @@ class BinaryView:
 		"""
 		result = {}
 
-		for type_id, archive_type_id in self.get_associated_type_ids_from_archive(archive.id).items():
+		for type_id, archive_type_id in self.get_associated_type_from_archive_by_id(archive.id).items():
 			name = self.get_type_name_by_id(type_id)
 			if name is None:
 				continue
 			result[name] = archive_type_id
 		return result
 
-	def get_associated_type_ids_from_archive(self, archive_id: str) -> Mapping[str, str]:
+	def get_associated_type_from_archive_by_id(self, archive_id: str) -> Mapping[str, str]:
 		"""
 		Get a list of all types in the analysis that are associated with a specific type archive
 		:return: Map of all analysis types to their corresponding archive id
