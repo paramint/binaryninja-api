@@ -6610,7 +6610,7 @@ extern "C"
 	BINARYNINJACOREAPI void BNFreeTypeArchiveList(BNTypeArchive** archives, size_t count);
 	BINARYNINJACOREAPI BNTypeArchive* BNOpenTypeArchive(const char* path);
 	BINARYNINJACOREAPI BNTypeArchive* BNLookupTypeArchiveById(const char* id);
-	BINARYNINJACOREAPI void BNCloseTypeArchive(const char* id);
+	BINARYNINJACOREAPI void BNCloseTypeArchive(BNTypeArchive* archive);
 	BINARYNINJACOREAPI char* BNGetTypeArchiveId(BNTypeArchive* archive);
 	BINARYNINJACOREAPI char* BNGetTypeArchivePath(BNTypeArchive* archive);
 	BINARYNINJACOREAPI char* BNGetTypeArchiveCurrentSnapshotId(BNTypeArchive* archive);
