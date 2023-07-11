@@ -391,6 +391,10 @@ public:
 	static void registerActions();
 	void bindActions();
 	void showContextMenu();
+
+	bool canConnectTypeArchive();
+	void connectTypeArchive();
+
 	bool canCreateTypeArchive();
 	void createTypeArchive();
 	bool canAttachTypeArchive();
