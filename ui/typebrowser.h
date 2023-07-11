@@ -67,7 +67,7 @@ protected:
 class BINARYNINJAUIAPI RootTreeNode : public TypeBrowserTreeNode
 {
 	std::shared_ptr<class BinaryViewTreeNode> m_viewNode;
-	std::map<TypeArchiveRef, std::shared_ptr<class TypeArchiveTreeNode>> m_archiveNodes;
+	std::map<std::string, std::shared_ptr<class TypeArchiveTreeNode>> m_archiveNodes;
 	std::map<TypeLibraryRef, std::shared_ptr<class TypeLibraryTreeNode>> m_libraryNodes;
 	std::map<std::string, std::shared_ptr<class DebugInfoTreeNode>> m_debugInfoNodes;
 	std::shared_ptr<class PlatformTreeNode> m_platformNode;
@@ -171,12 +171,15 @@ public:
 
 class BINARYNINJAUIAPI TypeArchiveTreeNode : public TypeSourceTreeNode
 {
+	std::string m_archiveId;
+	std::optional<std::string> m_archivePath;
 	TypeArchiveRef m_archive;
 
 public:
-	TypeArchiveTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, TypeArchiveRef archive);
+	TypeArchiveTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, const std::string& archiveId);
 	virtual ~TypeArchiveTreeNode() = default;
 
+	const std::string& archiveId() const { return m_archiveId; }
 	const TypeArchiveRef& archive() const { return m_archive; }
 
 	virtual std::string text(int column) const override;

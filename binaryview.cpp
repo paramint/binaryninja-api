@@ -4142,20 +4142,31 @@ Ref<TypeArchive> BinaryView::GetTypeArchive(const std::string& id) const
 }
 
 
-std::unordered_map<std::string, Ref<TypeArchive>> BinaryView::GetTypeArchives() const
+std::unordered_map<std::string, std::string> BinaryView::GetTypeArchives() const
 {
-	char** names;
-	BNTypeArchive** archives;
-	size_t count = BNBinaryViewGetTypeArchives(m_object, &names, &archives);
+	char** ids;
+	char** paths;
+	size_t count = BNBinaryViewGetTypeArchives(m_object, &ids, &paths);
 
-	std::unordered_map<std::string, Ref<TypeArchive>> result;
+	std::unordered_map<std::string, std::string> result;
 	for (size_t i = 0; i < count; i ++)
 	{
-		result.emplace(names[i], new TypeArchive(BNNewTypeArchiveReference(archives[i])));
+		result.emplace(ids[i], paths[i]);
 	}
-	BNFreeStringList(names, count);
-	BNFreeTypeArchiveList(archives, count);
+	BNFreeStringList(ids, count);
+	BNFreeStringList(paths, count);
 	return result;
+}
+
+
+std::optional<std::string> BinaryView::GetTypeArchivePath(const std::string& id) const
+{
+	char* result = BNBinaryViewGetTypeArchivePath(m_object, id.c_str());
+	if (!result)
+		return std::nullopt;
+	std::string cppResult = result;
+	BNFreeString(result);
+	return cppResult;
 }
 
 

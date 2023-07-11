@@ -2882,19 +2882,19 @@ class BinaryView:
 			core.BNFreeTypeLibraryList(libraries, count.value)
 
 	@property
-	def type_archives(self) -> List['typearchive.TypeArchive']:
-		"""List of connected type archives (read-only)"""
-		names = ctypes.POINTER(ctypes.c_char_p)()
-		archives = ctypes.POINTER(core.BNTypeArchiveHandle)()
-		count = core.BNBinaryViewGetTypeArchives(self.handle, names, archives)
-		result = []
+	def type_archives(self) -> Mapping['str', 'typearchive.TypeArchive']:
+		"""All attached type archive ids and paths (read-only)"""
+		ids = ctypes.POINTER(ctypes.c_char_p)()
+		paths = ctypes.POINTER(ctypes.c_char_p)()
+		count = core.BNBinaryViewGetTypeArchives(self.handle, ids, paths)
+		result = {}
 		try:
 			for i in range(0, count):
-				result.append(typearchive.TypeArchive(core.BNNewTypeArchiveReference(archives[i])))
+				result[core.pyNativeStr(ids[i])] = core.pyNativeStr(paths[i])
 			return result
 		finally:
-			core.BNFreeStringList(names, count)
-			core.BNFreeTypeArchiveList(archives, count)
+			core.BNFreeStringList(ids, count)
+			core.BNFreeStringList(paths, count)
 
 	@property
 	def segments(self) -> List['Segment']:
@@ -7715,6 +7715,17 @@ class BinaryView:
 			return None
 		return typearchive.TypeArchive(result)
 
+	def get_type_archive_path(self, id: str) -> Optional[str]:
+		"""
+		Look up the path for an attached (but not necessarily connected) type archive by its id
+		:param id: Id of archive
+		:return: Archive path, if it is attached. Otherwise None.
+		"""
+		result = core.BNBinaryViewGetTypeArchivePath(self.handle, id)
+		if result is None:
+			return None
+		return result
+
 	@property
 	def type_archive_type_names(self) -> Mapping['_types.QualifiedName', List[Tuple['typearchive.TypeArchive', str]]]:
 		"""
@@ -7746,8 +7757,8 @@ class BinaryView:
 
 		type_archives = self.type_archives
 		type_archives_by_id = {}
-		for archive in type_archives:
-			type_archives_by_id[archive.id] = archive
+		for (archive_id, _) in type_archives.items():
+			type_archives_by_id[archive_id] = self.get_type_archive(archive_id)
 		try:
 			for j in range(0, id_count):
 				ids.append((type_archives_by_id[core.pyNativeStr(archive_ids[j])], core.pyNativeStr(type_ids[j])))
@@ -7766,8 +7777,8 @@ class BinaryView:
 
 		type_archives = self.type_archives
 		type_archives_by_id = {}
-		for archive in type_archives:
-			type_archives_by_id[archive.id] = archive
+		for (archive_id, _) in type_archives.items():
+			type_archives_by_id[archive_id] = self.get_type_archive(archive_id)
 
 		for type_id, (archive_id, archive_type_id) in self.associated_type_archive_type_ids.items():
 			name = self.get_type_name_by_id(type_id)

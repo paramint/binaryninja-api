@@ -5303,10 +5303,16 @@ namespace BinaryNinja {
 		 */
 		Ref<TypeArchive> GetTypeArchive(const std::string& id) const;
 		/*!
-			Get all connected type archives
-			\returnAll archives
+			Get all attached type archives
+			\return All archives
 		 */
-		std::unordered_map<std::string, Ref<TypeArchive>> GetTypeArchives() const;
+		std::unordered_map<std::string, std::string> GetTypeArchives() const;
+		/*!
+			Look up the path for an attached (but not necessarily connected) type archive by its id
+			\param id Id of archive
+			\return Archive path, if it is attached. Otherwise nullopt.
+		 */
+		std::optional<std::string> GetTypeArchivePath(const std::string& id) const;
 		/*!
 			Get a list of all available type names in all connected archives, and their archive/type id pair
 			\return All type names in a map
