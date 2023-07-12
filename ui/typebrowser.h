@@ -135,13 +135,13 @@ protected:
 };
 
 
-class BINARYNINJAUIAPI TypeSourceTreeNode : public TypeBrowserTreeNode
+class BINARYNINJAUIAPI TypeContainerTreeNode : public TypeBrowserTreeNode
 {
 	std::map<BinaryNinja::QualifiedName, std::pair<TypeRef, std::shared_ptr<TypeTreeNode>>> m_typeNodes;
 
 public:
-	TypeSourceTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent);
-	virtual ~TypeSourceTreeNode();
+	TypeContainerTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent);
+	virtual ~TypeContainerTreeNode();
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const = 0;
 	virtual void updateChildren(RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
@@ -151,7 +151,7 @@ protected:
 };
 
 
-class BINARYNINJAUIAPI BinaryViewTreeNode : public TypeSourceTreeNode
+class BINARYNINJAUIAPI BinaryViewTreeNode : public TypeContainerTreeNode
 {
 	BinaryViewRef m_view;
 
@@ -169,7 +169,7 @@ public:
 };
 
 
-class BINARYNINJAUIAPI TypeArchiveTreeNode : public TypeSourceTreeNode
+class BINARYNINJAUIAPI TypeArchiveTreeNode : public TypeContainerTreeNode
 {
 	std::string m_archiveId;
 	std::optional<std::string> m_archivePath;
@@ -187,10 +187,11 @@ public:
 	virtual bool filter(const std::string& filter) const override;
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
+	virtual void updateChildren(RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
 };
 
 
-class BINARYNINJAUIAPI TypeLibraryTreeNode : public TypeSourceTreeNode
+class BINARYNINJAUIAPI TypeLibraryTreeNode : public TypeContainerTreeNode
 {
 	TypeLibraryRef m_library;
 
@@ -208,7 +209,7 @@ public:
 };
 
 
-class BINARYNINJAUIAPI DebugInfoTreeNode : public TypeSourceTreeNode
+class BINARYNINJAUIAPI DebugInfoTreeNode : public TypeContainerTreeNode
 {
 	DebugInfoRef m_debugInfo;
 	std::string m_parserName;
@@ -228,7 +229,7 @@ public:
 };
 
 
-class BINARYNINJAUIAPI PlatformTreeNode : public TypeSourceTreeNode
+class BINARYNINJAUIAPI PlatformTreeNode : public TypeContainerTreeNode
 {
 	PlatformRef m_platform;
 
