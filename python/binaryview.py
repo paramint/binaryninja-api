@@ -2882,7 +2882,7 @@ class BinaryView:
 			core.BNFreeTypeLibraryList(libraries, count.value)
 
 	@property
-	def type_archives(self) -> Mapping['str', 'typearchive.TypeArchive']:
+	def attached_type_archives(self) -> Mapping['str', 'str']:
 		"""All attached type archive ids and paths (read-only)"""
 		ids = ctypes.POINTER(ctypes.c_char_p)()
 		paths = ctypes.POINTER(ctypes.c_char_p)()
@@ -2895,6 +2895,16 @@ class BinaryView:
 		finally:
 			core.BNFreeStringList(ids, count)
 			core.BNFreeStringList(paths, count)
+
+	@property
+	def connected_type_archives(self) -> List['typearchive.TypeArchive']:
+		"""All connected type archive objects (read-only)"""
+		result = []
+		for (id, path) in self.attached_type_archives.items():
+			archive = self.get_type_archive(id)
+			if archive is not None:
+				result.append(archive)
+		return result
 
 	@property
 	def segments(self) -> List['Segment']:
@@ -7676,30 +7686,52 @@ class BinaryView:
 		Names from that archive will be cached in the mapping but no types will actually be associated by calling this.
 		:param archive: New archive
 		"""
-		self.attach_type_archive_by_id(archive.id, archive.path)
+		attached = self.attach_type_archive_by_id(archive.id, archive.path)
+		assert attached == archive
 
-	def attach_type_archive_by_id(self, id: str, path: str) -> 'typearchive.TypeArchive':
+	def attach_type_archive_by_id(self, id: str, path: str) -> Optional['typearchive.TypeArchive']:
 		"""
-		Attach a given type archive to the owned analysis and try to connect to it.
-		Names from that archive will be cached in the mapping but no types will actually be associated by calling this.
-		:param id: Id of type archive to attach
+		Attach a type archive to the owned analysis and try to connect to it.
+		If attaching was successful, names from that archive will be cached in the mapping,
+		but no types will actually be associated by calling this.
+
+		The behavior of this function is rather complicated, in an attempt to enable
+		control of both attaching and connecting Type Archives.
+
+		If there was a previously connected Type Archive whose id matches `id`, nothing
+		will happen and it will simply be returned.
+		If there was no previously connected Type Archive whose id matches `id`, and the
+		file at `path` contains a Type Archive whose id matches `id`, it will be
+		attached and connected.
+
+		If the file at `path` does not exist, nothing will happen and None will be returned.
+		If the file at `path` exists but does not contain a Type Archive whose id matches `id`,
+		nothing will happen and None will be returned.
+		If there was a previously attached but disconnected Type Archive whose id matches `id`,
+		and the file at `path` contains a Type Archive whose id matches `id`, the
+		previously attached Type Archive will have its saved path updated to point
+		to `path`. The Type Archive at `path` will be connected and returned.
+
+		:param id: Id of Type Archive to attach
+		:param path: Path to file of Type Archive to attach
+		:return: Attached archive object, if it could be connected.
 		"""
 		archive = core.BNBinaryViewAttachTypeArchive(self.handle, id, path)
 		if not archive:
-			raise RuntimeError("BNBinaryViewAttachTypeArchive")
+			return None
 		return typearchive.TypeArchive(handle=archive)
 
 	def detach_type_archive(self, archive: 'typearchive.TypeArchive'):
 		"""
 		Detach from a type archive, breaking all associations to types with the archive
-		:param id: Id of type archive to detach
+		:param archive: Type archive to detach
 		"""
 		self.detach_type_archive_by_id(archive.id)
 
 	def detach_type_archive_by_id(self, id: str):
 		"""
 		Detach from a type archive, breaking all associations to types with the archive
-		:param archive: Archive to detach
+		:param id: Id of archive to detach
 		"""
 		if not core.BNBinaryViewDetachTypeArchive(self.handle, id):
 			raise RuntimeError("BNBinaryViewDetachTypeArchive")
@@ -7746,7 +7778,7 @@ class BinaryView:
 
 	def get_type_archives_for_type_name(self, name: '_types.QualifiedNameType') -> List[Tuple['typearchive.TypeArchive', str]]:
 		"""
-		Get a list of all type archives that have a given type name
+		Get a list of all connected type archives that have a given type name
 		:return: (archive, archive type id) for all archives
 		"""
 		name = _types.QualifiedName(name)
@@ -7755,10 +7787,10 @@ class BinaryView:
 		id_count = core.BNBinaryViewGetTypeArchiveTypeNames(self.handle, name._to_core_struct(), archive_ids, type_ids)
 		ids = []
 
-		type_archives = self.type_archives
+		type_archives = self.connected_type_archives
 		type_archives_by_id = {}
-		for (archive_id, _) in type_archives.items():
-			type_archives_by_id[archive_id] = self.get_type_archive(archive_id)
+		for archive in type_archives:
+			type_archives_by_id[archive.id] = archive
 		try:
 			for j in range(0, id_count):
 				ids.append((type_archives_by_id[core.pyNativeStr(archive_ids[j])], core.pyNativeStr(type_ids[j])))
@@ -7768,14 +7800,15 @@ class BinaryView:
 			core.BNFreeStringList(type_ids, id_count)
 
 	@property
-	def associated_type_archive_types(self) -> Mapping['_types.QualifiedName', Tuple['typearchive.TypeArchive', str]]:
+	def associated_type_archive_types(self) -> Mapping['_types.QualifiedName', Tuple[Optional['typearchive.TypeArchive'], str]]:
 		"""
-		Get a list of all types in the analysis that are associated with type archives
-		:return: Map of all analysis types to their corresponding archive / id
+		Get a list of all types in the analysis that are associated with attached type archives
+		:return: Map of all analysis types to their corresponding archive / id.
+		         If a type is associated with a disconnected type archive, the archive will be None.
 		"""
 		result = {}
 
-		type_archives = self.type_archives
+		type_archives = self.attached_type_archives
 		type_archives_by_id = {}
 		for (archive_id, _) in type_archives.items():
 			type_archives_by_id[archive_id] = self.get_type_archive(archive_id)
@@ -7784,7 +7817,7 @@ class BinaryView:
 			name = self.get_type_name_by_id(type_id)
 			if name is None:
 				continue
-			result[name] = (type_archives_by_id[archive_id], archive_type_id)
+			result[name] = (type_archives_by_id.get(archive_id, None), archive_type_id)
 		return result
 
 	@property
@@ -7819,14 +7852,14 @@ class BinaryView:
 		"""
 		result = {}
 
-		for type_id, archive_type_id in self.get_associated_type_from_archive_by_id(archive.id).items():
+		for type_id, archive_type_id in self.get_associated_types_from_archive_by_id(archive.id).items():
 			name = self.get_type_name_by_id(type_id)
 			if name is None:
 				continue
 			result[name] = archive_type_id
 		return result
 
-	def get_associated_type_from_archive_by_id(self, archive_id: str) -> Mapping[str, str]:
+	def get_associated_types_from_archive_by_id(self, archive_id: str) -> Mapping[str, str]:
 		"""
 		Get a list of all types in the analysis that are associated with a specific type archive
 		:return: Map of all analysis types to their corresponding archive id
@@ -7847,11 +7880,11 @@ class BinaryView:
 			core.BNFreeStringList(type_ids, count)
 			core.BNFreeStringList(archive_type_ids, count)
 
-	def get_associated_type_archive_type_target(self, name: '_types.QualifiedNameType') -> Optional[Tuple['typearchive.TypeArchive', '_types.QualifiedName']]:
+	def get_associated_type_archive_type_target(self, name: '_types.QualifiedNameType') -> Optional[Tuple[Optional['typearchive.TypeArchive'], str]]:
 		"""
-		Determine the target archive / type name of a given analysis type
+		Determine the target archive / type id of a given analysis type
 		:param name: Analysis type
-		:return: (archive, archive type name) if the type is associated. None otherwise.
+		:return: (archive, archive type id) if the type is associated. None otherwise.
 		"""
 		type_id = self.get_type_id(name)
 		if type_id == '':
@@ -7861,7 +7894,7 @@ class BinaryView:
 			return None
 		archive_id, type_id = result
 		archive = self.get_type_archive(archive_id)
-		return archive, archive.get_type_name_by_id(type_id)
+		return archive, type_id
 
 	def get_associated_type_archive_type_target_by_id(self, type_id: str) -> Optional[Tuple[str, str]]:
 		"""
