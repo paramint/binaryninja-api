@@ -35,6 +35,7 @@ from . import platform as _platform
 from . import types
 from . import function as _function
 from . import binaryview
+from . import typecontainer
 from .log import log_error
 from .enums import TokenEscapingType
 
@@ -220,12 +221,13 @@ class TypePrinter(metaclass=_TypePrinterMetaclass):
 			log_error(traceback.format_exc())
 			return False
 
-	def _get_type_lines(self, ctxt, type, data, name, line_width, collapsed, escaping, result, result_count):
+	def _get_type_lines(self, ctxt, type, container, name, platform, line_width, collapsed, escaping, result, result_count):
 		try:
 			result_py = self.get_type_lines(
 				types.Type(handle=core.BNNewTypeReference(type)),
-				binaryview.BinaryView(handle=core.BNNewViewReference(data)),
+				typecontainer.TypeContainer(handle=container),
 				types.QualifiedName._from_core_struct(name.contents),
+				_platform.Platform(handle=core.BNNewPlatformReference(platform)),
 				line_width, collapsed, escaping)
 
 			TypePrinter._cached_lines = (core.BNTypeDefinitionLine * len(result_py))()
@@ -378,13 +380,14 @@ class TypePrinter(metaclass=_TypePrinterMetaclass):
 		"""
 		raise NotImplementedError()
 
-	def get_type_lines(self, type: types.Type, data: binaryview.BinaryView, name: types.QualifiedNameType, line_width = 80, collapsed = False, escaping: TokenEscapingType = TokenEscapingType.BackticksTokenEscapingType) -> List[types.TypeDefinitionLine]:
+	def get_type_lines(self, type: types.Type, container: 'typecontainer.TypeContainer', name: types.QualifiedNameType, platform: _platform.Platform, line_width = 80, collapsed = False, escaping: TokenEscapingType = TokenEscapingType.BackticksTokenEscapingType) -> List[types.TypeDefinitionLine]:
 		"""
 		Generate a multi-line representation of a type
 
 		:param type: Type to print
-		:param data: Binary View in which the type is defined
+		:param container: Type Container containing the type and dependencies
 		:param name: Name of the type
+		:param platform: Platform relevant to the type
 		:param line_width: Maximum width of lines, in characters
 		:param collapsed: Whether to collapse structure/enum blocks
 		:param escaping: Style of escaping literals which may not be parsable
@@ -488,27 +491,28 @@ class CoreTypePrinter(TypePrinter):
 		core.free_string(result_cpp)
 		return result
 
-	def get_type_lines(self, type: types.Type, data: binaryview.BinaryView,
-					   name: types.QualifiedNameType, line_width = 80, collapsed = False,
+	def get_type_lines(self, type: types.Type, container: 'typecontainer.TypeContainer',
+					   name: types.QualifiedNameType, platform: _platform.Platform,
+					   line_width = 80, collapsed = False,
 					   escaping: TokenEscapingType = TokenEscapingType.BackticksTokenEscapingType
 					   ) -> List[types.TypeDefinitionLine]:
 		if not isinstance(name, types.QualifiedName):
 			name = types.QualifiedName(name)
 		count = ctypes.c_ulonglong()
 		core_lines = ctypes.POINTER(core.BNTypeDefinitionLine)()
-		if not core.BNGetTypePrinterTypeLines(self.handle, type.handle, data.handle, name._to_core_struct(), line_width, collapsed, ctypes.c_int(escaping), core_lines, count):
+		if not core.BNGetTypePrinterTypeLines(self.handle, type.handle, container.handle, name._to_core_struct(), platform.handle, line_width, collapsed, ctypes.c_int(escaping), core_lines, count):
 			raise RuntimeError("BNGetTypePrinterTypeLines returned False")
 		lines = []
 		for i in range(count.value):
 			tokens = _function.InstructionTextToken._from_core_struct(core_lines[i].tokens, core_lines[i].count)
-			type_ = types.Type.create(handle=core.BNNewTypeReference(core_lines[i].type), platform=data.platform)
-			root_type = types.Type.create(handle=core.BNNewTypeReference(core_lines[i].rootType), platform=data.platform)
+			type_ = types.Type.create(handle=core.BNNewTypeReference(core_lines[i].type), platform=platform)
+			root_type = types.Type.create(handle=core.BNNewTypeReference(core_lines[i].rootType), platform=platform)
 			root_type_name = core.pyNativeStr(core_lines[i].rootTypeName)
 			if core_lines[i].baseType:
 				const_conf = types.BoolWithConfidence.get_core_struct(False, 0)
 				volatile_conf = types.BoolWithConfidence.get_core_struct(False, 0)
 				handle = core.BNCreateNamedTypeReference(core_lines[i].baseType, 0, 1, const_conf, volatile_conf)
-				base_type = types.NamedTypeReferenceType(handle, data.platform)
+				base_type = types.NamedTypeReferenceType(handle, platform)
 			else:
 				base_type = None
 			line = types.TypeDefinitionLine(core_lines[i].lineType, tokens, type_, root_type, root_type_name, base_type,
