@@ -2561,7 +2561,7 @@ unordered_set<QualifiedName> BinaryView::GetOutgoingRecursiveTypeReferences(cons
 	{
 		apiTypes.push_back(type.GetAPIObject());
 	}
-	BNQualifiedName* apiResult = BNGetIncomingRecursiveTypeReferences(m_object, apiTypes.data(), apiTypes.size(), &count);
+	BNQualifiedName* apiResult = BNGetOutgoingRecursiveTypeReferences(m_object, apiTypes.data(), apiTypes.size(), &count);
 	for (auto& type: apiTypes)
 	{
 		QualifiedName::FreeAPIObject(&type);
