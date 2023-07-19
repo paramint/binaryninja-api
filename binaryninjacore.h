@@ -37,6 +37,7 @@
 // Current ABI version for linking to the core. This is incremented any time
 // there are changes to the API that affect linking, including new functions,
 // new types, or modifications to existing functions or types.
+// TOOD INCREMENT BEFORE COMMITTING WORKFLOW UPDATES
 #define BN_CURRENT_CORE_ABI_VERSION 36
 
 // Minimum ABI version that is supported for loading of plugins. Plugins that
@@ -44,6 +45,7 @@
 // will require rebuilding. The minimum version is increased when there are
 // incompatible changes that break binary compatibility, such as changes to
 // existing types or functions.
+// TOOD INCREMENT BEFORE COMMITTING WORKFLOW UPDATES
 #define BN_MINIMUM_CORE_ABI_VERSION 36
 
 #ifdef __GNUC__
@@ -2371,16 +2373,6 @@ extern "C"
 		IncrementalAutoFunctionUpdate
 	} BNFunctionUpdateType;
 
-	typedef enum BNWorkflowState
-	{
-		WorkflowInitial,
-		WorkflowIdle,
-		WorkflowRun,
-		WorkflowHalt,
-		WorkflowHold,
-		WorkflowInvalid
-	} BNWorkflowState;
-
 	typedef enum BNAnalysisState
 	{
 		InitialState,
@@ -4416,6 +4408,9 @@ extern "C"
 	BINARYNINJACOREAPI BNWorkflow* BNGetWorkflowForBinaryView(BNBinaryView* view);
 	BINARYNINJACOREAPI BNWorkflow* BNGetWorkflowForFunction(BNFunction* func);
 
+	// TODO expose machine?
+	BINARYNINJACOREAPI char* BNPostWorkflowRequestForFunction(BNFunction* func, const char* request);
+
 	BINARYNINJACOREAPI BNHighlightColor BNGetInstructionHighlight(
 	    BNFunction* func, BNArchitecture* arch, uint64_t addr);
 	BINARYNINJACOREAPI void BNSetAutoInstructionHighlight(
@@ -4618,8 +4613,7 @@ extern "C"
 	BINARYNINJACOREAPI bool BNAnalysisContextInform(BNAnalysisContext* analysisContext, const char* request);
 
 	// Activity
-	BINARYNINJACOREAPI BNActivity* BNCreateActivity(
-	    const char* name, void* ctxt, void (*action)(void*, BNAnalysisContext*));
+	BINARYNINJACOREAPI BNActivity* BNCreateActivity(const char* configuration, void* ctxt, void (*action)(void*, BNAnalysisContext*));
 	BINARYNINJACOREAPI BNActivity* BNNewActivityReference(BNActivity* activity);
 	BINARYNINJACOREAPI void BNFreeActivity(BNActivity* activity);
 
@@ -4633,11 +4627,10 @@ extern "C"
 	BINARYNINJACOREAPI BNWorkflow** BNGetWorkflowList(size_t* count);
 	BINARYNINJACOREAPI void BNFreeWorkflowList(BNWorkflow** workflows, size_t count);
 	BINARYNINJACOREAPI BNWorkflow* BNWorkflowInstance(const char* name);
-	BINARYNINJACOREAPI bool BNRegisterWorkflow(BNWorkflow* workflow, const char* description);
+	BINARYNINJACOREAPI bool BNRegisterWorkflow(BNWorkflow* workflow, const char* configuration);
 
 	BINARYNINJACOREAPI BNWorkflow* BNWorkflowClone(BNWorkflow* workflow, const char* name, const char* activity);
-	BINARYNINJACOREAPI bool BNWorkflowRegisterActivity(
-	    BNWorkflow* workflow, BNActivity* activity, const char** subactivities, size_t size, const char* description);
+	BINARYNINJACOREAPI BNActivity* BNWorkflowRegisterActivity(BNWorkflow* workflow, BNActivity* activity, const char** subactivities, size_t size);
 
 	BINARYNINJACOREAPI bool BNWorkflowContains(BNWorkflow* workflow, const char* activity);
 	BINARYNINJACOREAPI char* BNWorkflowGetConfiguration(BNWorkflow* workflow, const char* activity);

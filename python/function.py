@@ -3263,7 +3263,7 @@ class Function:
 		handle = core.BNGetWorkflowForFunction(self.handle)
 		if handle is None:
 			return None
-		return workflow.Workflow(handle=handle)
+		return workflow.Workflow(handle=handle, function_handle=self.handle)
 
 	def get_mlil_var_refs(self, var: 'variable.Variable') -> List[ILReferenceSource]:
 		"""
