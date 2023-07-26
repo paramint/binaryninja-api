@@ -119,6 +119,7 @@ public:
 	void setType(const TypeRef& type) { m_type = type; }
 
 	const SourceType& sourceType() const { return m_sourceType; }
+	std::optional<BinaryNinja::TypeContainer> typeContainer() const;
 	const std::optional<TypeLibraryRef>& sourceLibrary() const { return m_sourceLibrary; }
 	const std::optional<TypeArchiveRef>& sourceArchive() const { return m_sourceArchive; }
 	const std::optional<std::string>& sourceDebugInfoParser() const { return m_sourceDebugInfoParser; }
@@ -349,12 +350,7 @@ class BINARYNINJAUIAPI TypeBrowserView : public QFrame, public View, public Filt
 	TypeBrowserItemDelegate* m_delegate;
 	bool m_updatedWidths;
 
-	class TypesContainer* m_typeEditor;
-
-	QWidget* m_plaintextTypeEditor;
-	QTextEdit* m_typeEditorDefinition;
-	QTextEdit* m_typeEditorArguments;
-	QTextEdit* m_typeEditorErrors;
+	class TokenizedTextWidget* m_typeEditor;
 
 	QTimer* m_filterTimer;
 
@@ -386,7 +382,26 @@ public:
 
 	virtual void notifyRefresh() override;
 
+	// Selection helpers
+
+	// All nodes
 	std::vector<std::shared_ptr<TypeBrowserTreeNode>> selectedNodes() const;
+	// BV selected or BV relevant to selected types, only if JUST bv stuff is selected
+	std::optional<BinaryViewRef> selectedBV() const;
+	// If selectedBV exists, names of selected types
+	std::optional<std::unordered_set<BinaryNinja::QualifiedName>> selectedBVTypeNames() const;
+
+	// TAs selected or TAs relevant to selected types, only if JUST ta stuff is selected and only 1 TA
+	std::optional<TypeArchiveRef> selectedTA() const;
+	// TAs selected or TAs relevant to selected types, only if JUST ta stuff is selected
+	std::optional<std::unordered_set<TypeArchiveRef>> selectedTAs() const;
+	// If selectedTAs exist, map of ta ids to ids of selected types from that ta
+	std::optional<std::unordered_map<std::string, std::unordered_set<std::string>>> selectedTATypeIds() const;
+
+	// Names -> Ids, if any don't exist then nullopt
+	static std::optional<std::unordered_set<std::string>> typeIdsFromNames(BinaryViewRef view, const std::unordered_set<BinaryNinja::QualifiedName> &names);
+	// Ids -> Option<TypeArchive>
+	static std::unordered_map<std::optional<TypeArchiveRef>, std::unordered_set<std::string>> associatedTypeArchivesForTypeIds(BinaryViewRef view, const std::unordered_set<std::string>& typeIds);
 
 	// Menu actions
 	static void registerActions();

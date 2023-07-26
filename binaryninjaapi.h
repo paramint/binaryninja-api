@@ -16257,4 +16257,13 @@ namespace std
 			return std::hash<std::string>()(value.GetString());
 		}
 	};
+
+	template<typename T> struct hash<BinaryNinja::Ref<T>>
+	{
+		typedef BinaryNinja::Ref<T> argument_type;
+		size_t operator()(argument_type const& value) const
+		{
+			return std::hash<T*>()(value.GetPtr());
+		}
+	};
 }  // namespace std
