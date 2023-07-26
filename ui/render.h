@@ -69,7 +69,9 @@ class BINARYNINJAUIAPI FontParameters
 	FontParameters(QWidget* parent, float fontScale = 1.0f);
 	void update();
 
+	const QFont& getFont() const { return m_font; }
 	QFont& getFont() { return m_font; }
+	const QFont& getEmojiFont() const { return m_emojiFont; }
 	QFont& getEmojiFont() { return m_emojiFont; }
 	void setFont(const QFont& font);
 	void setEmojiFont(const QFont& emojiFont);
@@ -94,6 +96,7 @@ class BINARYNINJAUIAPI RenderContext
 	void update();
 
 	FontParameters& getFontParamters() { return m_fontParams; }
+	const FontParameters& getFontParameters() const { return m_fontParams; }
 	int getFontWidth() const { return m_fontParams.getWidth(); }
 	int getFontHeight() const { return m_fontParams.getHeight(); }
 
