@@ -110,6 +110,8 @@ class BINARYNINJAUIAPI TokenizedTextWidget :
 	TokenizedTextWidgetCursorPosition selectionEnd() const;
 	// Originally highlighted selection base
 	TokenizedTextWidgetCursorPosition selectionBase() const;
+	// Position of cursor for movement operations
+	TokenizedTextWidgetCursorPosition cursorPosition() const;
 
 	void clearSelection();
 	void setSelection(TokenizedTextWidgetCursorPosition base, TokenizedTextWidgetCursorPosition cursor);
