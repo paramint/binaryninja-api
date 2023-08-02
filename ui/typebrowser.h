@@ -424,8 +424,6 @@ public:
 	void pushSelectedTypes();
 	bool canPullSelectedTypes();
 	void pullSelectedTypes();
-	bool canRevertSelectedTypes();
-	void revertSelectedTypes();
 	bool canDisassociateSelectedTypes();
 	void disassociateSelectedTypes();
 
