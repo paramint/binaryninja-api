@@ -1873,7 +1873,22 @@ extern "C"
 		BraceOption3Color,
 		BraceOption4Color,
 		BraceOption5Color,
-		BraceOption6Color
+		BraceOption6Color,
+
+		// Type class colors
+		VoidTypeColor,
+		StructureTypeColor,
+		EnumerationTypeColor,
+		FunctionTypeColor,
+		BoolTypeColor,
+		IntegerTypeColor,
+		FloatTypeColor,
+		PointerTypeColor,
+		ArrayTypeColor,
+		VarArgsTypeColor,
+		ValueTypeColor,
+		NamedTypeReferenceColor,
+		WideCharTypeColor,
 	} BNThemeColor;
 
 	// The following edge styles map to Qt's Qt::PenStyle enumeration
