@@ -323,7 +323,8 @@ class BINARYNINJAUIAPI TypeBrowserItemDelegate : public QItemDelegate
 {
 	QFont m_font;
 	QFont m_monospaceFont;
-	int m_baseline, m_charWidth, m_charHeight, m_charOffset;
+	float m_charWidth, m_charHeight, m_charOffset;
+	float m_baseline;
 	class TypeBrowserView* m_view;
 
 public:
