@@ -265,6 +265,7 @@ public:
 	BinaryViewRef getData() { return m_data; }
 	std::shared_ptr<TypeBrowserTreeNode> getRootNode() { return m_rootNode; }
 
+	void updateFonts();
 	void startUpdate();
 
 	int columnCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -327,8 +328,10 @@ class BINARYNINJAUIAPI TypeBrowserItemDelegate : public QItemDelegate
 	float m_baseline;
 	class TypeBrowserView* m_view;
 
+	void initFont();
 public:
 	TypeBrowserItemDelegate(class TypeBrowserView* view);
+	void updateFonts();
 	virtual QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 	virtual void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 };
