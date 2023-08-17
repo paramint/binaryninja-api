@@ -1100,7 +1100,6 @@ class BinaryViewType(metaclass=_BinaryViewTypeMetaclass):
 			return None
 		return BinaryView(file_metadata=data.file, handle=view)
 
-	@deprecation.deprecated(deprecated_in="3.5.4378", details="Use `binaryninja.load` instead")
 	def open(self, src: PathType, file_metadata: 'filemetadata.FileMetadata' = None) -> Optional['BinaryView']:
 		data = BinaryView.open(src, file_metadata)
 		if data is None:
@@ -1912,6 +1911,30 @@ class BinaryView:
 	registered_view_type = None
 	_associated_data = {}
 	_registered_instances = []
+	_cached_instances = {}
+
+	@classmethod
+	def _cache_insert(cls, instance):
+		key = ctypes.addressof(instance.handle.contents)
+		if key not in cls._cached_instances:
+			cls._cached_instances[ctypes.addressof(instance.handle.contents)] = instance
+
+	@classmethod
+	def _cache_remove(cls, handle):
+		key = ctypes.addressof(handle.contents)
+		if key in cls._cached_instances:
+			cls._cached_instances.pop(key)
+
+	@classmethod
+	def _cache_contains(cls, handle):
+		return ctypes.addressof(handle.contents) in cls._cached_instances
+
+	def __new__(cls, file_metadata=None, parent_view=None, handle=None):
+		if handle:
+			key = ctypes.addressof(handle.contents)
+			if key in cls._cached_instances:
+				return cls._cached_instances[key]
+		return super().__new__(cls)
 
 	def __init__(
 	    self, file_metadata: Optional['filemetadata.FileMetadata'] = None, parent_view: Optional['BinaryView'] = None,
@@ -1919,6 +1942,8 @@ class BinaryView:
 	):
 		if handle is not None:
 			_handle = handle
+			if self.__class__._cache_contains(handle):
+				return
 			if file_metadata is None:
 				self._file = filemetadata.FileMetadata(handle=core.BNGetFileForView(handle))
 			else:
@@ -2190,7 +2215,6 @@ class BinaryView:
 			return None
 
 	@staticmethod
-	@deprecation.deprecated(deprecated_in="3.5.4378", details="Use `binaryninja.load` instead")
 	def open(src, file_metadata=None) -> Optional['BinaryView']:
 		binaryninja._init_plugins()
 		if isinstance(src, fileaccessor.FileAccessor):
