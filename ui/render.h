@@ -116,7 +116,7 @@ class BINARYNINJAUIAPI RenderContext
 	void drawUnderlinedText(QPainter& p, int x, int y, QColor color, const QString& text);
 
 	void drawSeparatorLine(QPainter& p, QColor top, QColor bottom, QColor line, const QRect& rect);
-	void drawInstructionHighlight(QPainter& p, const QRect& rect);
+	void drawInstructionHighlight(QPainter& p, const QRect& rect, bool focused = true);
 
 	void drawLinearDisassemblyLineBackground(
 		QPainter& p, BNLinearDisassemblyLineType type, const QRect& rect, const QRect& dirtyRect, int gutterWidth);

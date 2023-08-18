@@ -36,8 +36,11 @@ enum BINARYNINJAUIAPI TokenizedTextWidgetSelectionStyle
 */
 struct BINARYNINJAUIAPI TokenizedTextWidgetCursorPosition
 {
+	/// Index of line in widget
 	size_t lineIndex = BN_INVALID_OPERAND;
+	/// Index of token in current line
 	size_t tokenIndex = BN_INVALID_OPERAND;
+	/// Index of character in current token
 	size_t characterIndex = BN_INVALID_OPERAND;
 
 	// Directly from QMouseEvent, not used in comparator
@@ -64,7 +67,8 @@ class BINARYNINJAUIAPI TokenizedTextWidget :
 
 	RenderContext m_render;
 	int m_cols, m_rows;
-	int m_wheelDelta;
+	int m_contentsCols, m_contentsRows;
+	int m_verticalWheelDelta, m_horizontalWheelDelta;
 	bool m_updatingScrollBar;
 
 	TokenizedTextWidgetCursorPosition m_cursorPos, m_selectionStartPos, m_hoverPos;
@@ -73,15 +77,19 @@ class BINARYNINJAUIAPI TokenizedTextWidget :
 	bool m_cursorKeys;
 
 	std::vector<BinaryNinja::LinearDisassemblyLine> m_lines;
+	std::vector<std::vector<size_t>> m_lineCharOffsets;
 	DisassemblySettingsRef m_settings;
 
 	void adjustSize(int width, int height);
 	void clampCursorPosition(TokenizedTextWidgetCursorPosition& pos);
 	void clampSelectionToValid();
+	static void getContentsSize(const std::vector<BinaryNinja::LinearDisassemblyLine>& lines, int& width, int& height, std::vector<std::vector<size_t>>& charOffsets);
 
   private Q_SLOTS:
-	void scrollBarMoved(int value);
-	void scrollBarAction(int action);
+	void verticalScrollBarMoved(int value);
+	void verticalScrollBarAction(int action);
+	void horizontalScrollBarMoved(int value);
+	void horizontalScrollBarAction(int action);
 
   public:
 	explicit TokenizedTextWidget(QWidget* parent,
@@ -98,8 +106,11 @@ class BINARYNINJAUIAPI TokenizedTextWidget :
 	const DisassemblySettingsRef& settings() const { return m_settings; }
 
 	int getTopLine() const;
+	int getLeftmostChar() const;
 	int getVisibleColumns() const { return m_cols; }
 	int getVisibleRows() const { return m_rows; }
+	int getContentsColumns() const { return m_contentsCols; }
+	int getContentsRows() const { return m_contentsRows; }
 
 	bool hasSelection() const;
 	// Lines vs Tokens vs Characters vs NoSelection
@@ -140,6 +151,10 @@ class BINARYNINJAUIAPI TokenizedTextWidget :
 	void scrollLineToVisible(int lineIndex);
 	void scrollLineToTop(int lineIndex);
 
+	void scrollChars(int count);
+	void scrollCharToVisible(int charIndex);
+	void scrollCharToLeftmost(int charIndex);
+
 	const std::vector<BinaryNinja::LinearDisassemblyLine>& getLines() const { return m_lines; }
 	void setLines(const std::vector<BinaryNinja::LinearDisassemblyLine>& lines, bool resetScroll = true);
 	void setLines(const std::vector<BinaryNinja::DisassemblyTextLine>& lines, bool resetScroll = true);
@@ -167,4 +182,6 @@ class BINARYNINJAUIAPI TokenizedTextWidget :
 	virtual void mouseMoveEvent(QMouseEvent* event) override;
 	virtual void mouseDoubleClickEvent(QMouseEvent* event) override;
 	virtual void leaveEvent(QEvent* event) override;
+	virtual void focusInEvent(QFocusEvent* event) override;
+	virtual void focusOutEvent(QFocusEvent* event) override;
 };
