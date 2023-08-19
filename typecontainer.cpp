@@ -74,6 +74,12 @@ std::string TypeContainer::GetName() const
 }
 
 
+bool TypeContainer::IsMutable() const
+{
+	return BNTypeContainerIsMutable(m_object);
+}
+
+
 std::optional<std::unordered_map<QualifiedName, std::string>> TypeContainer::AddTypes(
 	const std::vector<std::pair<QualifiedName, Ref<Type>>>& types,
 	std::function<bool(size_t, size_t)> progress)
