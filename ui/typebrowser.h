@@ -120,6 +120,7 @@ public:
 
 	const SourceType& sourceType() const { return m_sourceType; }
 	std::optional<BinaryNinja::TypeContainer> typeContainer() const;
+	PlatformRef platform() const;
 	const std::optional<TypeLibraryRef>& sourceLibrary() const { return m_sourceLibrary; }
 	const std::optional<TypeArchiveRef>& sourceArchive() const { return m_sourceArchive; }
 	const std::optional<std::string>& sourceDebugInfoParser() const { return m_sourceDebugInfoParser; }
