@@ -120,6 +120,7 @@ public:
 
 	const SourceType& sourceType() const { return m_sourceType; }
 	std::optional<BinaryNinja::TypeContainer> typeContainer() const;
+	std::optional<BinaryNinja::TypeContainer> sourceTypeContainer() const;
 	PlatformRef platform() const;
 	const std::optional<TypeLibraryRef>& sourceLibrary() const { return m_sourceLibrary; }
 	const std::optional<TypeArchiveRef>& sourceArchive() const { return m_sourceArchive; }
@@ -146,6 +147,7 @@ public:
 	virtual ~TypeContainerTreeNode();
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const = 0;
+	virtual BinaryNinja::TypeContainer typeContainer() const = 0;
 	virtual void updateChildren(RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
 
 protected:
@@ -168,6 +170,7 @@ public:
 	virtual bool filter(const std::string& filter) const override;
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
+	virtual BinaryNinja::TypeContainer typeContainer() const override;
 };
 
 
@@ -189,6 +192,7 @@ public:
 	virtual bool filter(const std::string& filter) const override;
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
+	virtual BinaryNinja::TypeContainer typeContainer() const override;
 	virtual void updateChildren(RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
 };
 
@@ -208,6 +212,7 @@ public:
 	virtual bool filter(const std::string& filter) const override;
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
+	virtual BinaryNinja::TypeContainer typeContainer() const override;
 };
 
 
@@ -228,6 +233,7 @@ public:
 	virtual bool filter(const std::string& filter) const override;
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
+	virtual BinaryNinja::TypeContainer typeContainer() const override;
 };
 
 
@@ -246,6 +252,7 @@ public:
 	virtual bool filter(const std::string& filter) const override;
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
+	virtual BinaryNinja::TypeContainer typeContainer() const override;
 };
 
 
@@ -396,6 +403,10 @@ public:
 	// If selectedBV exists, names of selected types
 	std::optional<std::unordered_set<BinaryNinja::QualifiedName>> selectedBVTypeNames() const;
 
+	std::optional<std::pair<BinaryNinja::TypeContainer, BinaryNinja::QualifiedName>> selectedTypeNameAndContainer() const;
+	// All selected type names, grouped by type container
+	std::vector<std::pair<BinaryNinja::TypeContainer, std::vector<BinaryNinja::QualifiedName>>> selectedTypeNamesAndContainers() const;
+
 	// TAs selected or TAs relevant to selected types, only if JUST ta stuff is selected and only 1 TA
 	std::optional<TypeArchiveRef> selectedTA() const;
 	// TAs selected or TAs relevant to selected types, only if JUST ta stuff is selected
@@ -468,6 +479,7 @@ class BINARYNINJAUIAPI TypeBrowserContainer : public QWidget, public ViewContain
 	FilteredView* m_filter;
 	FilterEdit* m_separateEdit;
 	class TypeBrowserSidebarWidget* m_sidebarWidget;
+	UIActionHandler m_actionHandler;
 
 public:
 	TypeBrowserContainer(ViewFrame* frame, BinaryViewRef data, class TypeBrowserSidebarWidget* parent);
