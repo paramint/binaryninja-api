@@ -161,6 +161,8 @@ class BINARYNINJAUIAPI TokenizedTextWidget :
 	void setLines(const std::vector<BinaryNinja::TypeDefinitionLine>& lines, bool resetScroll = true);
 
   Q_SIGNALS:
+	void sizeChanged(int cols, int rows);
+	void visibleChanged(int leftCol, int topRow);
 	void linesChanged();
 	void selectionChanged(const TokenizedTextWidgetCursorPosition& begin, const TokenizedTextWidgetCursorPosition& end);
 	void tokenLeftClicked(const TokenizedTextWidgetCursorPosition& position);
