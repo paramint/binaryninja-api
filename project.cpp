@@ -174,6 +174,15 @@ void Project::PullFolders()
 }
 
 
+Ref<ProjectFolder> Project::CreateFolderFromPath(const std::string& path, Ref<ProjectFolder> parent, const std::string& description)
+{
+	BNProjectFolder* folder = BNProjectCreateFolderFromPath(m_object, path.c_str(), parent ? parent->m_object : nullptr, description.c_str());
+	if (folder == nullptr)
+		return nullptr;
+	return new ProjectFolder(folder);
+}
+
+
 Ref<ProjectFolder> Project::CreateFolder(Ref<ProjectFolder> parent, const std::string& name, const std::string& description)
 {
 	BNProjectFolder* folder = BNProjectCreateFolder(m_object, parent ? parent->m_object : nullptr, name.c_str(), description.c_str());
@@ -224,6 +233,15 @@ void Project::DeleteFolder(Ref<ProjectFolder> folder)
 void Project::PullFiles()
 {
 	BNProjectPullFiles(m_object);
+}
+
+
+Ref<ProjectFile> Project::CreateFileFromPath(const std::string& path, Ref<ProjectFolder> folder, const std::string& name, const std::string& description)
+{
+	BNProjectFile* file = BNProjectCreateFileFromPath(m_object, path.c_str(), folder ? folder->m_object : nullptr, name.c_str(), description.c_str());
+	if (file == nullptr)
+		return nullptr;
+	return new ProjectFile(file);
 }
 
 
