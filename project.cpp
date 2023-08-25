@@ -325,6 +325,12 @@ std::string ProjectFile::GetPathOnDisk() const
 }
 
 
+bool ProjectFile::ExistsOnDisk() const
+{
+	return BNProjectFileExistsOnDisk(m_object);
+}
+
+
 std::string ProjectFile::GetName() const
 {
 	char* name = BNProjectFileGetName(m_object);
