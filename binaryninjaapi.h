@@ -2287,8 +2287,11 @@ namespace BinaryNinja {
 		std::string GetName() const;
 		void SetName(const std::string& name);
 
-		bool PathExists(Ref<ProjectFolder> folder, const std::string& name) const;
+		std::optional<std::string> ReadMetadata(const std::string& key);
+		void WriteMetadata(const std::string& key, const std::string& value);
+		void DeleteMetadata(const std::string& key);
 
+		bool PathExists(Ref<ProjectFolder> folder, const std::string& name) const;
 
 		void PullFolders();
 		Ref<ProjectFolder> CreateFolderFromPath(const std::string& path, Ref<ProjectFolder> parent, const std::string& description);

@@ -161,6 +161,29 @@ void Project::SetName(const std::string& name)
 }
 
 
+std::optional<std::string> Project::ReadMetadata(const std::string& key)
+{
+	char* value = BNProjectReadMetadata(m_object, key.c_str());
+	if (value == nullptr)
+		return {};
+	std::string result = value;
+	BNFreeString(value);
+	return result;
+}
+
+
+void Project::WriteMetadata(const std::string& key, const std::string& value)
+{
+	BNProjectWriteMetadata(m_object, key.c_str(), value.c_str());
+}
+
+
+void Project::DeleteMetadata(const std::string& key)
+{
+	BNProjectDeleteMetadata(m_object, key.c_str());
+}
+
+
 bool Project::PathExists(Ref<ProjectFolder> folder, const std::string& name) const
 {
 	LogWarn("Path exists called");
