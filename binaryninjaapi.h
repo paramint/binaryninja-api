@@ -2286,6 +2286,8 @@ namespace BinaryNinja {
 		std::string GetPath() const;
 		std::string GetName() const;
 		void SetName(const std::string& name);
+		std::string GetDescription() const;
+		void SetDescription(const std::string& description);
 
 		std::optional<std::string> ReadMetadata(const std::string& key);
 		void WriteMetadata(const std::string& key, const std::string& value);

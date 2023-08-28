@@ -3286,6 +3286,8 @@ extern "C"
 	BINARYNINJACOREAPI char* BNProjectGetPath(BNProject* project);
 	BINARYNINJACOREAPI char* BNProjectGetName(BNProject* project);
 	BINARYNINJACOREAPI void BNProjectSetName(BNProject* project, const char* name);
+	BINARYNINJACOREAPI char* BNProjectGetDescription(BNProject* project);
+	BINARYNINJACOREAPI void BNProjectSetDescription(BNProject* project, const char* description);
 
 	BINARYNINJACOREAPI char* BNProjectReadMetadata(BNProject* project, const char* key);
 	BINARYNINJACOREAPI void BNProjectWriteMetadata(BNProject* project, const char* key, const char* value);

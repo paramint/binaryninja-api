@@ -161,6 +161,21 @@ void Project::SetName(const std::string& name)
 }
 
 
+std::string Project::GetDescription() const
+{
+	char* description = BNProjectGetDescription(m_object);
+	std::string result = description;
+	BNFreeString(description);
+	return result;
+}
+
+
+void Project::SetDescription(const std::string& description)
+{
+	BNProjectSetDescription(m_object, description.c_str());
+}
+
+
 std::optional<std::string> Project::ReadMetadata(const std::string& key)
 {
 	char* value = BNProjectReadMetadata(m_object, key.c_str());
