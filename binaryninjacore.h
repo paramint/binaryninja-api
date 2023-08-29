@@ -1500,12 +1500,13 @@ extern "C"
 	typedef struct BNProjectNotification
 	{
 		void* context;
-		void (*projectFileAdded)(void* ctxt, BNProject* project, BNProjectFile* projectFile);
+		void (*projectMetadataWritten)(void* ctxt, BNProject* project, char* key, char* value);
+		void (*projectFileCreated)(void* ctxt, BNProject* project, BNProjectFile* projectFile);
 		void (*projectFileUpdated)(void* ctxt, BNProject* project, BNProjectFile* projectFile);
-		void (*projectFileRemoved)(void* ctxt, BNProject* project, BNProjectFile* projectFile);
-		void (*projectFolderAdded)(void* ctxt, BNProject* project, BNProjectFolder* projectFolder);
+		void (*projectFileDeleted)(void* ctxt, BNProject* project, BNProjectFile* projectFile);
+		void (*projectFolderCreated)(void* ctxt, BNProject* project, BNProjectFolder* projectFolder);
 		void (*projectFolderUpdated)(void* ctxt, BNProject* project, BNProjectFolder* projectFolder);
-		void (*projectFolderRemoved)(void* ctxt, BNProject* project, BNProjectFolder* projectFolder);
+		void (*projectFolderDeleted)(void* ctxt, BNProject* project, BNProjectFolder* projectFolder);
 	} BNProjectNotification;
 
 	typedef struct BNFileAccessor

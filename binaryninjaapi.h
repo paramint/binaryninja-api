@@ -2177,12 +2177,13 @@ namespace BinaryNinja {
 	  private:
 		BNProjectNotification m_callbacks;
 
-		static void ProjectFileAddedCallback(void* ctxt, BNProject* project, BNProjectFile* projectFile);
+		static void ProjectMetadataWrittenCallback(void* ctxt, BNProject* project, char* key, char* value);
+		static void ProjectFileCreatedCallback(void* ctxt, BNProject* project, BNProjectFile* projectFile);
 		static void ProjectFileUpdatedCallback(void* ctxt, BNProject* project, BNProjectFile* projectFile);
-		static void ProjectFileRemovedCallback(void* ctxt, BNProject* project, BNProjectFile* projectFile);
-		static void ProjectFolderAddedCallback(void* ctxt, BNProject* project, BNProjectFolder* projectFolder);
+		static void ProjectFileDeletedCallback(void* ctxt, BNProject* project, BNProjectFile* projectFile);
+		static void ProjectFolderCreatedCallback(void* ctxt, BNProject* project, BNProjectFolder* projectFolder);
 		static void ProjectFolderUpdatedCallback(void* ctxt, BNProject* project, BNProjectFolder* projectFolder);
-		static void ProjectFolderRemovedCallback(void* ctxt, BNProject* project, BNProjectFolder* projectFolder);
+		static void ProjectFolderDeletedCallback(void* ctxt, BNProject* project, BNProjectFolder* projectFolder);
 
 	  public:
 		ProjectNotification();
@@ -2190,7 +2191,14 @@ namespace BinaryNinja {
 
 		BNProjectNotification* GetCallbacks() { return &m_callbacks; }
 
-		virtual void OnProjectFileAdded(Project* project, ProjectFile* projectFile)
+		virtual void OnProjectMetadataWritten(Project* project, std::string& key, std::string& value)
+		{
+			(void)project;
+			(void)key;
+			(void)value;
+		}
+
+		virtual void OnProjectFileCreated(Project* project, ProjectFile* projectFile)
 		{
 			(void)project;
 			(void)projectFile;
@@ -2202,13 +2210,13 @@ namespace BinaryNinja {
 			(void)projectFile;
 		}
 
-		virtual void OnProjectFileRemoved(Project* project, ProjectFile* projectFile)
+		virtual void OnProjectFileDeleted(Project* project, ProjectFile* projectFile)
 		{
 			(void)project;
 			(void)projectFile;
 		}
 
-		virtual void OnProjectFolderAdded(Project* project, ProjectFolder* projectFolder)
+		virtual void OnProjectFolderCreated(Project* project, ProjectFolder* projectFolder)
 		{
 			(void)project;
 			(void)projectFolder;
@@ -2220,7 +2228,7 @@ namespace BinaryNinja {
 			(void)projectFolder;
 		}
 
-		virtual void OnProjectFolderRemoved(Project* project, ProjectFolder* projectFolder)
+		virtual void OnProjectFolderDeleted(Project* project, ProjectFolder* projectFolder)
 		{
 			(void)project;
 			(void)projectFolder;

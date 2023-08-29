@@ -25,12 +25,24 @@
 using namespace BinaryNinja;
 
 
-void ProjectNotification::ProjectFileAddedCallback(void* ctxt, BNProject* object, BNProjectFile* bnProjectFile)
+void ProjectNotification::ProjectMetadataWrittenCallback(void* ctxt, BNProject* object, char* key, char* value)
+{
+	ProjectNotification* notify = (ProjectNotification*)ctxt;
+	Ref<Project> project = new Project(BNNewProjectReference(object));
+	std::string keyStr = key;
+	BNFreeString(key);
+	std::string valueStr = value;
+	BNFreeString(value);
+	notify->OnProjectMetadataWritten(project, keyStr, valueStr);
+}
+
+
+void ProjectNotification::ProjectFileCreatedCallback(void* ctxt, BNProject* object, BNProjectFile* bnProjectFile)
 {
 	ProjectNotification* notify = (ProjectNotification*)ctxt;
 	Ref<Project> project = new Project(BNNewProjectReference(object));
 	Ref<ProjectFile> projectFile = new ProjectFile(BNNewProjectFileReference(bnProjectFile));
-	notify->OnProjectFileAdded(project, projectFile);
+	notify->OnProjectFileCreated(project, projectFile);
 }
 
 
@@ -43,21 +55,21 @@ void ProjectNotification::ProjectFileUpdatedCallback(void* ctxt, BNProject* obje
 }
 
 
-void ProjectNotification::ProjectFileRemovedCallback(void* ctxt, BNProject* object, BNProjectFile* bnProjectFile)
+void ProjectNotification::ProjectFileDeletedCallback(void* ctxt, BNProject* object, BNProjectFile* bnProjectFile)
 {
 	ProjectNotification* notify = (ProjectNotification*)ctxt;
 	Ref<Project> project = new Project(BNNewProjectReference(object));
 	Ref<ProjectFile> projectFile = new ProjectFile(BNNewProjectFileReference(bnProjectFile));
-	notify->OnProjectFileRemoved(project, projectFile);
+	notify->OnProjectFileDeleted(project, projectFile);
 }
 
 
-void ProjectNotification::ProjectFolderAddedCallback(void* ctxt, BNProject* object, BNProjectFolder* bnProjectFolder)
+void ProjectNotification::ProjectFolderCreatedCallback(void* ctxt, BNProject* object, BNProjectFolder* bnProjectFolder)
 {
 	ProjectNotification* notify = (ProjectNotification*)ctxt;
 	Ref<Project> project = new Project(BNNewProjectReference(object));
 	Ref<ProjectFolder> projectFolder = new ProjectFolder(BNNewProjectFolderReference(bnProjectFolder));
-	notify->OnProjectFolderAdded(project, projectFolder);
+	notify->OnProjectFolderCreated(project, projectFolder);
 }
 
 
@@ -70,24 +82,25 @@ void ProjectNotification::ProjectFolderUpdatedCallback(void* ctxt, BNProject* ob
 }
 
 
-void ProjectNotification::ProjectFolderRemovedCallback(void* ctxt, BNProject* object, BNProjectFolder* bnProjectFolder)
+void ProjectNotification::ProjectFolderDeletedCallback(void* ctxt, BNProject* object, BNProjectFolder* bnProjectFolder)
 {
 	ProjectNotification* notify = (ProjectNotification*)ctxt;
 	Ref<Project> project = new Project(BNNewProjectReference(object));
 	Ref<ProjectFolder> projectFolder = new ProjectFolder(BNNewProjectFolderReference(bnProjectFolder));
-	notify->OnProjectFolderRemoved(project, projectFolder);
+	notify->OnProjectFolderDeleted(project, projectFolder);
 }
 
 
 ProjectNotification::ProjectNotification()
 {
 	m_callbacks.context = this;
-	m_callbacks.projectFileAdded = ProjectFileAddedCallback;
+	m_callbacks.projectMetadataWritten = ProjectMetadataWrittenCallback;
+	m_callbacks.projectFileCreated = ProjectFileCreatedCallback;
 	m_callbacks.projectFileUpdated = ProjectFileUpdatedCallback;
-	m_callbacks.projectFileRemoved = ProjectFileRemovedCallback;
-	m_callbacks.projectFolderAdded = ProjectFolderAddedCallback;
+	m_callbacks.projectFileDeleted = ProjectFileDeletedCallback;
+	m_callbacks.projectFolderCreated = ProjectFolderCreatedCallback;
 	m_callbacks.projectFolderUpdated = ProjectFolderUpdatedCallback;
-	m_callbacks.projectFolderRemoved = ProjectFolderRemovedCallback;
+	m_callbacks.projectFolderDeleted = ProjectFolderDeletedCallback;
 }
 
 
