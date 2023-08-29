@@ -2740,6 +2740,12 @@ namespace BinaryNinja {
 			ComponentFunctionRemoved = 1ULL << 36,
 			ComponentDataVariableAdded = 1ULL << 37,
 			ComponentDataVariableRemoved = 1ULL << 38,
+			ExternalLibraryAdded = 1ULL << 39,
+			ExternalLibraryUpdated = 1ULL << 40,
+			ExternalLibraryRemoved = 1ULL << 41,
+			ExternalLocationAdded = 1ULL << 42,
+			ExternalLocationUpdated = 1ULL << 43,
+			ExternalLocationRemoved = 1ULL << 44,
 
 			BinaryDataUpdates = DataWritten | DataInserted | DataRemoved,
 			FunctionLifetime = FunctionAdded | FunctionRemoved,

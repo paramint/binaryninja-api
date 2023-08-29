@@ -555,6 +555,12 @@ BinaryDataNotification::BinaryDataNotification(NotificationTypes notifications)
 	m_callbacks.componentFunctionRemoved = (notifications & NotificationType::ComponentFunctionRemoved) ? ComponentFunctionRemovedCallback : nullptr;
 	m_callbacks.componentDataVariableAdded = (notifications & NotificationType::ComponentDataVariableAdded) ? ComponentDataVariableAddedCallback : nullptr;
 	m_callbacks.componentDataVariableRemoved = (notifications & NotificationType::ComponentDataVariableRemoved) ? ComponentDataVariableRemovedCallback : nullptr;
+	m_callbacks.externalLibraryAdded = (notifications & NotificationType::ExternalLibraryAdded) ? ExternalLibraryAddedCallback : nullptr;
+	m_callbacks.externalLibraryUpdated = (notifications & NotificationType::ExternalLibraryUpdated) ? ExternalLibraryUpdatedCallback : nullptr;
+	m_callbacks.externalLibraryRemoved = (notifications & NotificationType::ExternalLibraryRemoved) ? ExternalLibraryRemovedCallback : nullptr;
+	m_callbacks.externalLocationAdded = (notifications & NotificationType::ExternalLocationAdded) ? ExternalLocationAddedCallback : nullptr;
+	m_callbacks.externalLocationUpdated = (notifications & NotificationType::ExternalLocationUpdated) ? ExternalLocationUpdatedCallback : nullptr;
+	m_callbacks.externalLocationRemoved = (notifications & NotificationType::ExternalLocationRemoved) ? ExternalLocationRemovedCallback : nullptr;
 }
 
 
