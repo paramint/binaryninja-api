@@ -345,6 +345,16 @@ public:
 };
 
 
+class BINARYNINJAUIAPI TypeBrowserTreeView : public QTreeView
+{
+	Q_OBJECT
+	UIActionHandler m_actionHandler;
+
+public:
+	explicit TypeBrowserTreeView(class TypeBrowserView* parent);
+};
+
+
 class BINARYNINJAUIAPI TypeBrowserView : public QFrame, public View, public FilterTarget
 {
 	Q_OBJECT
