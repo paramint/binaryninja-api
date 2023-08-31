@@ -201,7 +201,6 @@ class ScriptingInstance:
 			if view:
 				if binaryview.BinaryView._cache_contains(view):
 					self.perform_set_current_binary_view(binaryview.BinaryView._cache_get(view))
-					core.BNFreeBinaryView(view) # release the already taken reference since we are pulling from the cache
 					return
 				else:
 					view = binaryview.BinaryView(handle=core.BNNewViewReference(view))
