@@ -1929,6 +1929,14 @@ class BinaryView:
 	def _cache_contains(cls, handle):
 		return ctypes.addressof(handle.contents) in cls._cached_instances
 
+	@classmethod
+	def _cache_get(cls, handle):
+		key = ctypes.addressof(handle.contents)
+		if key in cls._cached_instances:
+			return cls._cached_instances[key]
+		else:
+			return None
+
 	def __new__(cls, file_metadata=None, parent_view=None, handle=None):
 		if handle:
 			key = ctypes.addressof(handle.contents)
@@ -1941,9 +1949,9 @@ class BinaryView:
 	    handle: Optional[core.BNBinaryViewHandle] = None
 	):
 		if handle is not None:
-			_handle = handle
 			if self.__class__._cache_contains(handle):
 				return
+			_handle = handle
 			if file_metadata is None:
 				self._file = filemetadata.FileMetadata(handle=core.BNGetFileForView(handle))
 			else:
