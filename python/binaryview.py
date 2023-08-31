@@ -1912,9 +1912,13 @@ class BinaryView:
 	_associated_data = {}
 	_registered_instances = []
 	_cached_instances = {}
+	_cache_start_count = 10
 
 	@classmethod
 	def _cache_insert(cls, instance):
+		if cls._cache_start_count != 0:
+			cls._cache_start_count = cls._cache_start_count - 1
+			return
 		key = ctypes.addressof(instance.handle.contents)
 		if key not in cls._cached_instances:
 			cls._cached_instances[ctypes.addressof(instance.handle.contents)] = instance
