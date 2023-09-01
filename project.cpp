@@ -351,7 +351,7 @@ void Project::RegisterNotification(ProjectNotification* notify)
 
 void Project::UnregisterNotification(ProjectNotification* notify)
 {
-	BNRegisterProjectNotification(m_object, notify->GetCallbacks());
+	BNUnregisterProjectNotification(m_object, notify->GetCallbacks());
 }
 
 
