@@ -1912,13 +1912,9 @@ class BinaryView:
 	_associated_data = {}
 	_registered_instances = []
 	_cached_instances = {}
-	_cache_start_count = 10
 
 	@classmethod
 	def _cache_insert(cls, instance):
-		if cls._cache_start_count != 0:
-			cls._cache_start_count = cls._cache_start_count - 1
-			return
 		key = ctypes.addressof(instance.handle.contents)
 		if key not in cls._cached_instances:
 			cls._cached_instances[ctypes.addressof(instance.handle.contents)] = instance
@@ -1945,6 +1941,7 @@ class BinaryView:
 		if handle:
 			key = ctypes.addressof(handle.contents)
 			if key in cls._cached_instances:
+				core.BNFreeBinaryView(handle) # release the already taken reference since we are pulling from the cache
 				return cls._cached_instances[key]
 		return super().__new__(cls)
 

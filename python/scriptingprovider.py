@@ -199,12 +199,8 @@ class ScriptingInstance:
 	def _set_current_binary_view(self, ctxt, view):
 		try:
 			if view:
-				if binaryview.BinaryView._cache_contains(view):
-					self.perform_set_current_binary_view(binaryview.BinaryView._cache_get(view))
-					return
-				else:
-					view = binaryview.BinaryView(handle=core.BNNewViewReference(view))
-					binaryview.BinaryView._cache_insert(view)
+				view = binaryview.BinaryView(handle=core.BNNewViewReference(view))
+				binaryview.BinaryView._cache_insert(view)
 			else:
 				view = None
 			self.perform_set_current_binary_view(view)
