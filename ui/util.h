@@ -33,6 +33,7 @@ bool BINARYNINJAUIAPI isBinaryNinjaDatabase(QFileInfo& info, QFileAccessor& acce
 
 PlatformRef BINARYNINJAUIAPI getOrAskForPlatform(QWidget* parent, BinaryViewRef data);
 PlatformRef BINARYNINJAUIAPI getOrAskForPlatform(QWidget* parent, PlatformRef defaultValue);
+QPixmap BINARYNINJAUIAPI overlayIcons(const QPixmap& base, const QPixmap& overlay, int x = 0, int y = 0);
 
 /*!
 	@}

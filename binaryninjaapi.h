@@ -2177,6 +2177,10 @@ namespace BinaryNinja {
 	  private:
 		BNProjectNotification m_callbacks;
 
+		static bool BeforeOpenProjectCallback(void* ctxt, BNProject* project);
+		static void AfterOpenProjectCallback(void* ctxt, BNProject* project);
+		static bool BeforeCloseProjectCallback(void* ctxt, BNProject* project);
+		static void AfterCloseProjectCallback(void* ctxt, BNProject* project);
 		static void ProjectMetadataWrittenCallback(void* ctxt, BNProject* project, char* key, char* value);
 		static void ProjectFileCreatedCallback(void* ctxt, BNProject* project, BNProjectFile* projectFile);
 		static void ProjectFileUpdatedCallback(void* ctxt, BNProject* project, BNProjectFile* projectFile);
@@ -2190,6 +2194,28 @@ namespace BinaryNinja {
 		virtual ~ProjectNotification() {}
 
 		BNProjectNotification* GetCallbacks() { return &m_callbacks; }
+
+		virtual bool OnBeforeOpenProject(Project* project)
+		{
+			(void)project;
+			return true;
+		}
+
+		virtual void OnAfterOpenProject(Project* project)
+		{
+			(void)project;
+		}
+
+		virtual bool OnBeforeCloseProject(Project* project)
+		{
+			(void)project;
+			return true;
+		}
+
+		virtual void OnAfterCloseProject(Project* project)
+		{
+			(void)project;
+		}
 
 		virtual void OnProjectMetadataWritten(Project* project, std::string& key, std::string& value)
 		{
@@ -2288,6 +2314,7 @@ namespace BinaryNinja {
 		static Ref<Project> CreateProject(const std::string& path, const std::string& name);
 		static Ref<Project> OpenProject(const std::string& path);
 
+		bool Open();
 		bool Close();
 		std::string GetId() const;
 		bool IsOpen() const;

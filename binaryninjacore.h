@@ -1500,6 +1500,10 @@ extern "C"
 	typedef struct BNProjectNotification
 	{
 		void* context;
+		bool (*beforeOpenProject)(void* ctxt, BNProject* project);
+		void (*afterOpenProject)(void* ctxt, BNProject* project);
+		bool (*beforeCloseProject)(void* ctxt, BNProject* project);
+		void (*afterCloseProject)(void* ctxt, BNProject* project);
 		void (*projectMetadataWritten)(void* ctxt, BNProject* project, char* key, char* value);
 		void (*projectFileCreated)(void* ctxt, BNProject* project, BNProjectFile* projectFile);
 		void (*projectFileUpdated)(void* ctxt, BNProject* project, BNProjectFile* projectFile);
@@ -3281,7 +3285,8 @@ extern "C"
 	BINARYNINJACOREAPI void BNFreeProject(BNProject* project);
 	BINARYNINJACOREAPI BNProject* BNCreateProject(const char* path, const char* name);
 	BINARYNINJACOREAPI BNProject* BNOpenProject(const char* path);
-	BINARYNINJACOREAPI bool BNCloseProject(BNProject* project);
+	BINARYNINJACOREAPI bool BNProjectOpen(BNProject* project);
+	BINARYNINJACOREAPI bool BNProjectClose(BNProject* project);
 	BINARYNINJACOREAPI char* BNProjectGetId(BNProject* project);
 	BINARYNINJACOREAPI bool BNProjectIsOpen(BNProject* project);
 	BINARYNINJACOREAPI char* BNProjectGetPath(BNProject* project);

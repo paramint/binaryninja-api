@@ -25,6 +25,38 @@
 using namespace BinaryNinja;
 
 
+bool ProjectNotification::BeforeOpenProjectCallback(void* ctxt, BNProject* object)
+{
+	ProjectNotification* notify = (ProjectNotification*)ctxt;
+	Ref<Project> project = new Project(BNNewProjectReference(object));
+	return notify->OnBeforeOpenProject(project);
+}
+
+
+void ProjectNotification::AfterOpenProjectCallback(void* ctxt, BNProject* object)
+{
+	ProjectNotification* notify = (ProjectNotification*)ctxt;
+	Ref<Project> project = new Project(BNNewProjectReference(object));
+	notify->OnAfterOpenProject(project);
+}
+
+
+bool ProjectNotification::BeforeCloseProjectCallback(void* ctxt, BNProject* object)
+{
+	ProjectNotification* notify = (ProjectNotification*)ctxt;
+	Ref<Project> project = new Project(BNNewProjectReference(object));
+	return notify->OnBeforeCloseProject(project);
+}
+
+
+void ProjectNotification::AfterCloseProjectCallback(void* ctxt, BNProject* object)
+{
+	ProjectNotification* notify = (ProjectNotification*)ctxt;
+	Ref<Project> project = new Project(BNNewProjectReference(object));
+	notify->OnAfterCloseProject(project);
+}
+
+
 void ProjectNotification::ProjectMetadataWrittenCallback(void* ctxt, BNProject* object, char* key, char* value)
 {
 	ProjectNotification* notify = (ProjectNotification*)ctxt;
@@ -94,6 +126,10 @@ void ProjectNotification::ProjectFolderDeletedCallback(void* ctxt, BNProject* ob
 ProjectNotification::ProjectNotification()
 {
 	m_callbacks.context = this;
+	m_callbacks.beforeOpenProject = BeforeOpenProjectCallback;
+	m_callbacks.afterOpenProject = AfterOpenProjectCallback;
+	m_callbacks.beforeCloseProject = BeforeCloseProjectCallback;
+	m_callbacks.afterCloseProject = AfterCloseProjectCallback;
 	m_callbacks.projectMetadataWritten = ProjectMetadataWrittenCallback;
 	m_callbacks.projectFileCreated = ProjectFileCreatedCallback;
 	m_callbacks.projectFileUpdated = ProjectFileUpdatedCallback;
@@ -129,9 +165,15 @@ Ref<Project> Project::OpenProject(const std::string& path)
 }
 
 
+bool Project::Open()
+{
+	return BNProjectOpen(m_object);
+}
+
+
 bool Project::Close()
 {
-	return BNCloseProject(m_object);
+	return BNProjectClose(m_object);
 }
 
 
@@ -485,7 +527,6 @@ void ProjectFolder::SetDescription(const std::string& description)
 {
 	BNProjectFolderSetDescription(m_object, description.c_str());
 }
-
 
 
 Ref<ProjectFolder> ProjectFolder::GetParent() const

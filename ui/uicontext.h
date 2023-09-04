@@ -79,6 +79,30 @@ class BINARYNINJAUIAPI UIContextNotification
 		return true;
 	}
 	/*!
+	    Callback before a project file is opened
+	    \param context Context opening the file
+	    \param projectFile Project file that is being opened
+	    \return True if the project file should be opened
+	 */
+	virtual bool OnBeforeOpenProjectFile(UIContext* context, ProjectFileRef projectFile)
+	{
+		(void)context;
+		(void)projectFile;
+		return true;
+	}
+	/*!
+	    Callback after a project file is opened
+	    \param context Context which opened the file
+	    \param projectFile Project file that was opened
+	    \param frame ViewFrame constructed to display the file
+	 */
+	virtual void OnAfterOpenProjectFile(UIContext* context, ProjectFileRef projectFile, ViewFrame* frame)
+	{
+		(void)context;
+		(void)projectFile;
+		(void)frame;
+	}
+	/*!
 	    Callback before a file (raw or database) is opened (after OnAfterOpenDatabase if opening a database)
 	    \param context Context opening the file
 	    \param file Context with the file and ui views
@@ -264,6 +288,8 @@ class BINARYNINJAUIAPI UIContext
 
 	bool NotifyOnBeforeOpenDatabase(FileMetadataRef metadata);
 	bool NotifyOnAfterOpenDatabase(FileMetadataRef metadata, BinaryViewRef data);
+	bool NotifyOnBeforeOpenProjectFile(ProjectFileRef projectFile);
+	void NotifyOnAfterOpenProjectFile(ProjectFileRef projectFile, ViewFrame* frame);
 	bool NotifyOnBeforeOpenFile(FileContext* file);
 	void NotifyOnAfterOpenFile(FileContext* file, ViewFrame* frame);
 	bool NotifyOnBeforeSaveFile(FileContext* file, ViewFrame* frame);
