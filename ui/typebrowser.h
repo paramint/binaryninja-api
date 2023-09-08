@@ -121,13 +121,7 @@ public:
 	const SourceType& sourceType() const { return m_sourceType; }
 	std::optional<BinaryNinja::TypeContainer> typeContainer() const;
 	std::optional<BinaryNinja::TypeContainer> sourceTypeContainer() const;
-	PlatformRef platform() const;
-	const std::optional<TypeLibraryRef>& sourceLibrary() const { return m_sourceLibrary; }
-	const std::optional<TypeArchiveRef>& sourceArchive() const { return m_sourceArchive; }
-	const std::optional<std::string>& sourceDebugInfoParser() const { return m_sourceDebugInfoParser; }
-	const std::optional<PlatformRef>& sourcePlatform() const { return m_sourcePlatform; }
-	const std::optional<std::string>& sourceOtherName() const { return m_sourceOtherName; }
-	const std::optional<BinaryNinja::QualifiedName>& sourceOriginalName() const { return m_sourceOriginalName; }
+	PlatformRef sourcePlatform() const;
 
 	virtual std::string text(int column) const override;
 	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
@@ -147,6 +141,7 @@ public:
 	virtual ~TypeContainerTreeNode();
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const = 0;
+	virtual PlatformRef platform() const = 0;
 	virtual BinaryNinja::TypeContainer typeContainer() const = 0;
 	virtual void updateChildren(RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
 
@@ -170,6 +165,7 @@ public:
 	virtual bool filter(const std::string& filter) const override;
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
+	virtual PlatformRef platform() const override;
 	virtual BinaryNinja::TypeContainer typeContainer() const override;
 };
 
@@ -192,6 +188,7 @@ public:
 	virtual bool filter(const std::string& filter) const override;
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
+	virtual PlatformRef platform() const override;
 	virtual BinaryNinja::TypeContainer typeContainer() const override;
 	virtual void updateChildren(RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
 };
@@ -212,6 +209,7 @@ public:
 	virtual bool filter(const std::string& filter) const override;
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
+	virtual PlatformRef platform() const override;
 	virtual BinaryNinja::TypeContainer typeContainer() const override;
 };
 
@@ -233,6 +231,7 @@ public:
 	virtual bool filter(const std::string& filter) const override;
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
+	virtual PlatformRef platform() const override;
 	virtual BinaryNinja::TypeContainer typeContainer() const override;
 };
 
@@ -245,13 +244,12 @@ public:
 	PlatformTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, PlatformRef platform);
 	virtual ~PlatformTreeNode() = default;
 
-	const PlatformRef& platform() const { return m_platform; }
-
 	virtual std::string text(int column) const override;
 	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
 	virtual bool filter(const std::string& filter) const override;
 
 	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
+	virtual PlatformRef platform() const override;
 	virtual BinaryNinja::TypeContainer typeContainer() const override;
 };
 
@@ -355,6 +353,17 @@ public:
 };
 
 
+struct BINARYNINJAUIAPI TypeReference
+{
+	PlatformRef platform;
+	std::string containerId;
+	BinaryNinja::QualifiedName typeName;
+
+	TypeReference() = default;
+	TypeReference(PlatformRef platform, std::string containerId, BinaryNinja::QualifiedName typeName);
+};
+
+
 class BINARYNINJAUIAPI TypeBrowserView : public QFrame, public View, public FilterTarget
 {
 	Q_OBJECT
@@ -375,6 +384,9 @@ class BINARYNINJAUIAPI TypeBrowserView : public QFrame, public View, public Filt
 	class TokenizedTextWidget* m_typeEditor;
 
 	QTimer* m_filterTimer;
+
+	std::unordered_map<std::string, BinaryNinja::TypeContainer> m_containerCache;
+	std::vector<TypeReference> m_editorTypeRefs;
 
 public:
 	TypeBrowserView(ViewFrame* frame, BinaryViewRef data, TypeBrowserContainer* container);
@@ -404,6 +416,9 @@ public:
 
 	virtual void notifyRefresh() override;
 
+	void showSelectedTypes();
+	void showTypes(const std::vector<TypeReference>& types);
+
 	// Selection helpers
 
 	// All nodes
@@ -415,7 +430,11 @@ public:
 
 	std::optional<std::pair<BinaryNinja::TypeContainer, BinaryNinja::QualifiedName>> selectedTypeNameAndContainer() const;
 	// All selected type names, grouped by type container
-	std::vector<std::pair<BinaryNinja::TypeContainer, std::vector<BinaryNinja::QualifiedName>>> selectedTypeNamesAndContainers() const;
+	std::vector<std::pair<BinaryNinja::TypeContainer, std::vector<BinaryNinja::QualifiedName>>> selectedTypeNamesByContainers() const;
+	// Selected type reference
+	std::optional<TypeReference> selectedType() const;
+	// Selected type references
+	std::vector<TypeReference> selectedTypes() const;
 
 	// TAs selected or TAs relevant to selected types, only if JUST ta stuff is selected and only 1 TA
 	std::optional<TypeArchiveRef> selectedTA() const;
@@ -428,6 +447,8 @@ public:
 	static std::optional<std::unordered_set<std::string>> typeIdsFromNames(BinaryViewRef view, const std::unordered_set<BinaryNinja::QualifiedName> &names);
 	// Ids -> Option<TypeArchive>
 	static std::unordered_map<std::optional<TypeArchiveRef>, std::unordered_set<std::string>> associatedTypeArchivesForTypeIds(BinaryViewRef view, const std::unordered_set<std::string>& typeIds);
+
+	std::optional<std::reference_wrapper<BinaryNinja::TypeContainer>> containerForId(const std::string& containerId);
 
 	// Menu actions
 	static void registerActions();
