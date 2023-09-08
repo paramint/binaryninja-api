@@ -45,6 +45,10 @@ class TypeContainer:
 		return f"<type container {self.name}>"
 
 	@property
+	def id(self) -> str:
+		return core.BNTypeContainerGetId(self.handle)
+
+	@property
 	def name(self) -> str:
 		return core.BNTypeContainerGetName(self.handle)
 

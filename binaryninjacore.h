@@ -4471,6 +4471,7 @@ extern "C"
 
 	BINARYNINJACOREAPI void BNFreeTypeContainer(BNTypeContainer* container);
 	BINARYNINJACOREAPI BNTypeContainer* BNDuplicateTypeContainer(BNTypeContainer* container);
+	BINARYNINJACOREAPI char* BNTypeContainerGetId(BNTypeContainer* container);
 	BINARYNINJACOREAPI char* BNTypeContainerGetName(BNTypeContainer* container);
 	BINARYNINJACOREAPI bool BNTypeContainerIsMutable(BNTypeContainer* container);
 	BINARYNINJACOREAPI bool BNTypeContainerAddTypes(BNTypeContainer* container, const BNQualifiedName* typeNames, BNType** types, size_t typeCount, bool(*progress)(void*, size_t, size_t), void* progressContext, BNQualifiedName** resultNames, char*** resultIds, size_t* resultCount);

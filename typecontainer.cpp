@@ -65,6 +65,15 @@ TypeContainer& TypeContainer::operator=(TypeContainer&& other)
 }
 
 
+std::string TypeContainer::GetId() const
+{
+	char* id = BNTypeContainerGetId(m_object);
+	std::string result = id;
+	BNFreeString(id);
+	return result;
+}
+
+
 std::string TypeContainer::GetName() const
 {
 	char* name = BNTypeContainerGetName(m_object);

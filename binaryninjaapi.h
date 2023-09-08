@@ -16194,9 +16194,12 @@ namespace BinaryNinja {
 		TypeContainer(const TypeContainer& other);
 		TypeContainer& operator=(const TypeContainer& other);
 		TypeContainer& operator=(TypeContainer&& other);
+		bool operator==(const TypeContainer& other) const { return GetId() == other.GetId(); }
+		bool operator!=(const TypeContainer& other) const { return !operator==(other); }
 
 		BNTypeContainer* GetObject() const { return m_object; }
 
+		std::string GetId() const;
 		std::string GetName() const;
 		bool IsMutable() const;
 
