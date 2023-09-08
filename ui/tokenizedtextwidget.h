@@ -71,6 +71,7 @@ class BINARYNINJAUIAPI TokenizedTextWidget :
 	int m_contentsCols, m_contentsRows;
 	int m_verticalWheelDelta, m_horizontalWheelDelta;
 	bool m_updatingScrollBar;
+	bool m_autoScrollHorizontal, m_autoScrollVertical;
 
 	TokenizedTextWidgetCursorPosition m_cursorPos, m_selectionStartPos, m_hoverPos;
 	TokenizedTextWidgetSelectionStyle m_selectionMode;
@@ -130,6 +131,11 @@ class BINARYNINJAUIAPI TokenizedTextWidget :
 	void setCursorPosition(TokenizedTextWidgetCursorPosition newPosition, bool selecting, bool cursorKeys, bool evenIfNoChange);
 	void moveCursorHorizontal(int count, bool allTheWay, bool selecting, bool cursorKeys);
 	void moveCursorVertical(int count, bool allTheWay, bool selecting, bool cursorKeys);
+
+	bool autoScrollHorizontal() const { return m_autoScrollHorizontal; }
+	void setAutoScrollHorizontal(bool value) { m_autoScrollHorizontal = value; }
+	bool autoScrollVertical() const { return m_autoScrollVertical; }
+	void setAutoScrollVertical(bool value) { m_autoScrollVertical = value; }
 
 	HighlightTokenState highlightTokenState();
 	UIActionHandler* actionHandler() { return &m_actionHandler; }
