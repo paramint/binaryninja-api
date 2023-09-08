@@ -105,12 +105,12 @@ class BINARYNINJAUIAPI TokenizedTextWidget :
 	DisassemblySettingsRef settings() { return m_settings; }
 	const DisassemblySettingsRef& settings() const { return m_settings; }
 
-	int getTopLine() const;
-	int getLeftmostChar() const;
-	int getVisibleColumns() const { return m_cols; }
-	int getVisibleRows() const { return m_rows; }
-	int getContentsColumns() const { return m_contentsCols; }
-	int getContentsRows() const { return m_contentsRows; }
+	int topLineIndex() const;
+	int leftmostCharIndex() const;
+	int visibleColumnCount() const { return m_cols; }
+	int visibleRowCount() const { return m_rows; }
+	int contentsColumnCount() const { return m_contentsCols; }
+	int contentsRowCount() const { return m_contentsRows; }
 
 	bool hasSelection() const;
 	// Lines vs Tokens vs Characters vs NoSelection
