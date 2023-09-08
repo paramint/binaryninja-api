@@ -2,6 +2,7 @@
 
 #include <QtWidgets/QAbstractScrollArea>
 #include <QtCore/QTimer>
+#include <optional>
 #include "binaryninjaapi.h"
 #include "viewframe.h"
 #include "render.h"
@@ -155,7 +156,10 @@ class BINARYNINJAUIAPI TokenizedTextWidget :
 	void scrollCharToVisible(int charIndex);
 	void scrollCharToLeftmost(int charIndex);
 
-	const std::vector<BinaryNinja::LinearDisassemblyLine>& getLines() const { return m_lines; }
+	const std::vector<BinaryNinja::LinearDisassemblyLine>& lines() const { return m_lines; }
+	std::optional<std::reference_wrapper<const BinaryNinja::LinearDisassemblyLine>> lineAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
+	std::optional<std::reference_wrapper<const BinaryNinja::InstructionTextToken>> tokenAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
+	std::optional<char> charAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
 	void setLines(const std::vector<BinaryNinja::LinearDisassemblyLine>& lines, bool resetScroll = true);
 	void setLines(const std::vector<BinaryNinja::DisassemblyTextLine>& lines, bool resetScroll = true);
 	void setLines(const std::vector<BinaryNinja::TypeDefinitionLine>& lines, bool resetScroll = true);
