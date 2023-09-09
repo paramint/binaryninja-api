@@ -5154,6 +5154,8 @@ namespace BinaryNinja {
 		    std::string& errors, const std::set<QualifiedName>& typesAllowRedefinition = {});
 
 		class TypeContainer GetTypeContainer();
+		class TypeContainer GetAutoTypeContainer();
+		class TypeContainer GetUserTypeContainer();
 		std::map<QualifiedName, Ref<Type>> GetTypes();
 		/*! List of all types, sorted such that types are after all types on which they depend
 

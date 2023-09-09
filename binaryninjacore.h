@@ -4423,6 +4423,8 @@ extern "C"
 	BINARYNINJACOREAPI BNQualifiedName* BNGetAnalysisTypeNames(BNBinaryView* view, size_t* count, const char* matching);
 	BINARYNINJACOREAPI void BNFreeTypeNameList(BNQualifiedName* names, size_t count);
 	BINARYNINJACOREAPI BNTypeContainer* BNGetAnalysisTypeContainer(BNBinaryView* view);
+	BINARYNINJACOREAPI BNTypeContainer* BNGetAnalysisAutoTypeContainer(BNBinaryView* view);
+	BINARYNINJACOREAPI BNTypeContainer* BNGetAnalysisUserTypeContainer(BNBinaryView* view);
 	BINARYNINJACOREAPI BNType* BNGetAnalysisTypeByName(BNBinaryView* view, BNQualifiedName* name);
 	BINARYNINJACOREAPI BNType* BNGetAnalysisTypeByRef(BNBinaryView* view, BNNamedTypeReference* ref);
 	BINARYNINJACOREAPI BNType* BNGetAnalysisTypeById(BNBinaryView* view, const char* id);

@@ -3756,6 +3756,18 @@ TypeContainer BinaryView::GetTypeContainer()
 }
 
 
+TypeContainer BinaryView::GetAutoTypeContainer()
+{
+	return TypeContainer(BNGetAnalysisAutoTypeContainer(m_object));
+}
+
+
+TypeContainer BinaryView::GetUserTypeContainer()
+{
+	return TypeContainer(BNGetAnalysisUserTypeContainer(m_object));
+}
+
+
 map<QualifiedName, Ref<Type>> BinaryView::GetTypes()
 {
 	size_t count;

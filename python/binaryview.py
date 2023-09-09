@@ -7120,6 +7120,16 @@ class BinaryView:
 		container = core.BNGetAnalysisTypeContainer(self.handle)
 		return typecontainer.TypeContainer(handle=container)
 
+	@property
+	def auto_type_container(self) -> 'typecontainer.TypeContainer':
+		container = core.BNGetAnalysisAutoTypeContainer(self.handle)
+		return typecontainer.TypeContainer(handle=container)
+
+	@property
+	def user_type_container(self) -> 'typecontainer.TypeContainer':
+		container = core.BNGetAnalysisUserTypeContainer(self.handle)
+		return typecontainer.TypeContainer(handle=container)
+
 	def get_type_by_name(self, name: '_types.QualifiedNameType') -> Optional['_types.Type']:
 		"""
 		``get_type_by_name`` returns the defined type whose name corresponds with the provided ``name``
