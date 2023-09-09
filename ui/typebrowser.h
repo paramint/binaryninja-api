@@ -66,7 +66,7 @@ protected:
 
 class BINARYNINJAUIAPI RootTreeNode : public TypeBrowserTreeNode
 {
-	std::shared_ptr<class BinaryViewTreeNode> m_viewNode;
+	std::shared_ptr<class BinaryViewTreeNode> m_viewNode, m_autoViewNode, m_userViewNode;
 	std::map<std::string, std::shared_ptr<class TypeArchiveTreeNode>> m_archiveNodes;
 	std::map<TypeLibraryRef, std::shared_ptr<class TypeLibraryTreeNode>> m_libraryNodes;
 	std::map<std::string, std::shared_ptr<class DebugInfoTreeNode>> m_debugInfoNodes;
@@ -152,10 +152,20 @@ protected:
 
 class BINARYNINJAUIAPI BinaryViewTreeNode : public TypeContainerTreeNode
 {
+public:
+	enum ContainerType
+	{
+		AllTypes,
+		AutoOnly,
+		UserOnly
+	};
+
+private:
 	BinaryViewRef m_view;
+	ContainerType m_type;
 
 public:
-	BinaryViewTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, BinaryViewRef view);
+	BinaryViewTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, BinaryViewRef view, ContainerType type);
 	virtual ~BinaryViewTreeNode() = default;
 
 	const BinaryViewRef& view() const { return m_view; }
@@ -283,6 +293,8 @@ public:
 
 	std::shared_ptr<TypeBrowserTreeNode> nodeForIndex(const QModelIndex& index) const;
 	QModelIndex indexForNode(std::shared_ptr<TypeBrowserTreeNode> node, int column = 0) const;
+
+	std::vector<std::shared_ptr<TypeContainerTreeNode>> containerNodes() const;
 
 	bool filter(const QModelIndex& index, const std::string& filter) const;
 	bool lessThan(const QModelIndex& left, const QModelIndex& right) const;
