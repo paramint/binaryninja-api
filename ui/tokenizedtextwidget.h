@@ -23,11 +23,13 @@
 */
 enum BINARYNINJAUIAPI TokenizedTextWidgetSelectionStyle
 {
-	NoSelection,
-	SelectLines,
-	SelectOneToken,
-	SelectTokens,
-	SelectCharacters
+	NoSelection      = 1 << 0,
+	SelectLines      = 1 << 1,
+	SelectOneToken   = 1 << 2,
+	SelectTokens     = 1 << 3,
+	SelectCharacters = 1 << 4,
+
+	AllStyles = NoSelection | SelectLines | SelectOneToken | SelectTokens | SelectCharacters,
 };
 
 
@@ -66,16 +68,16 @@ protected:
 	struct LineMetadata
 	{
 		size_t charWidth;
-		bool copyable;
+		int copyStyles;
 
-		LineMetadata() : charWidth(0), copyable(true) {}
+		LineMetadata() : charWidth(0), copyStyles(TokenizedTextWidgetSelectionStyle::AllStyles) {}
 	};
 	struct TokenMetadata
 	{
 		size_t charOffset;
-		bool copyable;
+		int copyStyles;
 
-		TokenMetadata() : charOffset(0), copyable(true) {}
+		TokenMetadata() : charOffset(0), copyStyles(TokenizedTextWidgetSelectionStyle::AllStyles) {}
 	};
 
 private:
@@ -197,10 +199,10 @@ private:
 	void setLines(const std::vector<BinaryNinja::DisassemblyTextLine>& lines, bool resetScroll = true);
 	void setLines(const std::vector<BinaryNinja::TypeDefinitionLine>& lines, bool resetScroll = true);
 
-	bool lineCopyable(size_t lineIndex) const;
-	void setLineCopyable(size_t lineIndex, bool copyable);
-	bool tokenCopyable(size_t lineIndex, size_t tokenIndex) const;
-	void setTokenCopyable(size_t lineIndex, size_t tokenIndex, bool copyable);
+	int lineCopyStyles(size_t lineIndex) const;
+	void setLineCopyStyles(size_t lineIndex, int styles);
+	int tokenCopyStyles(size_t lineIndex, size_t tokenIndex) const;
+	void setTokenCopyStyles(size_t lineIndex, size_t tokenIndex, int styles);
 
   Q_SIGNALS:
 	void sizeChanged(int cols, int rows);
