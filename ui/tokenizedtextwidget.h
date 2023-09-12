@@ -62,9 +62,28 @@ struct BINARYNINJAUIAPI TokenizedTextWidgetCursorPosition
 class BINARYNINJAUIAPI TokenizedTextWidget :
     public QAbstractScrollArea
 {
+protected:
+	struct LineMetadata
+	{
+		size_t charWidth;
+		bool copyable;
+
+		LineMetadata() : charWidth(0), copyable(true) {}
+	};
+	struct TokenMetadata
+	{
+		size_t charOffset;
+		bool copyable;
+
+		TokenMetadata() : charOffset(0), copyable(true) {}
+	};
+
+private:
 	Q_OBJECT
 
 	UIActionHandler m_actionHandler;
+	ContextMenuManager* m_contextMenuManager;
+	Menu m_contextMenu;
 
 	RenderContext m_render;
 	int m_cols, m_rows;
@@ -79,13 +98,16 @@ class BINARYNINJAUIAPI TokenizedTextWidget :
 	bool m_cursorKeys;
 
 	std::vector<BinaryNinja::LinearDisassemblyLine> m_lines;
-	std::vector<std::vector<size_t>> m_lineCharOffsets;
+	std::vector<LineMetadata> m_lineMetadata;
+	std::vector<std::vector<TokenMetadata>> m_tokenMetadata;
 	DisassemblySettingsRef m_settings;
 
 	void adjustSize(int width, int height);
 	void clampCursorPosition(TokenizedTextWidgetCursorPosition& pos);
 	void clampSelectionToValid();
-	static void getContentsSize(const std::vector<BinaryNinja::LinearDisassemblyLine>& lines, int& width, int& height, std::vector<std::vector<size_t>>& charOffsets);
+
+  protected:
+	virtual void updateMetadata(const std::vector<BinaryNinja::LinearDisassemblyLine>& lines, int& width, int& height);
 
   private Q_SLOTS:
 	void verticalScrollBarMoved(int value);
@@ -99,7 +121,7 @@ class BINARYNINJAUIAPI TokenizedTextWidget :
 	        std::vector<BinaryNinja::LinearDisassemblyLine>());
 	virtual ~TokenizedTextWidget();
 
-	void bindActions();
+	virtual void bindActions();
 
 	QFont font() const;
 	void setFont(const QFont& font);
@@ -162,13 +184,23 @@ class BINARYNINJAUIAPI TokenizedTextWidget :
 	void scrollCharToVisible(int charIndex);
 	void scrollCharToLeftmost(int charIndex);
 
+	void copy() const;
+	std::string selectedText() const;
+
 	const std::vector<BinaryNinja::LinearDisassemblyLine>& lines() const { return m_lines; }
 	std::optional<std::reference_wrapper<const BinaryNinja::LinearDisassemblyLine>> lineAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
 	std::optional<std::reference_wrapper<const BinaryNinja::InstructionTextToken>> tokenAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
 	std::optional<char> charAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
+
+	void clearLines();
 	void setLines(const std::vector<BinaryNinja::LinearDisassemblyLine>& lines, bool resetScroll = true);
 	void setLines(const std::vector<BinaryNinja::DisassemblyTextLine>& lines, bool resetScroll = true);
 	void setLines(const std::vector<BinaryNinja::TypeDefinitionLine>& lines, bool resetScroll = true);
+
+	bool lineCopyable(size_t lineIndex) const;
+	void setLineCopyable(size_t lineIndex, bool copyable);
+	bool tokenCopyable(size_t lineIndex, size_t tokenIndex) const;
+	void setTokenCopyable(size_t lineIndex, size_t tokenIndex, bool copyable);
 
   Q_SIGNALS:
 	void sizeChanged(int cols, int rows);
@@ -196,4 +228,5 @@ class BINARYNINJAUIAPI TokenizedTextWidget :
 	virtual void leaveEvent(QEvent* event) override;
 	virtual void focusInEvent(QFocusEvent* event) override;
 	virtual void focusOutEvent(QFocusEvent* event) override;
+	virtual void contextMenuEvent(QContextMenuEvent* event) override;
 };
