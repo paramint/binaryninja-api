@@ -70,14 +70,22 @@ protected:
 		size_t charWidth;
 		int copyStyles;
 
-		LineMetadata() : charWidth(0), copyStyles(TokenizedTextWidgetSelectionStyle::AllStyles) {}
+		LineMetadata():
+			charWidth(0),
+			copyStyles(TokenizedTextWidgetSelectionStyle::AllStyles)
+		{}
 	};
 	struct TokenMetadata
 	{
 		size_t charOffset;
 		int copyStyles;
+		bool selectLineTarget;
 
-		TokenMetadata() : charOffset(0), copyStyles(TokenizedTextWidgetSelectionStyle::AllStyles) {}
+		TokenMetadata():
+			charOffset(0),
+			copyStyles(TokenizedTextWidgetSelectionStyle::AllStyles),
+			selectLineTarget(false)
+		{}
 	};
 
 private:
@@ -123,7 +131,7 @@ private:
 	        std::vector<BinaryNinja::LinearDisassemblyLine>());
 	virtual ~TokenizedTextWidget();
 
-	virtual void bindActions();
+	void bindActions();
 
 	QFont font() const;
 	void setFont(const QFont& font);
@@ -150,8 +158,7 @@ private:
 	// Position of cursor for movement operations
 	TokenizedTextWidgetCursorPosition cursorPosition() const;
 
-	void clearSelection();
-	void setSelection(TokenizedTextWidgetCursorPosition base, TokenizedTextWidgetCursorPosition cursor);
+	void setSelection(TokenizedTextWidgetCursorPosition base, TokenizedTextWidgetCursorPosition cursor, TokenizedTextWidgetSelectionStyle mode);
 	void setCursorPosition(TokenizedTextWidgetCursorPosition newPosition, bool selecting, bool cursorKeys, bool evenIfNoChange);
 	void moveCursorHorizontal(int count, bool allTheWay, bool selecting, bool cursorKeys);
 	void moveCursorVertical(int count, bool allTheWay, bool selecting, bool cursorKeys);
@@ -163,7 +170,9 @@ private:
 
 	HighlightTokenState highlightTokenState();
 	UIActionHandler* actionHandler() { return &m_actionHandler; }
+
 	virtual UIActionContext actionContext();
+	Menu& contextMenu() { return m_contextMenu; }
 
 	void left(size_t count, bool selecting);
 	void right(size_t count, bool selecting);
@@ -177,6 +186,8 @@ private:
 	void moveToEndOfLine(bool selecting);
 	void moveToStartOfView(bool selecting);
 	void moveToEndOfView(bool selecting);
+	void selectAll();
+	void selectNone();
 
 	void scrollLines(int count);
 	void scrollLineToVisible(int lineIndex);
@@ -201,8 +212,11 @@ private:
 
 	int lineCopyStyles(size_t lineIndex) const;
 	void setLineCopyStyles(size_t lineIndex, int styles);
+
 	int tokenCopyStyles(size_t lineIndex, size_t tokenIndex) const;
 	void setTokenCopyStyles(size_t lineIndex, size_t tokenIndex, int styles);
+	bool tokenSelectLineTarget(size_t lineIndex, size_t tokenIndex) const;
+	void setTokenSelectLineTarget(size_t lineIndex, size_t tokenIndex, bool selectLineTarget);
 
   Q_SIGNALS:
 	void sizeChanged(int cols, int rows);
