@@ -101,6 +101,7 @@ public:
 private:
 	BinaryNinja::QualifiedName m_name;
 	TypeRef m_type;
+	std::string m_sortName;
 
 	SourceType m_sourceType;
 	std::optional<TypeLibraryRef> m_sourceLibrary;
