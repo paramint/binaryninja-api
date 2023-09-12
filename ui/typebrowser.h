@@ -394,12 +394,11 @@ class BINARYNINJAUIAPI TypeBrowserView : public QFrame, public View, public Filt
 	TypeBrowserItemDelegate* m_delegate;
 	bool m_updatedWidths;
 
-	class TokenizedTextWidget* m_typeEditor;
+	class TypeEditor* m_typeEditor;
 
 	QTimer* m_filterTimer;
 
 	std::unordered_map<std::string, BinaryNinja::TypeContainer> m_containerCache;
-	std::vector<TypeReference> m_editorTypeRefs;
 
 public:
 	TypeBrowserView(ViewFrame* frame, BinaryViewRef data, TypeBrowserContainer* container);
