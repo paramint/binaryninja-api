@@ -261,12 +261,6 @@ bool Project::PathExists(Ref<ProjectFolder> folder, const std::string& name) con
 }
 
 
-void Project::PullFolders()
-{
-	BNProjectPullFolders(m_object);
-}
-
-
 Ref<ProjectFolder> Project::CreateFolderFromPath(const std::string& path, Ref<ProjectFolder> parent, const std::string& description)
 {
 	BNProjectFolder* folder = BNProjectCreateFolderFromPath(m_object, path.c_str(), parent ? parent->m_object : nullptr, description.c_str());
@@ -320,12 +314,6 @@ void Project::PushFolder(Ref<ProjectFolder> folder)
 void Project::DeleteFolder(Ref<ProjectFolder> folder)
 {
 	BNProjectDeleteFolder(m_object, folder->m_object);
-}
-
-
-void Project::PullFiles()
-{
-	BNProjectPullFiles(m_object);
 }
 
 
