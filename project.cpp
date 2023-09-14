@@ -261,9 +261,12 @@ bool Project::PathExists(Ref<ProjectFolder> folder, const std::string& name) con
 }
 
 
-Ref<ProjectFolder> Project::CreateFolderFromPath(const std::string& path, Ref<ProjectFolder> parent, const std::string& description)
+Ref<ProjectFolder> Project::CreateFolderFromPath(const std::string& path, Ref<ProjectFolder> parent, const std::string& description,
+	const std::function<bool(size_t progress, size_t total)>& progressCallback)
 {
-	BNProjectFolder* folder = BNProjectCreateFolderFromPath(m_object, path.c_str(), parent ? parent->m_object : nullptr, description.c_str());
+	ProgressContext cb;
+	cb.callback = progressCallback;
+	BNProjectFolder* folder = BNProjectCreateFolderFromPath(m_object, path.c_str(), parent ? parent->m_object : nullptr, description.c_str(), &cb, ProgressCallback);
 	if (folder == nullptr)
 		return nullptr;
 	return new ProjectFolder(folder);
@@ -311,9 +314,11 @@ void Project::PushFolder(Ref<ProjectFolder> folder)
 }
 
 
-void Project::DeleteFolder(Ref<ProjectFolder> folder)
+void Project::DeleteFolder(Ref<ProjectFolder> folder, const std::function<bool(size_t progress, size_t total)>& progressCallback)
 {
-	BNProjectDeleteFolder(m_object, folder->m_object);
+	ProgressContext cb;
+	cb.callback = progressCallback;
+	BNProjectDeleteFolder(m_object, folder->m_object, &cb, ProgressCallback);
 }
 
 

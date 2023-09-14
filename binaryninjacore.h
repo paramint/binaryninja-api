@@ -3306,12 +3306,14 @@ extern "C"
 	BINARYNINJACOREAPI void BNProjectPushFile(BNProject* project, BNProjectFile* file);
 	BINARYNINJACOREAPI void BNProjectDeleteFile(BNProject* project, BNProjectFile* file);
 
-	BINARYNINJACOREAPI BNProjectFolder* BNProjectCreateFolderFromPath(BNProject* project, const char* path, BNProjectFolder* parent, const char* description);
+	BINARYNINJACOREAPI BNProjectFolder* BNProjectCreateFolderFromPath(BNProject* project, const char* path, BNProjectFolder* parent, const char* description, void* ctxt,
+		bool (*progress)(void* ctxt, size_t progress, size_t total));
 	BINARYNINJACOREAPI BNProjectFolder* BNProjectCreateFolder(BNProject* project, BNProjectFolder* parent, const char* name, const char* description);
 	BINARYNINJACOREAPI BNProjectFolder** BNProjectGetFolders(BNProject* project, size_t* count);
 	BINARYNINJACOREAPI BNProjectFolder* BNProjectGetFolderById(BNProject* project, const char* id);
 	BINARYNINJACOREAPI void BNProjectPushFolder(BNProject* project, BNProjectFolder* folder);
-	BINARYNINJACOREAPI void BNProjectDeleteFolder(BNProject* project, BNProjectFolder* folder);
+	BINARYNINJACOREAPI void BNProjectDeleteFolder(BNProject* project, BNProjectFolder* folder, void* ctxt,
+		bool (*progress)(void* ctxt, size_t progress, size_t total));
 
 	// ProjectFile object
 	BINARYNINJACOREAPI BNProjectFile* BNNewProjectFileReference(BNProjectFile* file);

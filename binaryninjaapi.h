@@ -2330,12 +2330,13 @@ namespace BinaryNinja {
 
 		bool PathExists(Ref<ProjectFolder> folder, const std::string& name) const;
 
-		Ref<ProjectFolder> CreateFolderFromPath(const std::string& path, Ref<ProjectFolder> parent, const std::string& description);
+		Ref<ProjectFolder> CreateFolderFromPath(const std::string& path, Ref<ProjectFolder> parent, const std::string& description,
+			const std::function<bool(size_t progress, size_t total)>& progressCallback = {});
 		Ref<ProjectFolder> CreateFolder(Ref<ProjectFolder> parent, const std::string& name, const std::string& description);
 		std::vector<Ref<ProjectFolder>> GetFolders() const;
 		Ref<ProjectFolder> GetFolderById(const std::string& id) const;
 		void PushFolder(Ref<ProjectFolder> folder);
-		void DeleteFolder(Ref<ProjectFolder> folder);
+		void DeleteFolder(Ref<ProjectFolder> folder, const std::function<bool(size_t progress, size_t total)>& progressCallback = {});
 
 		Ref<ProjectFile> CreateFileFromPath(const std::string& path, Ref<ProjectFolder> folder, const std::string& name, const std::string& description);
 		Ref<ProjectFile> CreateFile(const std::vector<uint8_t>& contents, Ref<ProjectFolder> folder, const std::string& name, const std::string& description);
