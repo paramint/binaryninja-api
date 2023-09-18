@@ -27,6 +27,7 @@ from . import _binaryninjacore as core
 from . import types as ty_
 from . import platform
 from . import typeparser
+from . import enums
 
 
 ProgressFuncType = Callable[[int, int], bool]
@@ -51,6 +52,10 @@ class TypeContainer:
 	@property
 	def name(self) -> str:
 		return core.BNTypeContainerGetName(self.handle)
+
+	@property
+	def container_type(self) -> 'enums.TypeContainerType':
+		return core.BNTypeContainerGetType(self.handle)
 
 	@property
 	def mutable(self) -> bool:

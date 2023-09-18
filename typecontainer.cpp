@@ -83,6 +83,12 @@ std::string TypeContainer::GetName() const
 }
 
 
+BNTypeContainerType TypeContainer::GetType() const
+{
+	return BNTypeContainerGetType(m_object);
+}
+
+
 bool TypeContainer::IsMutable() const
 {
 	return BNTypeContainerIsMutable(m_object);

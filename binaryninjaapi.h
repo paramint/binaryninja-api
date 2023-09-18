@@ -16203,6 +16203,7 @@ namespace BinaryNinja {
 
 		std::string GetId() const;
 		std::string GetName() const;
+		BNTypeContainerType GetType() const;
 		bool IsMutable() const;
 
 		std::optional<std::unordered_map<QualifiedName, std::string>> AddTypes(

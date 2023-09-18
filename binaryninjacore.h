@@ -3016,6 +3016,17 @@ extern "C"
 		void (*typeDeleted)(void* ctxt, BNTypeArchive* archive, const char* id, BNType* definition);
 	} BNTypeArchiveNotification;
 
+	typedef enum BNTypeContainerType
+	{
+		AnalysisTypeContainerType,
+		AnalysisAutoTypeContainerType,
+		AnalysisUserTypeContainerType,
+		TypeLibraryTypeContainerType,
+		TypeArchiveTypeContainerType,
+		DebugInfoTypeContainerType,
+		PlatformTypeContainerType,
+	} BNTypeContainerType;
+
 	BINARYNINJACOREAPI char* BNAllocString(const char* contents);
 	BINARYNINJACOREAPI void BNFreeString(char* str);
 	BINARYNINJACOREAPI char** BNAllocStringList(const char** contents, size_t size);
@@ -4475,6 +4486,7 @@ extern "C"
 	BINARYNINJACOREAPI BNTypeContainer* BNDuplicateTypeContainer(BNTypeContainer* container);
 	BINARYNINJACOREAPI char* BNTypeContainerGetId(BNTypeContainer* container);
 	BINARYNINJACOREAPI char* BNTypeContainerGetName(BNTypeContainer* container);
+	BINARYNINJACOREAPI BNTypeContainerType BNTypeContainerGetType(BNTypeContainer* container);
 	BINARYNINJACOREAPI bool BNTypeContainerIsMutable(BNTypeContainer* container);
 	BINARYNINJACOREAPI bool BNTypeContainerAddTypes(BNTypeContainer* container, const BNQualifiedName* typeNames, BNType** types, size_t typeCount, bool(*progress)(void*, size_t, size_t), void* progressContext, BNQualifiedName** resultNames, char*** resultIds, size_t* resultCount);
 	BINARYNINJACOREAPI bool BNTypeContainerRenameType(BNTypeContainer* container, const char* typeId, const BNQualifiedName* newName);
