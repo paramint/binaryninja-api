@@ -430,6 +430,7 @@ public:
 
 	void showSelectedTypes();
 	void showTypes(const std::vector<TypeReference>& types);
+	void selectTypeByName(const std::string& name);
 
 	// Selection helpers
 

@@ -6,11 +6,13 @@
 
 class BINARYNINJAUIAPI TypeEditor: public TokenizedTextWidget
 {
+	Q_OBJECT
+
 	PlatformRef m_platform;
 	std::optional<BinaryNinja::TypeContainer> m_typeContainer;
 	std::vector<BinaryNinja::QualifiedName> m_typeNames;
 
-	std::vector<BinaryNinja::QualifiedName> m_lineTypeRefs;
+	std::vector<BinaryNinja::QualifiedName> m_lineTypeRefs;	std::vector<BinaryNinja::TypeDefinitionLine> m_typeLines;
 
 public:
 	TypeEditor(QWidget* parent);
@@ -25,6 +27,8 @@ public:
 
 	std::vector<BinaryNinja::QualifiedName> typeNames() const { return m_typeNames; }
 	void setTypeNames(const std::vector<BinaryNinja::QualifiedName>& names);
+
+	std::optional<std::reference_wrapper<const BinaryNinja::TypeDefinitionLine>> typeLineAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
 
 public Q_SLOTS:
 	void createTypes();
@@ -54,6 +58,9 @@ public Q_SLOTS:
 
 public:
 	void goToAddress(bool selecting);
+
+Q_SIGNALS:
+	void onTypeNameDoubleClicked(const std::string& typeName);
 
 private:
 	void updateLines();
