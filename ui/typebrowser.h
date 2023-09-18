@@ -336,6 +336,10 @@ public:
 	TypeBrowserFilterModel(BinaryViewRef data, TypeBrowserModel* model);
 
 	void setFilter(const std::string& filter);
+
+Q_SIGNALS:
+	void filterAboutToBeChanged();
+	void filterChanged();
 };
 
 
@@ -395,8 +399,6 @@ class BINARYNINJAUIAPI TypeBrowserView : public QFrame, public View, public Filt
 	bool m_updatedWidths;
 
 	class TypeEditor* m_typeEditor;
-
-	QTimer* m_filterTimer;
 
 	std::unordered_map<std::string, BinaryNinja::TypeContainer> m_containerCache;
 
