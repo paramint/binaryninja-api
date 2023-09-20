@@ -14,6 +14,8 @@ class BINARYNINJAUIAPI TypeEditor: public TokenizedTextWidget
 
 	std::vector<BinaryNinja::QualifiedName> m_lineTypeRefs;	std::vector<BinaryNinja::TypeDefinitionLine> m_typeLines;
 
+	TokenizedTextWidgetCursorPosition m_originalBase;
+
 public:
 	TypeEditor(QWidget* parent);
 
