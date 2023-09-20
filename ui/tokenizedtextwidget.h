@@ -105,7 +105,10 @@ private:
 	TokenizedTextWidgetCursorPosition m_cursorPos, m_selectionStartPos, m_hoverPos;
 	TokenizedTextWidgetSelectionStyle m_selectionMode;
 	size_t m_hoverLine;
+	bool m_selectionStartedPastWidth;
+	bool m_selectionStartedPastHeight;
 	bool m_cursorKeys;
+	bool m_forceLineSelect;
 
 	std::vector<BinaryNinja::LinearDisassemblyLine> m_lines;
 	std::vector<LineMetadata> m_lineMetadata;
@@ -157,6 +160,8 @@ private:
 	TokenizedTextWidgetCursorPosition selectionBase() const;
 	// Position of cursor for movement operations
 	TokenizedTextWidgetCursorPosition cursorPosition() const;
+	bool forceLineSelect() const { return m_forceLineSelect; }
+	void setForceLineSelect(bool value) { m_forceLineSelect = value; }
 
 	void setSelection(TokenizedTextWidgetCursorPosition base, TokenizedTextWidgetCursorPosition cursor, TokenizedTextWidgetSelectionStyle mode);
 	void setCursorPosition(TokenizedTextWidgetCursorPosition newPosition, bool selecting, bool cursorKeys, bool evenIfNoChange);
