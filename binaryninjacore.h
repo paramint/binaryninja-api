@@ -1504,7 +1504,7 @@ extern "C"
 		void (*afterOpenProject)(void* ctxt, BNProject* project);
 		bool (*beforeCloseProject)(void* ctxt, BNProject* project);
 		void (*afterCloseProject)(void* ctxt, BNProject* project);
-		void (*projectMetadataWritten)(void* ctxt, BNProject* project, char* key, char* value);
+		void (*projectMetadataWritten)(void* ctxt, BNProject* project, char* key, BNMetadata* value);
 		void (*projectFileCreated)(void* ctxt, BNProject* project, BNProjectFile* projectFile);
 		void (*projectFileUpdated)(void* ctxt, BNProject* project, BNProjectFile* projectFile);
 		void (*projectFileDeleted)(void* ctxt, BNProject* project, BNProjectFile* projectFile);
@@ -3295,9 +3295,9 @@ extern "C"
 	BINARYNINJACOREAPI char* BNProjectGetDescription(BNProject* project);
 	BINARYNINJACOREAPI void BNProjectSetDescription(BNProject* project, const char* description);
 
-	BINARYNINJACOREAPI char* BNProjectReadMetadata(BNProject* project, const char* key);
-	BINARYNINJACOREAPI void BNProjectWriteMetadata(BNProject* project, const char* key, const char* value);
-	BINARYNINJACOREAPI void BNProjectDeleteMetadata(BNProject* project, const char* key);
+	BINARYNINJACOREAPI BNMetadata* BNProjectQueryMetadata(BNProject* project, const char* key);
+	BINARYNINJACOREAPI void BNProjectStoreMetadata(BNProject* project, const char* key, BNMetadata* value);
+	BINARYNINJACOREAPI void BNProjectRemoveMetadata(BNProject* project, const char* key);
 
 	BINARYNINJACOREAPI BNProjectFile* BNProjectCreateFileFromPath(BNProject* project, const char* path, BNProjectFolder* folder, const char* name, const char* description);
 	BINARYNINJACOREAPI BNProjectFile* BNProjectCreateFile(BNProject* project, const uint8_t* contents, size_t contentsSize, BNProjectFolder* folder, const char* name, const char* description);

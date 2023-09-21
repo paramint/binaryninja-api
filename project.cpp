@@ -57,15 +57,14 @@ void ProjectNotification::AfterCloseProjectCallback(void* ctxt, BNProject* objec
 }
 
 
-void ProjectNotification::ProjectMetadataWrittenCallback(void* ctxt, BNProject* object, char* key, char* value)
+void ProjectNotification::ProjectMetadataWrittenCallback(void* ctxt, BNProject* object, char* key, BNMetadata* value)
 {
 	ProjectNotification* notify = (ProjectNotification*)ctxt;
 	Ref<Project> project = new Project(BNNewProjectReference(object));
 	std::string keyStr = key;
 	BNFreeString(key);
-	std::string valueStr = value;
-	BNFreeString(value);
-	notify->OnProjectMetadataWritten(project, keyStr, valueStr);
+	Ref<Metadata> metaVal = new Metadata(BNNewMetadataReference(value));
+	notify->OnProjectMetadataWritten(project, keyStr, metaVal);
 }
 
 
@@ -231,26 +230,24 @@ void Project::SetDescription(const std::string& description)
 }
 
 
-std::optional<std::string> Project::ReadMetadata(const std::string& key)
+Ref<Metadata> Project::QueryMetadata(const std::string& key)
 {
-	char* value = BNProjectReadMetadata(m_object, key.c_str());
+	BNMetadata* value = BNProjectQueryMetadata(m_object, key.c_str());
 	if (value == nullptr)
-		return {};
-	std::string result = value;
-	BNFreeString(value);
-	return result;
+		return nullptr;
+	return new Metadata(value);
 }
 
 
-void Project::WriteMetadata(const std::string& key, const std::string& value)
+void Project::StoreMetadata(const std::string& key, Ref<Metadata> value)
 {
-	BNProjectWriteMetadata(m_object, key.c_str(), value.c_str());
+	BNProjectStoreMetadata(m_object, key.c_str(), value->m_object);
 }
 
 
-void Project::DeleteMetadata(const std::string& key)
+void Project::RemoveMetadata(const std::string& key)
 {
-	BNProjectDeleteMetadata(m_object, key.c_str());
+	BNProjectRemoveMetadata(m_object, key.c_str());
 }
 
 

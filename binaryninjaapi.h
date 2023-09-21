@@ -2181,7 +2181,7 @@ namespace BinaryNinja {
 		static void AfterOpenProjectCallback(void* ctxt, BNProject* project);
 		static bool BeforeCloseProjectCallback(void* ctxt, BNProject* project);
 		static void AfterCloseProjectCallback(void* ctxt, BNProject* project);
-		static void ProjectMetadataWrittenCallback(void* ctxt, BNProject* project, char* key, char* value);
+		static void ProjectMetadataWrittenCallback(void* ctxt, BNProject* project, char* key, BNMetadata* value);
 		static void ProjectFileCreatedCallback(void* ctxt, BNProject* project, BNProjectFile* projectFile);
 		static void ProjectFileUpdatedCallback(void* ctxt, BNProject* project, BNProjectFile* projectFile);
 		static void ProjectFileDeletedCallback(void* ctxt, BNProject* project, BNProjectFile* projectFile);
@@ -2217,7 +2217,7 @@ namespace BinaryNinja {
 			(void)project;
 		}
 
-		virtual void OnProjectMetadataWritten(Project* project, std::string& key, std::string& value)
+		virtual void OnProjectMetadataWritten(Project* project, std::string& key, Metadata* value)
 		{
 			(void)project;
 			(void)key;
@@ -2324,9 +2324,9 @@ namespace BinaryNinja {
 		std::string GetDescription() const;
 		void SetDescription(const std::string& description);
 
-		std::optional<std::string> ReadMetadata(const std::string& key);
-		void WriteMetadata(const std::string& key, const std::string& value);
-		void DeleteMetadata(const std::string& key);
+		Ref<Metadata> QueryMetadata(const std::string& key);
+		void StoreMetadata(const std::string& key, Ref<Metadata> value);
+		void RemoveMetadata(const std::string& key);
 
 		bool PathExists(Ref<ProjectFolder> folder, const std::string& name) const;
 
