@@ -390,6 +390,18 @@ void Project::UnregisterNotification(ProjectNotification* notify)
 }
 
 
+void Project::BeginBulkOperation()
+{
+	BNProjectBeginBulkOperation(m_object);
+}
+
+
+void Project::EndBulkOperation()
+{
+	BNProjectEndBulkOperation(m_object);
+}
+
+
 ProjectFile::ProjectFile(BNProjectFile* file)
 {
 	m_object = file;

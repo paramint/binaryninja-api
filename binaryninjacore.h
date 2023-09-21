@@ -3315,6 +3315,9 @@ extern "C"
 	BINARYNINJACOREAPI void BNProjectDeleteFolder(BNProject* project, BNProjectFolder* folder, void* ctxt,
 		bool (*progress)(void* ctxt, size_t progress, size_t total));
 
+	BINARYNINJACOREAPI void BNProjectBeginBulkOperation(BNProject* project);
+	BINARYNINJACOREAPI void BNProjectEndBulkOperation(BNProject* project);
+
 	// ProjectFile object
 	BINARYNINJACOREAPI BNProjectFile* BNNewProjectFileReference(BNProjectFile* file);
 	BINARYNINJACOREAPI void BNFreeProjectFile(BNProjectFile* file);

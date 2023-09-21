@@ -2347,6 +2347,9 @@ namespace BinaryNinja {
 
 		void RegisterNotification(ProjectNotification* notify);
 		void UnregisterNotification(ProjectNotification* notify);
+
+		void BeginBulkOperation();
+		void EndBulkOperation();
 	};
 
 
