@@ -66,7 +66,7 @@ protected:
 
 class BINARYNINJAUIAPI RootTreeNode : public TypeBrowserTreeNode
 {
-	std::shared_ptr<class BinaryViewTreeNode> m_viewNode, m_autoViewNode, m_userViewNode;
+	std::shared_ptr<class BinaryViewTreeNode> m_userViewNode, m_autoViewNode;
 	std::map<std::string, std::shared_ptr<class TypeArchiveTreeNode>> m_archiveNodes;
 	std::map<TypeLibraryRef, std::shared_ptr<class TypeLibraryTreeNode>> m_libraryNodes;
 	std::map<std::string, std::shared_ptr<class DebugInfoTreeNode>> m_debugInfoNodes;
