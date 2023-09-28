@@ -10,6 +10,7 @@ class BINARYNINJAUIAPI TypeEditor: public TokenizedTextWidget
 
 	PlatformRef m_platform;
 	std::optional<BinaryNinja::TypeContainer> m_typeContainer;
+	std::optional<BinaryViewRef> m_binaryView;
 	std::vector<BinaryNinja::QualifiedName> m_typeNames;
 
 	std::vector<BinaryNinja::QualifiedName> m_lineTypeRefs;	std::vector<BinaryNinja::TypeDefinitionLine> m_typeLines;
@@ -24,6 +25,9 @@ public:
 	PlatformRef platform() const { return m_platform; }
 	void setPlatform(PlatformRef platform) { m_platform = platform; }
 
+	std::optional<BinaryViewRef> binaryView() const { return m_binaryView; }
+	void setBinaryView(std::optional<BinaryViewRef> binaryView) { m_binaryView = binaryView; }
+
 	std::optional<std::reference_wrapper<const BinaryNinja::TypeContainer>> typeContainer() const;
 	void setTypeContainer(std::optional<BinaryNinja::TypeContainer> container);
 
@@ -31,6 +35,9 @@ public:
 	void setTypeNames(const std::vector<BinaryNinja::QualifiedName>& names);
 
 	std::optional<std::reference_wrapper<const BinaryNinja::TypeDefinitionLine>> typeLineAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
+	std::optional<BinaryNinja::QualifiedName> rootTypeNameAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
+	std::optional<TypeRef> rootTypeAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
+	std::optional<uint64_t> offsetAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
 
 	bool canCreateAllMembersForStructure();
 	void createAllMembersForStructure();
@@ -79,6 +86,8 @@ public:
 
 Q_SIGNALS:
 	void typeNameNavigated(const std::string& typeName);
+	void currentTypeUpdated(const BinaryNinja::QualifiedName& typeName);
+	void currentTypeNameUpdated(const BinaryNinja::QualifiedName& typeName);
 
 private:
 	void updateLines();
