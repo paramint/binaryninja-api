@@ -7997,11 +7997,7 @@ namespace BinaryNinja {
 
 		bool AddTypeMemberTokens(BinaryView* data, std::vector<InstructionTextToken>& tokens, int64_t offset,
 		    std::vector<std::string>& nameList, size_t size = 0, bool indirect = false);
-		/*! \deprecated This API is now just a wrapper for GetLines with a TypeContainer
-		*/
-		std::vector<TypeDefinitionLine> GetLines(Ref<BinaryView> data, const std::string& name,
-			int lineWidth = 80, bool collapsed = false, BNTokenEscapingType escaping = NoTokenEscapingType);
-		std::vector<TypeDefinitionLine> GetLines(const TypeContainer& types, const std::string& name, Ref<Platform> platform = nullptr,
+		std::vector<TypeDefinitionLine> GetLines(const TypeContainer& types, const std::string& name,
 			int lineWidth = 80, bool collapsed = false, BNTokenEscapingType escaping = NoTokenEscapingType);
 
 		static std::string GetSizeSuffix(size_t size);
@@ -8254,11 +8250,6 @@ namespace BinaryNinja {
 		*/
 		std::vector<StructureMember> GetMembers() const;
 
-		/*! Get a list of Structure members, including those inherited from base structures
-
-		    \return The list of structure members
-		*/
-		std::vector<InheritedStructureMember> GetMembersIncludingInherited(BinaryView* view) const;
 		/*! Get a list of Structure members, including those inherited from base structures
 
 		    \return The list of structure members
@@ -13978,7 +13969,7 @@ namespace BinaryNinja {
 		static bool GetTypeStringAfterNameCallback(void* ctxt, BNType* type,
 			BNPlatform* platform, BNTokenEscapingType escaping, char** result);
 		static bool GetTypeLinesCallback(void* ctxt, BNType* type, BNTypeContainer* types,
-			BNQualifiedName* name, BNPlatform* platform, int lineWidth, bool collapsed,
+			BNQualifiedName* name, int lineWidth, bool collapsed,
 			BNTokenEscapingType escaping, BNTypeDefinitionLine** result, size_t* resultCount);
 		static bool PrintAllTypesCallback(void* ctxt, BNQualifiedName* names, BNType** types, size_t typeCount,
 			BNBinaryView* data, int lineWidth, BNTokenEscapingType escaping, char** result);
@@ -14093,7 +14084,6 @@ namespace BinaryNinja {
 		    \param type Type to print
 		    \param types Type Container in which the type is defined
 		    \param name Name of the type
-		    \param platform Platform responsible for this type
 		    \param lineWidth Maximum width of lines, in characters
 		    \param collapsed Whether to collapse structure/enum blocks
 		    \param escaping Style of escaping literals which may not be parsable
@@ -14103,7 +14093,6 @@ namespace BinaryNinja {
 			Ref<Type> type,
 			const TypeContainer& types,
 			const QualifiedName& name,
-			Ref<Platform> platform = nullptr,
 			int lineWidth = 80,
 			bool collapsed = false,
 			BNTokenEscapingType escaping = NoTokenEscapingType
@@ -14166,7 +14155,7 @@ namespace BinaryNinja {
 		virtual std::string GetTypeStringAfterName(Ref<Type> type, Ref<Platform> platform,
 			BNTokenEscapingType escaping) override;
 		virtual std::vector<TypeDefinitionLine> GetTypeLines(Ref<Type> type,
-			const TypeContainer& types, const QualifiedName& name, Ref<Platform> platform, int lineWidth,
+			const TypeContainer& types, const QualifiedName& name, int lineWidth,
 			bool collapsed, BNTokenEscapingType escaping) override;
 		virtual std::string PrintAllTypes(const std::vector<std::pair<QualifiedName, Ref<Type>>>& types,
 			Ref<BinaryView> data, int lineWidth, BNTokenEscapingType escaping) override;
@@ -16251,7 +16240,6 @@ namespace BinaryNinja {
 		bool ParseTypesFromSource(
 			const std::string& text,
 			const std::string& fileName,
-			Ref<Platform> platform,
 			const std::vector<std::string>& options,
 			const std::vector<std::string>& includeDirs,
 			const std::string& autoTypeSource,

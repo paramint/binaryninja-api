@@ -1234,7 +1234,6 @@ impl fmt::Debug for Type {
                         self.handle,
                         container,
                         "".as_ptr() as *const c_char,
-                        null_mut(),
                         80,
                         false,
                         BNTokenEscapingType::NoTokenEscapingType,

@@ -2010,15 +2010,13 @@ class Type:
 		:rtype: :py:class:`TypeDefinitionLine`
 		"""
 		count = ctypes.c_ulonglong()
-		platform = None
 		if isinstance(bv, (binaryview.BinaryView,)):
 			container = bv.type_container
-			platform = bv.platform.handle
 		elif isinstance(bv, (typecontainer.TypeContainer,)):
 			container = bv
 		else:
 			assert False, "Unexpected type container type"
-		core_lines = core.BNGetTypeLines(self._handle, container.handle, name, platform, line_width, collapsed, escaping, count)
+		core_lines = core.BNGetTypeLines(self._handle, container.handle, name, line_width, collapsed, escaping, count)
 		assert core_lines is not None, "core.BNGetTypeLines returned None"
 		lines = []
 		for i in range(count.value):

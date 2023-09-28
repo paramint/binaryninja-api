@@ -1197,20 +1197,12 @@ bool Type::AddTypeMemberTokens(BinaryView* data, vector<InstructionTextToken>& t
 }
 
 
-std::vector<TypeDefinitionLine> Type::GetLines(Ref<BinaryView> data, const std::string& name,
-	int lineWidth, bool collapsed, BNTokenEscapingType escaping)
-{
-	TypeContainer container = data->GetTypeContainer();
-	return GetLines(container, name, data->GetDefaultPlatform(), lineWidth, collapsed, escaping);
-}
-
-
-std::vector<TypeDefinitionLine> Type::GetLines(const TypeContainer& types, const std::string& name, Ref<Platform> platform,
+std::vector<TypeDefinitionLine> Type::GetLines(const TypeContainer& types, const std::string& name,
 	int lineWidth, bool collapsed, BNTokenEscapingType escaping)
 {
 	size_t count;
 	BNTypeDefinitionLine* list =
-		BNGetTypeLines(m_object, types.GetObject(), name.c_str(), platform ? platform->m_object : nullptr, lineWidth, collapsed, escaping, &count);
+		BNGetTypeLines(m_object, types.GetObject(), name.c_str(), lineWidth, collapsed, escaping, &count);
 
 	std::vector<TypeDefinitionLine> results;
 	for (size_t i = 0; i < count; i++)
@@ -2148,12 +2140,6 @@ vector<StructureMember> Structure::GetMembers() const
 
 	BNFreeStructureMemberList(members, count);
 	return result;
-}
-
-
-vector<InheritedStructureMember> Structure::GetMembersIncludingInherited(BinaryView* view) const
-{
-	return GetMembersIncludingInherited(view->GetTypeContainer());
 }
 
 

@@ -317,7 +317,6 @@ std::optional<std::unordered_map<std::string, QualifiedName>> TypeContainer::Get
 bool TypeContainer::ParseTypesFromSource(
 	const std::string& text,
 	const std::string& fileName,
-	Ref<BinaryNinja::Platform> platform,
 	const std::vector<std::string>& options,
 	const std::vector<std::string>& includeDirs,
 	const std::string& autoTypeSource,
@@ -340,7 +339,7 @@ bool TypeContainer::ParseTypesFromSource(
 	BNTypeParserError* apiErrors;
 	size_t errorCount;
 
-	auto success = BNTypeContainerParseTypesFromSource(m_object, text.c_str(), fileName.c_str(), platform->GetObject(),
+	auto success = BNTypeContainerParseTypesFromSource(m_object, text.c_str(), fileName.c_str(),
 		apiOptions, options.size(), apiIncludeDirs, includeDirs.size(), autoTypeSource.c_str(), &apiResult,
 		&apiErrors, &errorCount);
 

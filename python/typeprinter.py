@@ -221,13 +221,12 @@ class TypePrinter(metaclass=_TypePrinterMetaclass):
 			log_error(traceback.format_exc())
 			return False
 
-	def _get_type_lines(self, ctxt, type, container, name, platform, line_width, collapsed, escaping, result, result_count):
+	def _get_type_lines(self, ctxt, type, container, name, line_width, collapsed, escaping, result, result_count):
 		try:
 			result_py = self.get_type_lines(
 				types.Type(handle=core.BNNewTypeReference(type)),
 				typecontainer.TypeContainer(handle=container),
 				types.QualifiedName._from_core_struct(name.contents),
-				_platform.Platform(handle=core.BNNewPlatformReference(platform)),
 				line_width, collapsed, escaping)
 
 			TypePrinter._cached_lines = (core.BNTypeDefinitionLine * len(result_py))()
@@ -374,13 +373,12 @@ class TypePrinter(metaclass=_TypePrinterMetaclass):
 		be printed after the type's name.
 
 		:param type: Type to print
-		:param platform: Platform responsible for this type
 		:param escaping: Style of escaping literals which may not be parsable
 		:return: String representing the type
 		"""
 		raise NotImplementedError()
 
-	def get_type_lines(self, type: types.Type, container: 'typecontainer.TypeContainer', name: types.QualifiedNameType, platform: _platform.Platform, line_width = 80, collapsed = False, escaping: TokenEscapingType = TokenEscapingType.BackticksTokenEscapingType) -> List[types.TypeDefinitionLine]:
+	def get_type_lines(self, type: types.Type, container: 'typecontainer.TypeContainer', name: types.QualifiedNameType, line_width = 80, collapsed = False, escaping: TokenEscapingType = TokenEscapingType.BackticksTokenEscapingType) -> List[types.TypeDefinitionLine]:
 		"""
 		Generate a multi-line representation of a type
 
@@ -492,7 +490,7 @@ class CoreTypePrinter(TypePrinter):
 		return result
 
 	def get_type_lines(self, type: types.Type, container: 'typecontainer.TypeContainer',
-					   name: types.QualifiedNameType, platform: _platform.Platform,
+					   name: types.QualifiedNameType,
 					   line_width = 80, collapsed = False,
 					   escaping: TokenEscapingType = TokenEscapingType.BackticksTokenEscapingType
 					   ) -> List[types.TypeDefinitionLine]:
@@ -500,19 +498,19 @@ class CoreTypePrinter(TypePrinter):
 			name = types.QualifiedName(name)
 		count = ctypes.c_ulonglong()
 		core_lines = ctypes.POINTER(core.BNTypeDefinitionLine)()
-		if not core.BNGetTypePrinterTypeLines(self.handle, type.handle, container.handle, name._to_core_struct(), platform.handle, line_width, collapsed, ctypes.c_int(escaping), core_lines, count):
+		if not core.BNGetTypePrinterTypeLines(self.handle, type.handle, container.handle, name._to_core_struct(), line_width, collapsed, ctypes.c_int(escaping), core_lines, count):
 			raise RuntimeError("BNGetTypePrinterTypeLines returned False")
 		lines = []
 		for i in range(count.value):
 			tokens = _function.InstructionTextToken._from_core_struct(core_lines[i].tokens, core_lines[i].count)
-			type_ = types.Type.create(handle=core.BNNewTypeReference(core_lines[i].type), platform=platform)
-			root_type = types.Type.create(handle=core.BNNewTypeReference(core_lines[i].rootType), platform=platform)
+			type_ = types.Type.create(handle=core.BNNewTypeReference(core_lines[i].type), platform=container.platform)
+			root_type = types.Type.create(handle=core.BNNewTypeReference(core_lines[i].rootType), platform=container.platform)
 			root_type_name = core.pyNativeStr(core_lines[i].rootTypeName)
 			if core_lines[i].baseType:
 				const_conf = types.BoolWithConfidence.get_core_struct(False, 0)
 				volatile_conf = types.BoolWithConfidence.get_core_struct(False, 0)
 				handle = core.BNCreateNamedTypeReference(core_lines[i].baseType, 0, 1, const_conf, volatile_conf)
-				base_type = types.NamedTypeReferenceType(handle, platform)
+				base_type = types.NamedTypeReferenceType(handle, container.platform)
 			else:
 				base_type = None
 			line = types.TypeDefinitionLine(core_lines[i].lineType, tokens, type_, root_type, root_type_name, base_type,
