@@ -2527,6 +2527,10 @@ namespace BinaryNinja {
 			ComponentFunctionRemoved = 1ULL << 36,
 			ComponentDataVariableAdded = 1ULL << 37,
 			ComponentDataVariableRemoved = 1ULL << 38,
+			TypeArchiveAttached = 1ULL << 39,
+			TypeArchiveDetached = 1ULL << 40,
+			TypeArchiveConnected = 1ULL << 41,
+			TypeArchiveDisconnected = 1ULL << 42,
 
 			BinaryDataUpdates = DataWritten | DataInserted | DataRemoved,
 			FunctionLifetime = FunctionAdded | FunctionRemoved,
@@ -2544,7 +2548,8 @@ namespace BinaryNinja {
 			SegmentUpdates = SegmentLifetime | SegmentUpdated,
 			SectionLifetime = SectionAdded | SectionRemoved,
 			SectionUpdates = SectionLifetime | SectionUpdated,
-			ComponentUpdates = ComponentAdded | ComponentRemoved | ComponentMoved | ComponentFunctionAdded | ComponentFunctionRemoved | ComponentDataVariableAdded | ComponentDataVariableRemoved
+			ComponentUpdates = ComponentAdded | ComponentRemoved | ComponentMoved | ComponentFunctionAdded | ComponentFunctionRemoved | ComponentDataVariableAdded | ComponentDataVariableRemoved,
+			TypeArchiveUpdates = TypeArchiveAttached | TypeArchiveDetached | TypeArchiveConnected | TypeArchiveDisconnected
 		};
 
 		using NotificationTypes = uint64_t;

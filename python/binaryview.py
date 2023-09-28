@@ -194,6 +194,7 @@ class NotificationType(IntFlag):
 	SectionLifetime = SectionAdded | SectionRemoved
 	SectionUpdates = SectionLifetime | SectionUpdated
 	ComponentUpdates = (ComponentAdded | ComponentRemoved | ComponentMoved | ComponentFunctionAdded | ComponentFunctionRemoved | ComponentDataVariableAdded | ComponentDataVariableRemoved)
+	TypeArchiveUpdates = (TypeArchiveAttached | TypeArchiveDetached | TypeArchiveConnected | TypeArchiveDisconnected)
 
 
 class BinaryDataNotification:

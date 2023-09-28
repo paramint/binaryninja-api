@@ -532,6 +532,10 @@ BinaryDataNotification::BinaryDataNotification(NotificationTypes notifications)
 	m_callbacks.componentFunctionRemoved = (notifications & NotificationType::ComponentFunctionRemoved) ? ComponentFunctionRemovedCallback : nullptr;
 	m_callbacks.componentDataVariableAdded = (notifications & NotificationType::ComponentDataVariableAdded) ? ComponentDataVariableAddedCallback : nullptr;
 	m_callbacks.componentDataVariableRemoved = (notifications & NotificationType::ComponentDataVariableRemoved) ? ComponentDataVariableRemovedCallback : nullptr;
+	m_callbacks.typeArchiveAttached = (notifications & NotificationType::TypeArchiveAttached) ? TypeArchiveAttachedCallback : nullptr;
+	m_callbacks.typeArchiveDetached = (notifications & NotificationType::TypeArchiveDetached) ? TypeArchiveDetachedCallback : nullptr;
+	m_callbacks.typeArchiveConnected = (notifications & NotificationType::TypeArchiveConnected) ? TypeArchiveConnectedCallback : nullptr;
+	m_callbacks.typeArchiveDisconnected = (notifications & NotificationType::TypeArchiveDisconnected) ? TypeArchiveDisconnectedCallback : nullptr;
 }
 
 
