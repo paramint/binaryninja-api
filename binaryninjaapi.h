@@ -16211,6 +16211,12 @@ namespace BinaryNinja {
 	public:
 		explicit TypeContainer(BNTypeContainer* container);
 		explicit TypeContainer(TypeContainer&& other);
+
+		TypeContainer(Ref<BinaryView> data);
+		TypeContainer(Ref<TypeLibrary> library);
+		TypeContainer(Ref<TypeArchive> archive);
+		TypeContainer(Ref<Platform> platform);
+
 		~TypeContainer();
 		TypeContainer(const TypeContainer& other);
 		TypeContainer& operator=(const TypeContainer& other);

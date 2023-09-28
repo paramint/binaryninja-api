@@ -36,6 +36,34 @@ TypeContainer::TypeContainer(TypeContainer&& other)
 }
 
 
+TypeContainer::TypeContainer(Ref<BinaryView> data)
+{
+	auto container = data->GetTypeContainer();
+	m_object = BNDuplicateTypeContainer(container.m_object);
+}
+
+
+TypeContainer::TypeContainer(Ref<TypeLibrary> library)
+{
+	auto container = library->GetTypeContainer();
+	m_object = BNDuplicateTypeContainer(container.m_object);
+}
+
+
+TypeContainer::TypeContainer(Ref<TypeArchive> archive)
+{
+	auto container = archive->GetTypeContainer();
+	m_object = BNDuplicateTypeContainer(container.m_object);
+}
+
+
+TypeContainer::TypeContainer(Ref<Platform> platform)
+{
+	auto container = platform->GetTypeContainer();
+	m_object = BNDuplicateTypeContainer(container.m_object);
+}
+
+
 TypeContainer::~TypeContainer()
 {
 	if (m_object)
