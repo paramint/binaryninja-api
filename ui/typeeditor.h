@@ -32,37 +32,59 @@ public:
 
 	std::optional<std::reference_wrapper<const BinaryNinja::TypeDefinitionLine>> typeLineAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
 
-public Q_SLOTS:
+	bool canCreateTypes();
 	void createTypes();
+	bool canCreateStructure();
 	void createStructure();
+	bool canCreateUnion();
 	void createUnion();
+	bool canCreateAllMembersForStructure();
 	void createAllMembersForStructure();
+	bool canCreateCurrentMemberForStructure();
 	void createCurrentMemberForStructure();
+	bool canDefineName();
 	void defineName();
+	bool canUndefine();
 	void undefine();
+	bool canCreateArray();
 	void createArray();
+	bool canChangeType();
 	void changeType();
+	bool canSetStructureSize();
 	void setStructureSize();
+	bool canAddUserXref();
 	void addUserXref();
+	bool canMakePointer();
 	void makePointer();
+	bool canMakeCString();
 	void makeCString();
+	bool canMakeUTF16String();
 	void makeUTF16String();
+	bool canMakeUTF32String();
 	void makeUTF32String();
+	bool canCycleIntegerSize();
 	void cycleIntegerSize();
+	bool canCycleFloatSize();
 	void cycleFloatSize();
+	bool canInvertIntegerSize();
 	void invertIntegerSize();
+	bool canMakeInt8();
 	void makeInt8();
+	bool canMakeInt16();
 	void makeInt16();
+	bool canMakeInt32();
 	void makeInt32();
+	bool canMakeInt64();
 	void makeInt64();
+	bool canMakeFloat32();
 	void makeFloat32();
+	bool canMakeFloat64();
 	void makeFloat64();
-
-public:
+	bool canGoToAddress(bool selecting);
 	void goToAddress(bool selecting);
 
 Q_SIGNALS:
-	void onTypeNameDoubleClicked(const std::string& typeName);
+	void typeNameNavigated(const std::string& typeName);
 
 private:
 	void updateLines();
