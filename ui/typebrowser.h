@@ -354,12 +354,11 @@ public:
 
 struct BINARYNINJAUIAPI TypeReference
 {
-	PlatformRef platform;
 	std::string containerId;
 	BinaryNinja::QualifiedName typeName;
 
 	TypeReference() = default;
-	TypeReference(PlatformRef platform, std::string containerId, BinaryNinja::QualifiedName typeName);
+	TypeReference(std::string containerId, BinaryNinja::QualifiedName typeName);
 };
 
 
@@ -432,6 +431,8 @@ public:
 	std::optional<TypeReference> selectedType() const;
 	// Selected type references
 	std::vector<TypeReference> selectedTypes() const;
+	// Selected type container, or container of selected type
+	std::optional<BinaryNinja::TypeContainer> selectedTypeContainer(bool makeSureItHasPlatform = true) const;
 
 	// TAs selected or TAs relevant to selected types, only if JUST ta stuff is selected and only 1 TA
 	std::optional<TypeArchiveRef> selectedTA() const;
@@ -473,6 +474,10 @@ public:
 
 	bool canCreateNewTypes();
 	void createNewTypes();
+	bool canCreateNewStructure();
+	void createNewStructure();
+	bool canCreateNewUnion();
+	void createNewUnion();
 	bool canRenameTypes();
 	void renameTypes();
 	bool canDeleteTypes();

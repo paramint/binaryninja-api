@@ -32,12 +32,6 @@ public:
 
 	std::optional<std::reference_wrapper<const BinaryNinja::TypeDefinitionLine>> typeLineAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
 
-	bool canCreateTypes();
-	void createTypes();
-	bool canCreateStructure();
-	void createStructure();
-	bool canCreateUnion();
-	void createUnion();
 	bool canCreateAllMembersForStructure();
 	void createAllMembersForStructure();
 	bool canCreateCurrentMemberForStructure();
