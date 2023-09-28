@@ -58,11 +58,24 @@ class TypeArchive:
 	@staticmethod
 	def open(path: str) -> Optional['TypeArchive']:
 		"""
-		Open the Type Archive at the given path, if it exists, or create one if it does not.
+		Open the Type Archive at the given path, if it exists.
 		:param path: Path to Type Archive file
 		:return: Type Archive, or None if it could not be loaded.
 		"""
 		handle = core.BNOpenTypeArchive(path)
+		if handle is None:
+			return None
+		return TypeArchive(handle=handle)
+
+	@staticmethod
+	def create(path: str, platform: 'platform.Platform') -> Optional['TypeArchive']:
+		"""
+		Create a Type Archive at the given path.
+		:param path: Path to Type Archive file
+		:param platform: Relevant platform for types in the archive
+		:return: Type Archive, or None if it could not be created.
+		"""
+		handle = core.BNCreateTypeArchive(path, platform.handle)
 		if handle is None:
 			return None
 		return TypeArchive(handle=handle)
@@ -94,6 +107,16 @@ class TypeArchive:
 		:return: Guid string
 		"""
 		return core.BNGetTypeArchiveId(self.handle)
+
+	@property
+	def platform(self) -> 'platform.Platform':
+		"""
+		Get the associated Platform for a Type Archive
+		:return: Platform object
+		"""
+		handle = core.BNGetTypeArchivePlatform(self.handle)
+		assert handle is not None
+		return platform.Platform(handle=handle)
 
 	@property
 	def current_snapshot_id(self) -> str:

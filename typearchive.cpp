@@ -86,6 +86,15 @@ Ref<TypeArchive> TypeArchive::Open(const std::string& path)
 }
 
 
+Ref<TypeArchive> TypeArchive::Create(const std::string& path, Ref<Platform> platform)
+{
+	BNTypeArchive* handle = BNCreateTypeArchive(path.c_str(), platform->GetObject());
+	if (!handle)
+		return nullptr;
+	return new TypeArchive(handle);
+}
+
+
 Ref<TypeArchive> TypeArchive::LookupById(const std::string& id)
 {
 	BNTypeArchive* handle = BNLookupTypeArchiveById(id.c_str());
@@ -110,6 +119,15 @@ std::string TypeArchive::GetPath() const
 	std::string result(str);
 	BNFreeString(str);
 	return result;
+}
+
+
+Ref<Platform> TypeArchive::GetPlatform() const
+{
+	BNPlatform* platform = BNGetTypeArchivePlatform(m_object);
+	if (!platform)
+		return nullptr;
+	return new Platform(platform);
 }
 
 

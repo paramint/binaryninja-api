@@ -6640,10 +6640,12 @@ extern "C"
 	BINARYNINJACOREAPI void BNFreeTypeArchiveReference(BNTypeArchive* archive);
 	BINARYNINJACOREAPI void BNFreeTypeArchiveList(BNTypeArchive** archives, size_t count);
 	BINARYNINJACOREAPI BNTypeArchive* BNOpenTypeArchive(const char* path);
+	BINARYNINJACOREAPI BNTypeArchive* BNCreateTypeArchive(const char* path, BNPlatform* platform);
 	BINARYNINJACOREAPI BNTypeArchive* BNLookupTypeArchiveById(const char* id);
 	BINARYNINJACOREAPI void BNCloseTypeArchive(BNTypeArchive* archive);
 	BINARYNINJACOREAPI char* BNGetTypeArchiveId(BNTypeArchive* archive);
 	BINARYNINJACOREAPI char* BNGetTypeArchivePath(BNTypeArchive* archive);
+	BINARYNINJACOREAPI BNPlatform* BNGetTypeArchivePlatform(BNTypeArchive* archive);
 	BINARYNINJACOREAPI char* BNGetTypeArchiveCurrentSnapshotId(BNTypeArchive* archive);
 	BINARYNINJACOREAPI char** BNGetTypeArchiveAllSnapshotIds(BNTypeArchive* archive, size_t* count);
 	BINARYNINJACOREAPI char** BNGetTypeArchiveSnapshotParentIds(BNTypeArchive* archive, const char* id, size_t* count);

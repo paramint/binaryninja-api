@@ -15955,11 +15955,19 @@ namespace BinaryNinja {
 		TypeArchive(BNTypeArchive* archive);
 
 		/*!
-		    Open the type archive at the given path, if it exists, or create one if it does not.
+		    Open the type archive at the given path, if it exists.
 		    \param path Path to type archive file
 		    \return Type archive, or nullptr if it could not be loaded.
 		 */
 		static Ref<TypeArchive> Open(const std::string& path);
+
+		/*!
+		    Create a type archive at the given path.
+		    \param path Path to type archive file
+		    \param platform Relevant platform for types in the archive
+		    \return Type archive, or nullptr if it could not be loaded.
+		 */
+		static Ref<TypeArchive> Create(const std::string& path, Ref<Platform> platform);
 
 		/*!
 		    Get a reference to the type archive with the known id, if one exists.
@@ -15979,6 +15987,12 @@ namespace BinaryNinja {
 		    \return The path
 		 */
 		std::string GetPath() const;
+
+		/*!
+		    Get the associated Platform for a Type Archive
+		    \return Platform
+		 */
+		Ref<Platform> GetPlatform() const;
 
 		/*!
 		    Get the id of the current snapshot in the type archive
