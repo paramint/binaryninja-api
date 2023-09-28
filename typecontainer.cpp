@@ -132,6 +132,21 @@ Ref<Platform> TypeContainer::GetPlatform() const
 }
 
 
+std::optional<std::string> TypeContainer::AddType(QualifiedName name, Ref<Type> type)
+{
+	auto result = AddTypes({std::make_pair(name, type)});
+	if (!result.has_value())
+		return std::nullopt;
+
+	auto found = result->find(name);
+	if (found != result->end())
+	{
+		return found->second;
+	}
+	return std::nullopt;
+}
+
+
 std::optional<std::unordered_map<QualifiedName, std::string>> TypeContainer::AddTypes(
 	const std::vector<std::pair<QualifiedName, Ref<Type>>>& types,
 	std::function<bool(size_t, size_t)> progress)

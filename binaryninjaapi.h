@@ -8263,7 +8263,7 @@ namespace BinaryNinja {
 			\param result Reference to a InheritedStructureMember to copy the result to
 			\return Whether a member was found
 		*/
-		bool  GetMemberIncludingInheritedAtOffset(BinaryView* view, int64_t offset,
+		bool GetMemberIncludingInheritedAtOffset(BinaryView* view, int64_t offset,
 			InheritedStructureMember& result) const;
 
 		/*! Get a structure member by name
@@ -16221,6 +16221,7 @@ namespace BinaryNinja {
 		bool IsMutable() const;
 		Ref<Platform> GetPlatform() const;
 
+		std::optional<std::string> AddType(QualifiedName name, Ref<Type> type);
 		std::optional<std::unordered_map<QualifiedName, std::string>> AddTypes(
 		const std::vector<std::pair<QualifiedName, Ref<Type>>>& types,
 			std::function<bool(size_t, size_t)> progress = {});
