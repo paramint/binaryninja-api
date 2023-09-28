@@ -141,8 +141,11 @@ public:
 	TypeContainerTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent);
 	virtual ~TypeContainerTreeNode();
 
-	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const = 0;
-	virtual PlatformRef platform() const = 0;
+	virtual std::string text(int column) const override;
+	virtual bool filter(const std::string& filter) const override;
+
+	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const;
+	virtual PlatformRef platform() const;
 	virtual BinaryNinja::TypeContainer typeContainer() const = 0;
 	virtual void updateChildren(RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
 
@@ -173,10 +176,7 @@ public:
 
 	virtual std::string text(int column) const override;
 	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
-	virtual bool filter(const std::string& filter) const override;
 
-	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
-	virtual PlatformRef platform() const override;
 	virtual BinaryNinja::TypeContainer typeContainer() const override;
 };
 
@@ -196,10 +196,7 @@ public:
 
 	virtual std::string text(int column) const override;
 	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
-	virtual bool filter(const std::string& filter) const override;
 
-	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
-	virtual PlatformRef platform() const override;
 	virtual BinaryNinja::TypeContainer typeContainer() const override;
 	virtual void updateChildren(RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
 };
@@ -215,12 +212,7 @@ public:
 
 	const TypeLibraryRef& library() const { return m_library; }
 
-	virtual std::string text(int column) const override;
 	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
-	virtual bool filter(const std::string& filter) const override;
-
-	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
-	virtual PlatformRef platform() const override;
 	virtual BinaryNinja::TypeContainer typeContainer() const override;
 };
 
@@ -237,12 +229,7 @@ public:
 	const DebugInfoRef& debugInfo() const { return m_debugInfo; }
 	const std::string& parserName() const { return m_parserName; }
 
-	virtual std::string text(int column) const override;
 	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
-	virtual bool filter(const std::string& filter) const override;
-
-	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
-	virtual PlatformRef platform() const override;
 	virtual BinaryNinja::TypeContainer typeContainer() const override;
 };
 
@@ -255,12 +242,7 @@ public:
 	PlatformTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, PlatformRef platform);
 	virtual ~PlatformTreeNode() = default;
 
-	virtual std::string text(int column) const override;
 	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
-	virtual bool filter(const std::string& filter) const override;
-
-	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const override;
-	virtual PlatformRef platform() const override;
 	virtual BinaryNinja::TypeContainer typeContainer() const override;
 };
 
