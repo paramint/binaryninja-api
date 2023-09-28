@@ -16219,6 +16219,7 @@ namespace BinaryNinja {
 		std::string GetName() const;
 		BNTypeContainerType GetType() const;
 		bool IsMutable() const;
+		Ref<Platform> GetPlatform() const;
 
 		std::optional<std::unordered_map<QualifiedName, std::string>> AddTypes(
 		const std::vector<std::pair<QualifiedName, Ref<Type>>>& types,

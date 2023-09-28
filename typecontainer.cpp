@@ -95,6 +95,15 @@ bool TypeContainer::IsMutable() const
 }
 
 
+Ref<Platform> TypeContainer::GetPlatform() const
+{
+	BNPlatform* platform = BNTypeContainerGetPlatform(m_object);
+	if (!platform)
+		return nullptr;
+	return new Platform(platform);
+}
+
+
 std::optional<std::unordered_map<QualifiedName, std::string>> TypeContainer::AddTypes(
 	const std::vector<std::pair<QualifiedName, Ref<Type>>>& types,
 	std::function<bool(size_t, size_t)> progress)

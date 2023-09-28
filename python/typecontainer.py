@@ -61,6 +61,12 @@ class TypeContainer:
 	def mutable(self) -> bool:
 		return core.BNTypeContainerIsMutable(self.handle)
 
+	@property
+	def platform(self) -> 'platform.Platform':
+		handle = core.BNTypeContainerGetPlatform(self.handle)
+		assert handle is not None
+		return platform.Platform(handle=handle)
+
 	def add_types(self, types: Mapping['ty_.QualifiedNameType', 'ty_.Type'], progress_func: Optional[ProgressFuncType] = None) -> Optional[Mapping['ty_.QualifiedName', str]]:
 		api_names = (core.BNQualifiedName * len(types))()
 		api_types = (ctypes.POINTER(core.BNType) * len(types))()

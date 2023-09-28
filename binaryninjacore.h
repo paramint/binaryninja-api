@@ -4488,6 +4488,7 @@ extern "C"
 	BINARYNINJACOREAPI char* BNTypeContainerGetName(BNTypeContainer* container);
 	BINARYNINJACOREAPI BNTypeContainerType BNTypeContainerGetType(BNTypeContainer* container);
 	BINARYNINJACOREAPI bool BNTypeContainerIsMutable(BNTypeContainer* container);
+	BINARYNINJACOREAPI BNPlatform* BNTypeContainerGetPlatform(BNTypeContainer* container);
 	BINARYNINJACOREAPI bool BNTypeContainerAddTypes(BNTypeContainer* container, const BNQualifiedName* typeNames, BNType** types, size_t typeCount, bool(*progress)(void*, size_t, size_t), void* progressContext, BNQualifiedName** resultNames, char*** resultIds, size_t* resultCount);
 	BINARYNINJACOREAPI bool BNTypeContainerRenameType(BNTypeContainer* container, const char* typeId, const BNQualifiedName* newName);
 	BINARYNINJACOREAPI bool BNTypeContainerDeleteType(BNTypeContainer* container, const char* typeId);
