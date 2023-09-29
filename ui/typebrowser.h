@@ -434,10 +434,14 @@ public:
 	// Selected type container, or container of selected type
 	std::optional<BinaryNinja::TypeContainer> selectedTypeContainer(bool makeSureItHasPlatform = true) const;
 
-	// TAs selected or TAs relevant to selected types, only if JUST ta stuff is selected and only 1 TA
+	// TA selected or TA relevant to selected types, only if JUST ta stuff is selected and only 1 TA
 	std::optional<TypeArchiveRef> selectedTA() const;
+	// Id of TA selected or TA relevant to selected types, only if JUST ta stuff is selected and only 1 TA
+	std::optional<std::string> selectedTAId() const;
 	// TAs selected or TAs relevant to selected types, only if JUST ta stuff is selected
 	std::optional<std::unordered_set<TypeArchiveRef>> selectedTAs() const;
+	// Ids of TAs selected or TAs relevant to selected types, only if JUST ta stuff is selected
+	std::optional<std::unordered_set<std::string>> selectedTAIds() const;
 	// If selectedTAs exist, map of ta ids to ids of selected types from that ta
 	std::optional<std::unordered_map<std::string, std::unordered_set<std::string>>> selectedTATypeIds() const;
 
