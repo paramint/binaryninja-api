@@ -11,6 +11,8 @@ class BINARYNINJAUIAPI TypeEditor: public TokenizedTextWidget
 	PlatformRef m_platform;
 	std::optional<BinaryNinja::TypeContainer> m_typeContainer;
 	std::optional<BinaryViewRef> m_binaryView;
+	// Empty view for bv-requiring operations
+	mutable std::optional<BinaryViewRef> m_emptyView;
 	std::vector<BinaryNinja::QualifiedName> m_typeNames;
 
 	std::vector<BinaryNinja::QualifiedName> m_lineTypeRefs;	std::vector<BinaryNinja::TypeDefinitionLine> m_typeLines;
@@ -91,8 +93,12 @@ public:
 Q_SIGNALS:
 	void typeNameNavigated(const std::string& typeName);
 	void currentTypeUpdated(const BinaryNinja::QualifiedName& typeName);
+	void currentTypeDeleted(const BinaryNinja::QualifiedName& typeName);
 	void currentTypeNameUpdated(const BinaryNinja::QualifiedName& typeName);
 
 private:
 	void updateLines();
+	BinaryViewRef binaryViewOrEmpty() const;
+	void updateInTransaction(std::function<void()> transaction);
+	void updateInTransaction(std::function<void(BinaryViewRef)> transaction);
 };
