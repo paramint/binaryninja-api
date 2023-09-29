@@ -17,9 +17,12 @@ class BINARYNINJAUIAPI TypeEditor: public TokenizedTextWidget
 
 	TokenizedTextWidgetCursorPosition m_originalBase;
 
+	bool m_wrapLines;
+
 public:
 	TypeEditor(QWidget* parent);
 
+	static void registerActions();
 	void bindActions();
 
 	PlatformRef platform() const { return m_platform; }
@@ -83,6 +86,7 @@ public:
 	void makeFloat64();
 	bool canGoToAddress(bool selecting);
 	void goToAddress(bool selecting);
+	void toggleWrapLines();
 
 Q_SIGNALS:
 	void typeNameNavigated(const std::string& typeName);
