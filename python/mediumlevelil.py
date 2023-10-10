@@ -21,7 +21,7 @@
 import ctypes
 import struct
 from typing import (Optional, List, Union, Mapping,
-	Generator, NewType, Tuple, ClassVar, Dict, Set, Callable)
+	Generator, NewType, Tuple, ClassVar, Dict, Set, Callable, Any)
 from dataclasses import dataclass
 
 # Binary Ninja components
@@ -486,6 +486,59 @@ class MediumLevelILInstruction(BaseILInstruction):
 					if not i.visit(cb, name, self): # type: ignore
 						return False
 		return True
+
+	def visit_simple(self, cb: Callable[['MediumLevelILInstruction', Any], Any], *args: Any, **kwargs: Any) -> Any:
+		"""
+		Visits all MediumLevelILInstructions in the operands of this instruction and any sub-instructions.
+		The callback you provide only needs to accept a single instruction, but accepts anything, and can return whatever you want.
+
+		None is treated as a reserved value to indicate that the visitor should continue descending into subexpressions.
+
+		:param cb: Callback function that takes only the instruction
+		:param args: Custom user-defined arguments
+		:param kwargs: Custom user-defined keyword arguments
+		:return: None if your callback doesn't return anything and all instructions were visited, otherwise it returns the value from your callback.
+		:Example:
+		>>> # This visitor allows for simplified function signatures in your callback
+		>>> def visitor(inst) -> int:
+		>>>  if isinstance(inst, Constant):
+		>>>   return inst.constant # Stop recursion and return the constant
+		>>>  return None # Continue descending into subexpressions
+
+		>>> # Finds all constants used in the program
+		>>> for inst in bv.mlil_instructions:
+		>>>  if const := inst.visit(visitor):
+		>>>   print(f"Found constant {const}")
+
+
+		>>> # But it also allows for complex function signatures in your callback
+		>>> def visitor(inst, search_constant, skip_list: List[int] = []) -> int:
+		>>>  if inst.address in skip_list:
+		>>>   return None # Skip this instruction
+		>>>  if isinstance(inst, Constant):
+		>>>   if inst.constant == search_constant:
+		>>>    return inst.address # Stop recursion and return the address of this use
+		>>>  return None # Continue descending into subexpressions
+
+		>>> # Finds all instances of 0xdeadbeaf used in the program
+		>>> for inst in bv.mlil_instructions:
+		>>>  if use_addr := inst.visit(visitor, 0xdeadbeaf, skip_list=[0x12345678]):
+		>>>   print(f"Found 0xdeadbeef use at {use_addr}")
+		"""
+
+		if (result := cb(self, *args, **kwargs)) is not None:
+			return result
+		for _, op, opType in self.detailed_operands:
+			if opType == "MediumLevelILInstruction":
+				assert isinstance(op, MediumLevelILInstruction)
+				if (result := op.visit(cb, *args, **kwargs)) is not None:
+					return result
+			elif opType == "List[MediumLevelILInstruction]":
+				assert isinstance(op, list) and all(isinstance(i, MediumLevelILInstruction) for i in op)
+				for i in op:
+					if (result := i.visit(cb, *args, **kwargs)) is not None:
+						return result
+		return None
 
 	@property
 	def tokens(self) -> TokenList:
