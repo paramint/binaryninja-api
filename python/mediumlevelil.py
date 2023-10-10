@@ -1167,6 +1167,10 @@ class MediumLevelILConstPtr(MediumLevelILConstBase):
 	def detailed_operands(self) -> List[Tuple[str, MediumLevelILOperandType, str]]:
 		return [("constant", self.constant, "int")]
 
+	@property
+	def string(self) -> Optional['binaryview.StringReference']:
+		return self.function.view.get_string_at(self.constant)
+
 
 @dataclass(frozen=True, repr=False, eq=False)
 class MediumLevelILFloatConst(MediumLevelILConstBase, FloatingPoint):

@@ -1646,6 +1646,10 @@ class HighLevelILConstPtr(HighLevelILInstruction, Constant):
 			("constant", self.constant, "int"),
 		]
 
+	@property
+	def string(self) -> Optional['binaryview.StringReference']:
+		return self.function.view.get_string_at(self.constant)
+
 
 @dataclass(frozen=True, repr=False, eq=False)
 class HighLevelILExternPtr(HighLevelILInstruction, Constant):
