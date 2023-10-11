@@ -7,6 +7,7 @@
 #include "binaryninjaapi.h"
 #include "action.h"
 #include "preview.h"
+#include "uitypes.h"
 
 #define PREVIEW_HOVER_TIME 500
 
@@ -434,6 +435,8 @@ public:
 	    \return List of ViewFrame objects for the QWidget
 	 */
 	virtual std::vector<ViewFrame*> getAllViewFramesForTab(QWidget* tab) const = 0;
+
+	virtual ProjectRef getProject();
 
 	virtual bool openFilename(const QString& path, bool openOptions = false);
 	virtual bool openProject(const QString& path);

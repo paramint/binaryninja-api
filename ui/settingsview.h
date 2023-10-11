@@ -14,6 +14,7 @@
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
+#include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QStyledItemDelegate>
 #include <QtWidgets/QTreeView>
@@ -355,7 +356,7 @@ class BINARYNINJAUIAPI SettingsScopeBar : public QWidget
 	Q_OBJECT
 
 	QPushButton* m_userLabel;
-	//BinaryViewScopeLabel* m_projectLabel;
+	QPushButton* m_projectLabel;
 	BinaryViewScopeLabel* m_resourceLabel;
 	//ClickableLabel* m_openProjectLabel;
 	QLabel* m_desc;
