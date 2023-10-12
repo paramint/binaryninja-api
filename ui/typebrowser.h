@@ -413,7 +413,9 @@ public:
 
 	void showSelectedTypes();
 	void showTypes(const std::vector<TypeReference>& types);
-	void selectTypeByName(const std::string& name);
+	bool selectTypeByName(const std::string& name);
+
+	bool navigateToType(const std::string& typeName, uint64_t offset);
 
 	// Selection helpers
 
@@ -556,6 +558,7 @@ class BINARYNINJAUIAPI TypeBrowserSidebarWidget : public SidebarWidget
 
 public:
 	TypeBrowserSidebarWidget(ViewFrame* frame, BinaryViewRef data);
+	TypeBrowserContainer* container() { return m_container; }
 	virtual QWidget* headerWidget() override { return m_header; }
 	virtual void focus() override;
 
