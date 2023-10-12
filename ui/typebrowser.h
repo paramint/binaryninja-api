@@ -23,28 +23,24 @@ protected:
 	class TypeBrowserModel* m_model;
 	std::optional<std::weak_ptr<TypeBrowserTreeNode>> m_parent;
 	std::vector<std::shared_ptr<TypeBrowserTreeNode>> m_children;
-	std::map<TypeBrowserTreeNode*, size_t> m_childIndices;
+	std::map<const TypeBrowserTreeNode*, size_t> m_childIndices;
 	bool m_hasGeneratedChildren;
 
 	TypeBrowserTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent);
 	virtual ~TypeBrowserTreeNode() = default;
-	void ensureGeneratedChildren();
 	virtual void generateChildren() = 0;
 	void updateChildIndices();
-
-	template<typename T, typename T2>
-	friend void updateNodes(TypeBrowserTreeNode* node, std::map<T, std::shared_ptr<T2>>& nodes, const std::vector<T>& newList, TypeBrowserTreeNode::RemoveNodeCallback remove, TypeBrowserTreeNode::UpdateNodeCallback update, TypeBrowserTreeNode::InsertNodeCallback insert);
 
 public:
 	class TypeBrowserModel* model() const { return m_model; }
 	std::optional<std::shared_ptr<TypeBrowserTreeNode>> parent() const;
 	const std::vector<std::shared_ptr<TypeBrowserTreeNode>>& children();
-	int indexOfChild(std::shared_ptr<TypeBrowserTreeNode> child) const;
+	int indexOfChild(std::shared_ptr<const TypeBrowserTreeNode> child) const;
 
 	virtual std::string text(int column) const = 0;
 	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const = 0;
 	virtual bool filter(const std::string& filter) const = 0;
-	virtual void updateChildren(RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert);
+	virtual void updateChildren(bool recursive, RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert);
 };
 
 
@@ -60,17 +56,14 @@ public:
 
 protected:
 	virtual void generateChildren() override;
-	virtual void updateChildren(RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
+	virtual void updateChildren(bool recursive, RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
 };
 
 
 class BINARYNINJAUIAPI RootTreeNode : public TypeBrowserTreeNode
 {
-	std::shared_ptr<class BinaryViewTreeNode> m_userViewNode, m_autoViewNode;
-	std::map<std::string, std::shared_ptr<class TypeArchiveTreeNode>> m_archiveNodes;
-	std::map<TypeLibraryRef, std::shared_ptr<class TypeLibraryTreeNode>> m_libraryNodes;
-	std::map<std::string, std::shared_ptr<class DebugInfoTreeNode>> m_debugInfoNodes;
-	std::shared_ptr<class PlatformTreeNode> m_platformNode;
+	std::map<std::string, std::shared_ptr<class TypeContainerTreeNode>> m_containerNodes;
+
 public:
 	RootTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent);
 	virtual ~RootTreeNode() = default;
@@ -81,7 +74,7 @@ public:
 
 protected:
 	virtual void generateChildren() override;
-	virtual void updateChildren(RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
+	virtual void updateChildren(bool recursive, RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
 };
 
 
@@ -135,117 +128,27 @@ protected:
 
 class BINARYNINJAUIAPI TypeContainerTreeNode : public TypeBrowserTreeNode
 {
+	std::string m_containerId;
 	std::map<BinaryNinja::QualifiedName, std::pair<TypeRef, std::shared_ptr<TypeTreeNode>>> m_typeNodes;
 
 public:
-	TypeContainerTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent);
+	TypeContainerTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, const std::string& m_containerId);
 	virtual ~TypeContainerTreeNode();
 
 	virtual std::string text(int column) const override;
 	virtual bool filter(const std::string& filter) const override;
+	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
 
-	virtual std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const;
-	virtual PlatformRef platform() const;
-	virtual BinaryNinja::TypeContainer typeContainer() const = 0;
-	virtual void updateChildren(RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
+	const std::string& containerId() const { return m_containerId; }
+	std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const;
+	std::optional<PlatformRef> platform() const;
+	std::optional<BinaryNinja::TypeContainer> typeContainer() const;
+	std::optional<BNTypeContainerType> containerType() const;
+	virtual void updateChildren(bool recursive, RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
 
 protected:
 	virtual void generateChildren() override;
 };
-
-
-class BINARYNINJAUIAPI BinaryViewTreeNode : public TypeContainerTreeNode
-{
-public:
-	enum ContainerType
-	{
-		AllTypes,
-		AutoOnly,
-		UserOnly
-	};
-
-private:
-	BinaryViewRef m_view;
-	ContainerType m_type;
-
-public:
-	BinaryViewTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, BinaryViewRef view, ContainerType type);
-	virtual ~BinaryViewTreeNode() = default;
-
-	const BinaryViewRef& view() const { return m_view; }
-
-	virtual std::string text(int column) const override;
-	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
-
-	virtual BinaryNinja::TypeContainer typeContainer() const override;
-};
-
-
-class BINARYNINJAUIAPI TypeArchiveTreeNode : public TypeContainerTreeNode
-{
-	std::string m_archiveId;
-	std::optional<std::string> m_archivePath;
-	TypeArchiveRef m_archive;
-
-public:
-	TypeArchiveTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, const std::string& archiveId);
-	virtual ~TypeArchiveTreeNode() = default;
-
-	const std::string& archiveId() const { return m_archiveId; }
-	const TypeArchiveRef& archive() const { return m_archive; }
-
-	virtual std::string text(int column) const override;
-	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
-
-	virtual BinaryNinja::TypeContainer typeContainer() const override;
-	virtual void updateChildren(RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
-};
-
-
-class BINARYNINJAUIAPI TypeLibraryTreeNode : public TypeContainerTreeNode
-{
-	TypeLibraryRef m_library;
-
-public:
-	TypeLibraryTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, TypeLibraryRef library);
-	virtual ~TypeLibraryTreeNode() = default;
-
-	const TypeLibraryRef& library() const { return m_library; }
-
-	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
-	virtual BinaryNinja::TypeContainer typeContainer() const override;
-};
-
-
-class BINARYNINJAUIAPI DebugInfoTreeNode : public TypeContainerTreeNode
-{
-	DebugInfoRef m_debugInfo;
-	std::string m_parserName;
-
-public:
-	DebugInfoTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, const std::string& parserName);
-	virtual ~DebugInfoTreeNode() = default;
-
-	const DebugInfoRef& debugInfo() const { return m_debugInfo; }
-	const std::string& parserName() const { return m_parserName; }
-
-	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
-	virtual BinaryNinja::TypeContainer typeContainer() const override;
-};
-
-
-class BINARYNINJAUIAPI PlatformTreeNode : public TypeContainerTreeNode
-{
-	PlatformRef m_platform;
-
-public:
-	PlatformTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, PlatformRef platform);
-	virtual ~PlatformTreeNode() = default;
-
-	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
-	virtual BinaryNinja::TypeContainer typeContainer() const override;
-};
-
 
 //-----------------------------------------------------------------------------
 
@@ -258,13 +161,44 @@ class BINARYNINJAUIAPI TypeBrowserModel : public QAbstractItemModel, public Bina
 	mutable std::recursive_mutex m_rootNodeMutex;
 	bool m_needsUpdate;
 
+	std::recursive_mutex m_updateMutex;
+	std::vector<std::function<void()>> m_updateCallbacks;
+
+	std::vector<std::string> m_containerIds;
+	std::map<std::string, std::string> m_containerNames;
+	std::map<std::string, BNTypeContainerType> m_containerTypes;
+	std::map<std::string, BinaryNinja::TypeContainer> m_containers;
+
+	std::map<std::string, BinaryViewRef> m_containerViews;
+	std::map<std::string, TypeArchiveRef> m_containerArchives;
+	std::map<std::string, std::string> m_containerArchiveIds;
+	std::map<std::string, TypeLibraryRef> m_containerLibraries;
+	std::map<std::string, DebugInfoRef> m_containerDebugInfos;
+	std::map<std::string, PlatformRef> m_containerPlatforms;
+
+	void updateContainerList();
+	void callUpdateCallbacks();
+
 public:
 	TypeBrowserModel(BinaryViewRef data);
 	virtual ~TypeBrowserModel();
 	BinaryViewRef getData() { return m_data; }
 	std::shared_ptr<TypeBrowserTreeNode> getRootNode() { return m_rootNode; }
 
+	std::vector<std::string> containerIds() const;
+
+	std::string nameForContainerId(const std::string& id) const;
+	std::optional<std::reference_wrapper<BinaryNinja::TypeContainer>> containerForContainerId(const std::string& id);
+	std::optional<std::reference_wrapper<const BinaryNinja::TypeContainer>> containerForContainerId(const std::string& id) const;
+	std::optional<BinaryViewRef> viewForContainerId(const std::string& id) const;
+	std::optional<TypeArchiveRef> archiveForContainerId(const std::string& id) const;
+	std::optional<std::string> archiveIdForContainerId(const std::string& id) const;
+	std::optional<TypeLibraryRef> libraryForContainerId(const std::string& id) const;
+	std::optional<DebugInfoRef> debugInfoForContainerId(const std::string& id) const;
+	std::optional<PlatformRef> platformForContainerId(const std::string& id) const;
+
 	void updateFonts();
+	void runAfterUpdate(std::function<void()> callback);
 	void startUpdate();
 
 	int columnCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -380,8 +314,6 @@ class BINARYNINJAUIAPI TypeBrowserView : public QFrame, public View, public Filt
 	bool m_updatedWidths;
 
 	class TypeEditor* m_typeEditor;
-
-	std::unordered_map<std::string, BinaryNinja::TypeContainer> m_containerCache;
 
 public:
 	TypeBrowserView(ViewFrame* frame, BinaryViewRef data, TypeBrowserContainer* container);
