@@ -15,9 +15,23 @@
 class BINARYNINJAUIAPI TypeBrowserTreeNode : public std::enable_shared_from_this<TypeBrowserTreeNode>
 {
 public:
-	typedef std::function<void(std::shared_ptr<TypeBrowserTreeNode>, std::function<void()>)> RemoveNodeCallback;
-	typedef std::function<void(std::shared_ptr<TypeBrowserTreeNode>, std::function<void()>)> UpdateNodeCallback;
-	typedef std::function<void(std::shared_ptr<TypeBrowserTreeNode>, int, std::function<void()>)> InsertNodeCallback;
+	struct UpdateData
+	{
+		enum UpdateType
+		{
+			NodeInserted,
+			NodeUpdated,
+			NodeRemoved,
+			UpdatesFinished,
+		};
+
+		UpdateType type;
+		std::shared_ptr<TypeBrowserTreeNode> parent;
+		std::shared_ptr<TypeBrowserTreeNode> node;
+		std::function<void(const UpdateData&)> commit;
+	};
+
+	typedef std::function<void(UpdateData)> UpdateNodeCallback;
 
 protected:
 	class TypeBrowserModel* m_model;
@@ -31,6 +45,9 @@ protected:
 	virtual void generateChildren() = 0;
 	void updateChildIndices();
 
+	void removeChild(std::shared_ptr<TypeBrowserTreeNode> child);
+	void addChild(std::shared_ptr<TypeBrowserTreeNode> child);
+
 public:
 	class TypeBrowserModel* model() const { return m_model; }
 	std::optional<std::shared_ptr<TypeBrowserTreeNode>> parent() const;
@@ -40,7 +57,7 @@ public:
 	virtual std::string text(int column) const = 0;
 	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const = 0;
 	virtual bool filter(const std::string& filter) const = 0;
-	virtual void updateChildren(bool recursive, RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert);
+	virtual void updateChildren(bool recursive, UpdateNodeCallback update);
 };
 
 
@@ -56,7 +73,7 @@ public:
 
 protected:
 	virtual void generateChildren() override;
-	virtual void updateChildren(bool recursive, RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
+	virtual void updateChildren(bool recursive, UpdateNodeCallback update) override;
 };
 
 
@@ -74,7 +91,7 @@ public:
 
 protected:
 	virtual void generateChildren() override;
-	virtual void updateChildren(bool recursive, RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
+	virtual void updateChildren(bool recursive, UpdateNodeCallback update) override;
 };
 
 
@@ -144,7 +161,7 @@ public:
 	std::optional<PlatformRef> platform() const;
 	std::optional<BinaryNinja::TypeContainer> typeContainer() const;
 	std::optional<BNTypeContainerType> containerType() const;
-	virtual void updateChildren(bool recursive, RemoveNodeCallback remove, UpdateNodeCallback update, InsertNodeCallback insert) override;
+	virtual void updateChildren(bool recursive, UpdateNodeCallback update) override;
 
 protected:
 	virtual void generateChildren() override;
@@ -160,6 +177,7 @@ class BINARYNINJAUIAPI TypeBrowserModel : public QAbstractItemModel, public Bina
 	std::shared_ptr<TypeBrowserTreeNode> m_rootNode;
 	mutable std::recursive_mutex m_rootNodeMutex;
 	bool m_needsUpdate;
+	bool m_updating;
 
 	std::recursive_mutex m_updateMutex;
 	std::vector<std::function<void()>> m_updateCallbacks;
@@ -178,6 +196,7 @@ class BINARYNINJAUIAPI TypeBrowserModel : public QAbstractItemModel, public Bina
 
 	void updateContainerList();
 	void callUpdateCallbacks();
+	void commitUpdates(std::vector<TypeBrowserTreeNode::UpdateData>& updates);
 
 public:
 	TypeBrowserModel(BinaryViewRef data);
@@ -199,7 +218,6 @@ public:
 
 	void updateFonts();
 	void runAfterUpdate(std::function<void()> callback);
-	void startUpdate();
 
 	int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 	int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -345,7 +363,7 @@ public:
 
 	void showSelectedTypes();
 	void showTypes(const std::vector<TypeReference>& types);
-	bool selectTypeByName(const std::string& name);
+	void selectTypeByName(const std::string& name);
 
 	bool navigateToType(const std::string& typeName, uint64_t offset);
 
