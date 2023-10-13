@@ -15,7 +15,9 @@ class BINARYNINJAUIAPI TypeEditor: public TokenizedTextWidget
 	mutable std::optional<BinaryViewRef> m_emptyView;
 	std::vector<BinaryNinja::QualifiedName> m_typeNames;
 
-	std::vector<BinaryNinja::QualifiedName> m_lineTypeRefs;	std::vector<BinaryNinja::TypeDefinitionLine> m_typeLines;
+	std::vector<BinaryNinja::QualifiedName> m_lineTypeRefs;
+	std::map<BinaryNinja::QualifiedName, size_t> m_lineTypeStarts;
+	std::vector<BinaryNinja::TypeDefinitionLine> m_typeLines;
 
 	TokenizedTextWidgetCursorPosition m_originalBase;
 
