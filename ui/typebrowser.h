@@ -347,8 +347,9 @@ public:
 	virtual QFont getFont() override;
 	virtual void updateFonts() override;
 
-	virtual void showEvent(QShowEvent *event) override;
-	virtual void hideEvent(QHideEvent *event) override;
+	virtual void showEvent(QShowEvent* event) override;
+	virtual void hideEvent(QHideEvent* event) override;
+	virtual void resizeEvent(QResizeEvent* event) override;
 
 	virtual StatusBarWidget* getStatusBarWidget() override;
 	virtual QWidget* getHeaderOptionsWidget() override;
