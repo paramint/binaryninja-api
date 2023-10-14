@@ -15,8 +15,15 @@ class BINARYNINJAUIAPI TypeEditor: public TokenizedTextWidget
 	mutable std::optional<BinaryViewRef> m_emptyView;
 	std::vector<BinaryNinja::QualifiedName> m_typeNames;
 
+	// line index -> type name
 	std::vector<BinaryNinja::QualifiedName> m_lineTypeRefs;
+	// type name -> index of first line
 	std::map<BinaryNinja::QualifiedName, size_t> m_lineTypeStarts;
+	// type name -> { line index -> offset }
+	std::map<BinaryNinja::QualifiedName, std::map<size_t, size_t>> m_lineTypeOffsets;
+	// type name -> { offset -> index of first line }
+	std::map<BinaryNinja::QualifiedName, std::map<size_t, size_t>> m_lineTypeOffsetStarts;
+	// line index -> line
 	std::vector<BinaryNinja::TypeDefinitionLine> m_typeLines;
 
 	TokenizedTextWidgetCursorPosition m_originalBase;
