@@ -1,5 +1,6 @@
 #include "binaryninjaapi.h"
 #include "lowlevelilinstruction.h"
+#include "mainfunctiondetector.h"
 
 using namespace BinaryNinja;
 using namespace std;
@@ -480,14 +481,13 @@ extern "C"
 		}
 
 		Ref<Architecture> x64 = Architecture::GetByName("x86_64");
+		Ref<Platform> windowsX64;
 		if (x64)
 		{
-			Ref<Platform> platform;
-
-			platform = new WindowsX64Platform(x64);
-			Platform::Register("windows", platform);
-			BinaryViewType::RegisterDefaultPlatform("PE", x64, platform);
-			BinaryViewType::RegisterDefaultPlatform("COFF", x64, platform);
+			windowsX64 = new WindowsX64Platform(x64);
+			Platform::Register("windows", windowsX64);
+			BinaryViewType::RegisterDefaultPlatform("PE", x64, windowsX64);
+			BinaryViewType::RegisterDefaultPlatform("COFF", x64, windowsX64);
 		}
 
 		Ref<Architecture> armv7 = Architecture::GetByName("armv7");
@@ -528,6 +528,12 @@ extern "C"
 				x86, new ExceptionHandlerPrologFunctionRecognizer(windowsX86));
 			FunctionRecognizer::RegisterArchitectureFunctionRecognizer(
 				x86, new ExceptionHandlerEpilogFunctionRecognizer(windowsX86));
+		}
+
+		if (x64 && windowsX64)
+		{
+			FunctionRecognizer::RegisterArchitectureFunctionRecognizer(
+				x64, new WinMainFunctionRecognizer(windowsX64));
 		}
 
 		return true;
