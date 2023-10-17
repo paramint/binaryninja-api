@@ -795,6 +795,28 @@ bool WinMainFunctionRecognizer::MainFunctionFound(BinaryNinja::BinaryView *view)
 	return false;
 }
 
+static void AddEntryCalleeToPriorityQueue(BinaryView* bv, Function* entry)
+{
+	auto callSites = entry->GetCallSites();
+	if (callSites.size() > 2)
+		return;
+
+	std::set<uint64_t> calleeAddresses;
+	for (const auto& callSite: callSites)
+	{
+		for (auto addr: bv->GetCallees(callSite))
+			calleeAddresses.emplace(addr);
+	}
+
+	for (const uint64_t addr: calleeAddresses)
+	{
+		auto func = bv->GetAnalysisFunction(bv->GetDefaultPlatform(), addr);
+		if (!func)
+			continue;
+		func->RequestAdvancedAnalysisData();
+	}
+}
+
 
 bool WinMainFunctionRecognizer::RecognizeLowLevelIL(BinaryView* view, Function* func, LowLevelILFunction* il)
 {
@@ -810,6 +832,11 @@ bool WinMainFunctionRecognizer::RecognizeLowLevelIL(BinaryView* view, Function* 
 	auto entryFunc = view->GetAnalysisEntryPoint();
 	if (!entryFunc)
 		return false;
+
+	if (func->GetStart() == entryFunc->GetStart())
+		// Add the callees of the entry function into the priority queue, so they get analyzed sooner and the detection
+		// can finish faster
+		AddEntryCalleeToPriorityQueue(view, entryFunc);
 
 	auto entryPoint = entryFunc->GetStart();
 
