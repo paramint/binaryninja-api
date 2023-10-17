@@ -246,31 +246,31 @@ std::set<SSARegister> GetTargetSSARegisters(const Ref<LowLevelILFunction>& ssa)
 			}
 			break;
 		}
-//		case LLIL_RET:
-//		{
-//			auto block = ssa->GetBasicBlockForInstruction(i);
-//			if(!block)
-//				break;
-//
-//			auto ssaReg = GetRegisterSetInBlocks(block, returnReg, i);
-//			if (ssaReg.has_value())
-//			{
-//				result.emplace(ssaReg.value());
-//			}
-//			else
-//			{
-//				// search incoming blocks
-//				for (const auto& edge: block->GetIncomingEdges())
-//				{
-//					ssaReg = GetRegisterSetInBlocks(edge.target, returnReg);
-//					if (ssaReg.has_value())
-//					{
-//						result.emplace(ssaReg.value());
-//					}
-//				}
-//			}
-//			break;
-//		}
+		case LLIL_RET:
+		{
+			auto block = ssa->GetBasicBlockForInstruction(i);
+			if(!block)
+				break;
+
+			auto ssaReg = GetRegisterSetInBlocks(block, returnReg, i);
+			if (ssaReg.has_value())
+			{
+				result.emplace(ssaReg.value());
+			}
+			else
+			{
+				// search incoming blocks
+				for (const auto& edge: block->GetIncomingEdges())
+				{
+					ssaReg = GetRegisterSetInBlocks(edge.target, returnReg);
+					if (ssaReg.has_value())
+					{
+						result.emplace(ssaReg.value());
+					}
+				}
+			}
+			break;
+		}
 		default:
 			break;
 		}
@@ -356,7 +356,7 @@ bool SinkToReturn(const std::set<SSARegister>& targetRegs, const Ref<LowLevelILF
 					continue;
 
 				src = src.GetSourceExpr<LLIL_LOAD_SSA>();
-				if (src.GetValue().state != ConstantPointerValue)
+				if ((src.GetValue().state != ConstantValue) && (src.GetValue().state != ConstantPointerValue))
 					continue;
 				if (src.GetValue().value != storeAddress)
 					continue;
@@ -378,19 +378,31 @@ bool SinkToReturn(const std::set<SSARegister>& targetRegs, const Ref<LowLevelILF
 }
 
 
-std::vector<WinMainDetectionInfo> DetectionMethod1(const Ref<LowLevelILFunction>& ssa, uint32_t returnReg)
+std::vector<WinMainDetectionInfo> DetectionMethod1(BinaryView* view, Function* func, LowLevelILFunction* llil)
 {
 	std::vector<WinMainDetectionInfo> results;
 
-	auto function = ssa->GetFunction();
-	if (!function)
+	auto ssa = llil->GetSSAForm();
+	if (!ssa)
+	{
+		WinMainDetectionInfo result;
+		result.reason = "No SSA available";
+		results.emplace_back(result);
 		return results;
+	}
 
-	auto view = function->GetView();
-	if (!view)
+	auto callingConvention = func->GetCallingConvention();
+	if (!callingConvention)
+	{
+		WinMainDetectionInfo result;
+		result.reason = "No calling convention available";
+		results.emplace_back(result);
 		return results;
+	}
 
+	auto returnReg = callingConvention->GetIntegerReturnValueRegister();
 	auto targetRegs = GetTargetSSARegisters(ssa);
+
 	for (size_t i = 0; i < ssa->GetInstructionCount(); i++)
 	{
 		auto il = ssa->GetInstruction(i);
@@ -443,101 +455,85 @@ std::vector<WinMainDetectionInfo> DetectionMethod1(const Ref<LowLevelILFunction>
 }
 
 
-std::vector<WinMainDetectionInfo> DetectionMethod2(const Ref<LowLevelILFunction>& ssa, uint32_t returnReg)
+static std::optional<std::pair<Ref<BasicBlock>, size_t>> GetCallingBlockAndInstruction(
+		BinaryView* view, LowLevelILFunction* llil, const std::string& name)
 {
-	std::vector<WinMainDetectionInfo> results;
-
-	auto function = ssa->GetFunction();
-	if (!function)
-		return results;
-
-	auto view = function->GetView();
-	if (!view)
-		return results;
-
-	auto argc = view->GetSymbolByRawName("__p___argc");
-	if (!argc)
-		return results;
-
-	auto sites = view->GetCodeReferences(argc->GetAddress());
-	for (const auto& site: sites)
+	for (auto block: llil->GetBasicBlocks())
 	{
-		if ((!site.arch) || (!site.func))
-			continue;
-		auto llil = site.func->GetLowLevelIL();
-		if (!llil)
-			continue;
-
-		auto index = site.func->GetLowLevelILForInstruction(site.arch, site.addr);
-		auto il = llil->GetInstruction(index);
-		if (il.operation != LLIL_CALL)
-			continue;
-
-		auto block = llil->GetBasicBlockForInstruction(il.instructionIndex);
-		if (!block)
-			continue;
-
-		for (size_t i = il.instructionIndex + 1; i < block->GetEnd(); i++)
+		for (size_t i = block->GetStart(); i < block->GetEnd(); i++)
 		{
-			il = llil->GetInstruction(i);
+			auto il = llil->GetInstruction(i);
 			if (il.operation != LLIL_CALL)
 				continue;
 			auto dest = il.GetDestExpr<LLIL_CALL>();
+			if ((dest.GetValue().state != ConstantValue) && (dest.GetValue().state != ConstantPointerValue))
+				continue;
 			auto value = dest.GetValue().value;
 			auto sym = view->GetSymbolByAddress(value);
-			if ((!sym) ||
-				std::find(mainFunctionNames.begin(), mainFunctionNames.end(), sym->GetRawName())
-				!= mainFunctionNames.end())
-			{
-				WinMainDetectionInfo result;
-				result.found = true;
-				result.method2 = true;
-				result.address = value;
-				results.emplace_back(result);
-				break;
-			}
+			if (!sym)
+				continue;
+			if (sym->GetShortName() == name)
+				return std::make_pair(block, i);
 		}
-
 	}
-	return results;
+	return std::nullopt;
 }
 
 
-std::vector<Ref<Function>> GetFunctionsByName(const Ref<BinaryView>& view, const std::string& name)
-{
-	std::vector<Ref<Function>> results;
-
-	std::set<uint64_t> addresses;
-	auto syms = view->GetSymbolsByRawName(name);
-	for (const auto& sym: syms)
-	{
-		auto symType = sym->GetType();
-		if ((symType != FunctionSymbol) && (symType != ImportedFunctionSymbol) && (symType != LibraryFunctionSymbol))
-			continue;
-		addresses.emplace(sym->GetAddress());
-	}
-
-	for (const auto addr: addresses)
-	{
-		for (const auto& func: view->GetAnalysisFunctionsForAddress(addr))
-			results.emplace_back(func);
-	}
-
-	return results;
-}
-
-
-std::vector<WinMainDetectionInfo> DetectionMethod3(const Ref<BinaryView>& view)
+std::vector<WinMainDetectionInfo> DetectionMethod2(BinaryView* view, Function* func, LowLevelILFunction* llil)
 {
 	std::vector<WinMainDetectionInfo> results;
 
-	auto functions = GetFunctionsByName(view, "invoke_main");
-	if (functions.size() != 1)
+	// Find a call to __p___argc
+	auto caller = GetCallingBlockAndInstruction(view, llil, "__p___argc");
+	if (!caller.has_value())
 		return results;
 
-	auto func = functions[0];
-	auto llil = func->GetLowLevelIL();
-	if (!llil)
+	auto block = caller->first;
+	auto idx = caller->second;
+
+	if (!block)
+		return results;
+
+	// Find the next LLIL_CALL instruction after the call to __p___argc
+	for (size_t i = idx + 1; i < block->GetEnd(); i++)
+	{
+		auto il = llil->GetInstruction(i);
+		if (il.operation != LLIL_CALL)
+			continue;
+		auto dest = il.GetDestExpr<LLIL_CALL>();
+		if ((dest.GetValue().state != ConstantValue) && (dest.GetValue().state != ConstantPointerValue))
+			break;
+		// If the call destination has no symbol or the symbol name is a known main function name, treat it as main
+		auto value = dest.GetValue().value;
+		auto sym = view->GetSymbolByAddress(value);
+		if ((!sym) ||
+			std::find(mainFunctionNames.begin(), mainFunctionNames.end(), sym->GetRawName())
+			!= mainFunctionNames.end())
+		{
+			WinMainDetectionInfo result;
+			result.found = true;
+			result.method2 = true;
+			result.address = value;
+			results.emplace_back(result);
+			break;
+		}
+		// We only consider the first LLIL_CALL after the __p___argc. It is not a main function, break out
+		break;
+	}
+	return results;
+}
+
+
+std::vector<WinMainDetectionInfo> DetectionMethod3(BinaryView* view, Function* func, LowLevelILFunction* llil)
+{
+	std::vector<WinMainDetectionInfo> results;
+
+	auto sym = func->GetSymbol();
+	if (!sym)
+		return results;
+
+	if (sym->GetShortName() != "invoke_main")
 		return results;
 
 	auto ssa = llil->GetSSAForm();
@@ -555,7 +551,7 @@ std::vector<WinMainDetectionInfo> DetectionMethod3(const Ref<BinaryView>& view)
 		auto mainStub = view->GetAnalysisFunction(view->GetDefaultPlatform(), value);
 		if (!mainStub)
 			break;
-		auto mainStubllil = mainStub->GetLowLevelIL();
+		auto mainStubllil = mainStub->GetLowLevelILIfAvailable();
 		if (!mainStubllil)
 			break;
 		auto mainStubSSA = mainStubllil->GetSSAForm();
@@ -586,29 +582,32 @@ WinMainDetectionInfo IsCommonMain(BinaryView* view, Function* func, LowLevelILFu
 {
 	WinMainDetectionInfo result;
 
-	auto ssa = il->GetSSAForm();
-	if (!ssa)
+	bool isCalledByEntry = false;
+	auto entryPoint = view->GetStart();
+	auto refs = view->GetCodeReferences(func->GetStart());
+	for (const auto& ref: refs)
 	{
-		result.reason = "No SSA available";
-		return result;
+		// The candidate function must be a direct callee of the entry point
+		// TODO: if this is relaxed, not only we could get false positives, the detection algorithm also hangs on
+		// certain functions because it could be requesting the LLIL of a function which has not been analyzed
+		if (ref.func->GetStart() == entryPoint)
+		{
+			isCalledByEntry = true;
+			break;
+		}
 	}
-
-	auto callingConvention = func->GetCallingConvention();
-	if (!callingConvention)
-	{
-		result.reason = "No calling convention available";
-		return result;
-	}
-
-	auto returnReg = callingConvention->GetIntegerReturnValueRegister();
 
 	std::vector<WinMainDetectionInfo> candidates;
-	auto results1 = DetectionMethod1(ssa, returnReg);
-	auto results2 = DetectionMethod2(ssa, returnReg);
-	auto results3 = DetectionMethod3(view);
+	if (isCalledByEntry)
+	{
+		// detection method 1 and 2 require that the current function is called by the entry point
+		auto results1 = DetectionMethod1(view, func, il);
+		auto results2 = DetectionMethod2(view, func, il);
+		candidates.insert(candidates.end(), results1.begin(), results1.end());
+		candidates.insert(candidates.end(), results2.begin(), results2.end());
+	}
 
-	candidates.insert(candidates.end(), results1.begin(), results1.end());
-	candidates.insert(candidates.end(), results2.begin(), results2.end());
+	auto results3 = DetectionMethod3(view, func, il);
 	candidates.insert(candidates.end(), results3.begin(), results3.end());
 
 	if (candidates.empty())
@@ -735,25 +734,6 @@ bool WinMainFunctionRecognizer::RecognizeLowLevelIL(BinaryView* view, Function* 
 			return false;
 		}
 	}
-
-	auto entryPoint = entryFunc->GetStart();
-
-	bool isCalledByEntry = false;
-	auto refs = view->GetCodeReferences(func->GetStart());
-	for (const auto& ref: refs)
-	{
-		// The candidate function must be a direct callee of the entry point
-		// TODO: if this is relaxed, not only we could get false positives, the detection algorithm also hangs on
-		// certain functions because it could be requesting the LLIL of a function which has not been analyzed
-		if (ref.func->GetStart() == entryPoint)
-		{
-			isCalledByEntry = true;
-			break;
-		}
-	}
-
-	if (!isCalledByEntry)
-		return false;
 
 	auto info = IsCommonMain(view, func, il);
 	if (info.found)
