@@ -607,9 +607,6 @@ WinMainDetectionInfo IsCommonMain(BinaryView* view, Function* func, LowLevelILFu
 	auto results2 = DetectionMethod2(ssa, returnReg);
 	auto results3 = DetectionMethod3(view);
 
-	if (func->GetStart() == 0x140001010)
-		LogWarn("here");
-
 	candidates.insert(candidates.end(), results1.begin(), results1.end());
 	candidates.insert(candidates.end(), results2.begin(), results2.end());
 	candidates.insert(candidates.end(), results3.begin(), results3.end());
@@ -659,127 +656,6 @@ WinMainDetectionInfo IsCommonMain(BinaryView* view, Function* func, LowLevelILFu
 }
 
 
-//WinMainDetectionInfo FindWinMain(const Ref<BinaryView>& bv)
-//{
-//	WinMainDetectionInfo result;
-//
-//	auto entryFunc = bv->GetAnalysisEntryPoint();
-//	if (!entryFunc)
-//		return result;
-//
-//	auto callSites = entryFunc->GetCallSites();
-//	if (callSites.size() > 2)
-//	{
-//		result.reason = "More entrypoint callees than expected";
-//		return result;
-//	}
-//
-//	std::set<uint64_t> calleeAddresses;
-//	for (const auto& callSite: callSites)
-//	{
-//		for (auto addr: bv->GetCallees(callSite))
-//			calleeAddresses.emplace(addr);
-//	}
-//
-//	for (const uint64_t addr: calleeAddresses)
-//	{
-//		auto func = bv->GetAnalysisFunction(bv->GetDefaultPlatform(), addr);
-//		if (!func)
-//			continue;
-//
-//		auto funcSymbol = func->GetSymbol();
-//		if (!funcSymbol)
-//			continue;
-//
-//		auto funcName = funcSymbol->GetShortName();
-//		// This relies on the presence of the PDB, which is not always reliable. We should check if the function
-//		// writes to the security_cookie data variable.
-//		if (StringEndsWith(funcName, "security_init_cookie"))
-//			continue;
-//
-//		WinMainDetectionInfo ret = IsCommonMain(func);
-//		if (ret.found)
-//			return ret;
-//		else
-//		{
-//			if (result.reason.empty())
-//				result.reason = ret.reason;
-//			else
-//				result.reason += (string(", ") + ret.reason);
-//		}
-//	}
-//	return result;
-//}
-
-
-//std::string GetMethodString(const WinMainDetectionInfo& result)
-//{
-//	std::string s;
-//	if (result.method1)
-//		s += "1";
-//	if (result.method2)
-//		s += ",2";
-//	if (result.method3)
-//		s += ",3";
-//	return s;
-//}
-
-
-//void ProcessOneFile(const std::string& path)
-//{
-//	printf("file: %s: ", path.c_str());
-//
-//	// Do not use the PDB symbol info
-//	Ref<Metadata> options = new Metadata(KeyValueDataType);
-//	options->SetValueForKey("analysis.debugInfo.internal", new Metadata(false));
-//
-//	Ref<BinaryView> bv = BinaryNinja::Load(path, false, {}, options);
-//	if (!bv)
-//	{
-//		printf("failed to get a binary view\n");
-//		return;
-//	}
-//
-////	LogWarn("start: 0x%llx", bv->GetStart());
-//
-//	auto platform = bv->GetDefaultPlatform();
-//	if ((!platform) || (platform->GetName() != "windows-x86_64"))
-//	{
-//		printf("unexpected platform: %s\n", platform ? platform->GetName().c_str() : "None");
-//		bv->GetFile()->Close();
-//		return;
-//	}
-//
-//	if (IsDLL(bv))
-//	{
-//		printf("Skipping DLL\n");
-//		bv->GetFile()->Close();
-//		return;
-//	}
-//
-//	if (IsDriver(bv))
-//	{
-//		printf("Skipping driver\n");
-//		bv->GetFile()->Close();
-//		return;
-//	}
-//
-//	bv->UpdateAnalysisAndWait();
-//
-//	auto result = FindWinMain(bv);
-//	if (result.found)
-//	{
-//		printf("found main at 0x%llx, method: %s\n", result.address, GetMethodString(result).c_str());
-//	}
-//	else
-//	{
-//		printf("cannot find main, reason: %s\n", result.reason.c_str());
-//	}
-//
-//	bv->GetFile()->Close();
-//}
-
-
 WinMainFunctionRecognizer::WinMainFunctionRecognizer(Ref<Platform> platform) : m_platform(platform)
 {
 	auto settings = Settings::Instance();
@@ -787,19 +663,29 @@ WinMainFunctionRecognizer::WinMainFunctionRecognizer(Ref<Platform> platform) : m
 }
 
 
-bool WinMainFunctionRecognizer::MainFunctionFound(BinaryNinja::BinaryView *view)
+bool WinMainFunctionRecognizer::MainFunctionDetectionDone(BinaryNinja::BinaryView *view)
 {
 	auto data = view->QueryMetadata("__BN_main_function_address");
 	if (data && data->IsUnsignedInteger())
 		return true;
+
+	data = view->QueryMetadata("__BN_main_function_not_found");
+	if (data && data->IsBoolean())
+		return true;
 	return false;
 }
 
-static void AddEntryCalleeToPriorityQueue(BinaryView* bv, Function* entry)
+
+static bool AddEntryCalleeToPriorityQueue(BinaryView* bv, Function* entry)
 {
 	auto callSites = entry->GetCallSites();
 	if (callSites.size() > 2)
-		return;
+	{
+		// The entry point has more than two callees, cannot find main
+		auto notFound = new Metadata(true);
+		bv->StoreMetadata("__BN_main_function_not_found", notFound, true);
+		return false;
+	}
 
 	std::set<uint64_t> calleeAddresses;
 	for (const auto& callSite: callSites)
@@ -815,6 +701,7 @@ static void AddEntryCalleeToPriorityQueue(BinaryView* bv, Function* entry)
 			continue;
 		func->RequestAdvancedAnalysisData();
 	}
+	return true;
 }
 
 
@@ -825,8 +712,8 @@ bool WinMainFunctionRecognizer::RecognizeLowLevelIL(BinaryView* view, Function* 
 	if (func->GetPlatform() != m_platform)
 		return false;
 
-	// main function has been found, returning
-	if (MainFunctionFound(view))
+	// main function has either been found or could not be found, returning
+	if (MainFunctionDetectionDone(view))
 		return true;
 
 	auto entryFunc = view->GetAnalysisEntryPoint();
@@ -834,9 +721,20 @@ bool WinMainFunctionRecognizer::RecognizeLowLevelIL(BinaryView* view, Function* 
 		return false;
 
 	if (func->GetStart() == entryFunc->GetStart())
+	{
 		// Add the callees of the entry function into the priority queue, so they get analyzed sooner and the detection
 		// can finish faster
-		AddEntryCalleeToPriorityQueue(view, entryFunc);
+		if (AddEntryCalleeToPriorityQueue(view, entryFunc))
+			return false;
+
+		if (IsDLL(view) || IsDriver(view))
+		{
+			// Do not detect main for DLL and driver
+			auto notFound = new Metadata(true);
+			view->StoreMetadata("__BN_main_function_not_found", notFound, true);
+			return false;
+		}
+	}
 
 	auto entryPoint = entryFunc->GetStart();
 
@@ -857,14 +755,10 @@ bool WinMainFunctionRecognizer::RecognizeLowLevelIL(BinaryView* view, Function* 
 	if (!isCalledByEntry)
 		return false;
 
-	// TODO: this needs to be run on every function, which is bad
-	if (IsDLL(view) || IsDriver(view))
-		return false;
-
 	auto info = IsCommonMain(view, func, il);
 	if (info.found)
 	{
-//		LogWarn("main function found in function: 0x%llx", func->GetStart());
+		LogDebug("main function found in function: 0x%llx", func->GetStart());
 		auto entry = new Metadata(info.address);
 		view->StoreMetadata("__BN_main_function_address", entry, true);
 		return true;

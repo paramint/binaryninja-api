@@ -8,7 +8,7 @@ class WinMainFunctionRecognizer : public BinaryNinja::FunctionRecognizer
 	std::vector<std::string> m_mainFunctionNames;
 	std::vector<std::string> m_exitFunctionNames;
 
-	bool MainFunctionFound(BinaryNinja::BinaryView* view);
+	bool MainFunctionDetectionDone(BinaryNinja::BinaryView* view);
 
 public:
 	WinMainFunctionRecognizer(BinaryNinja::Ref<BinaryNinja::Platform> platform);
