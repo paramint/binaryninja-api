@@ -57,8 +57,10 @@ public:
 	void createAllMembersForStructure();
 	bool canCreateCurrentMemberForStructure();
 	void createCurrentMemberForStructure();
-	bool canDefineName();
-	void defineName();
+	bool canRename();
+	void rename();
+	void renameRoot();
+	void renameMember();
 	bool canUndefine();
 	void undefine();
 	bool canCreateArray();
