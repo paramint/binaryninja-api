@@ -1643,6 +1643,7 @@ extern "C"
 		BNInstructionTextToken* tokens;
 		size_t count;
 		BNType* type;
+		BNType* parentType;
 		BNType* rootType;
 		char* rootTypeName;
 		BNNamedTypeReference* baseType;

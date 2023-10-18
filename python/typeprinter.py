@@ -502,19 +502,7 @@ class CoreTypePrinter(TypePrinter):
 			raise RuntimeError("BNGetTypePrinterTypeLines returned False")
 		lines = []
 		for i in range(count.value):
-			tokens = _function.InstructionTextToken._from_core_struct(core_lines[i].tokens, core_lines[i].count)
-			type_ = types.Type.create(handle=core.BNNewTypeReference(core_lines[i].type), platform=container.platform)
-			root_type = types.Type.create(handle=core.BNNewTypeReference(core_lines[i].rootType), platform=container.platform)
-			root_type_name = core.pyNativeStr(core_lines[i].rootTypeName)
-			if core_lines[i].baseType:
-				const_conf = types.BoolWithConfidence.get_core_struct(False, 0)
-				volatile_conf = types.BoolWithConfidence.get_core_struct(False, 0)
-				handle = core.BNCreateNamedTypeReference(core_lines[i].baseType, 0, 1, const_conf, volatile_conf)
-				base_type = types.NamedTypeReferenceType(handle, container.platform)
-			else:
-				base_type = None
-			line = types.TypeDefinitionLine(core_lines[i].lineType, tokens, type_, root_type, root_type_name, base_type,
-									  core_lines[i].baseOffset, core_lines[i].offset, core_lines[i].fieldIndex)
+			line = types.TypeDefinitionLine._from_core_struct(core_lines[i], container.platform)
 			lines.append(line)
 		core.BNFreeTypeDefinitionLineList(core_lines, count.value)
 		return lines

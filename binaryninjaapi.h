@@ -3194,7 +3194,7 @@ namespace BinaryNinja {
 	{
 		BNTypeDefinitionLineType lineType;
 		std::vector<InstructionTextToken> tokens;
-		Ref<Type> type, rootType;
+		Ref<Type> type, parentType, rootType;
 		std::string rootTypeName;
 		Ref<NamedTypeReference> baseType;
 		uint64_t baseOffset;
