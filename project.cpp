@@ -160,7 +160,22 @@ Ref<Project> Project::OpenProject(const std::string& path)
 	if (!bnproj)
 		return nullptr;
 	return new Project(bnproj);
+}
 
+
+std::vector<Ref<Project>> Project::GetOpenProjects()
+{
+	size_t count = 0;
+	BNProject** bnprojs = BNGetOpenProjects(&count);
+
+	std::vector<Ref<Project>> result;
+	result.reserve(count);
+	for (size_t i = 0; i < count; i++)
+	{
+		result.push_back(new Project(BNNewProjectReference(bnprojs[i])));
+	}
+	BNFreeProjectList(bnprojs, count);
+	return result;
 }
 
 
@@ -282,8 +297,8 @@ Ref<ProjectFolder> Project::CreateFolder(Ref<ProjectFolder> parent, const std::s
 std::vector<Ref<ProjectFolder>> Project::GetFolders() const
 {
 	size_t count;
-	BNProjectFolder** folders = BNProjectGetFolders(m_object, &count);
 
+	BNProjectFolder** folders = BNProjectGetFolders(m_object, &count);
 	std::vector<Ref<ProjectFolder>> result;
 	result.reserve(count);
 	for (size_t i = 0; i < count; i++)

@@ -3283,6 +3283,8 @@ extern "C"
 	// Project object
 	BINARYNINJACOREAPI BNProject* BNNewProjectReference(BNProject* project);
 	BINARYNINJACOREAPI void BNFreeProject(BNProject* project);
+	BINARYNINJACOREAPI void BNFreeProjectList(BNProject** projects, size_t count);
+	BINARYNINJACOREAPI BNProject** BNGetOpenProjects(size_t* count);
 	BINARYNINJACOREAPI BNProject* BNCreateProject(const char* path, const char* name);
 	BINARYNINJACOREAPI BNProject* BNOpenProject(const char* path);
 	BINARYNINJACOREAPI bool BNProjectOpen(BNProject* project);

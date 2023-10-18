@@ -2313,6 +2313,7 @@ namespace BinaryNinja {
 
 		static Ref<Project> CreateProject(const std::string& path, const std::string& name);
 		static Ref<Project> OpenProject(const std::string& path);
+		static std::vector<Ref<Project>> GetOpenProjects();
 
 		bool Open();
 		bool Close();
