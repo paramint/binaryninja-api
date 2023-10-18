@@ -364,7 +364,7 @@ public:
 
 	void showSelectedTypes();
 	void showTypes(const std::vector<TypeReference>& types);
-	void selectTypeByName(const std::string& name);
+	void selectTypeByName(const std::string& name, bool newSelection);
 
 	bool navigateToType(const std::string& typeName, uint64_t offset);
 
@@ -385,7 +385,9 @@ public:
 	// Selected type references
 	std::vector<TypeReference> selectedTypes() const;
 	// Selected type container, or container of selected type
-	std::optional<BinaryNinja::TypeContainer> selectedTypeContainer(bool makeSureItHasPlatform = true) const;
+	// makeSureItHasPlatform: if the type container is a BV with no platform (raw), ask for one and return nullopt if rejected
+	// preferUserOverAuto: if the type container is a BV and the auto-only container, switch to the user-only container for that BV instead
+	std::optional<BinaryNinja::TypeContainer> selectedTypeContainer(bool makeSureItHasPlatform = true, bool preferUserOverAuto = false) const;
 
 	// TA selected or TA relevant to selected types, only if JUST ta stuff is selected and only 1 TA
 	std::optional<TypeArchiveRef> selectedTA() const;
@@ -433,6 +435,8 @@ public:
 	void createNewTypes();
 	bool canCreateNewStructure();
 	void createNewStructure();
+	bool canCreateNewEnumeration();
+	void createNewEnumeration();
 	bool canCreateNewUnion();
 	void createNewUnion();
 	bool canRenameTypes();
@@ -441,6 +445,9 @@ public:
 	void deleteTypes();
 	bool canChangeTypes();
 	void changeTypes();
+
+Q_SIGNALS:
+	void typeNameNavigated(const std::string& typeName, bool newSelection);
 
 protected:
 	void itemSelected(const QItemSelection& selected, const QItemSelection& deselected);
