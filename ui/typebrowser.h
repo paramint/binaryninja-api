@@ -109,6 +109,7 @@ public:
 	};
 
 private:
+	std::string m_id;
 	BinaryNinja::QualifiedName m_name;
 	TypeRef m_type;
 	std::string m_sortName;
@@ -122,12 +123,13 @@ private:
 	std::optional<BinaryNinja::QualifiedName> m_sourceOriginalName;
 
 public:
-	TypeTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, BinaryNinja::QualifiedName name, TypeRef type);
+	TypeTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, const std::string& id, BinaryNinja::QualifiedName name, TypeRef type);
 	virtual ~TypeTreeNode() = default;
 
+	const std::string& id() const { return m_id; }
 	const BinaryNinja::QualifiedName& name() const { return m_name; }
 	const TypeRef& type() const { return m_type; }
-	void setType(const TypeRef& type) { m_type = type; }
+	void setType(const std::string& id, const BinaryNinja::QualifiedName& name, const TypeRef& type);
 
 	const SourceType& sourceType() const { return m_sourceType; }
 	std::optional<BinaryNinja::TypeContainer> typeContainer() const;
@@ -146,7 +148,8 @@ protected:
 class BINARYNINJAUIAPI TypeContainerTreeNode : public TypeBrowserTreeNode
 {
 	std::string m_containerId;
-	std::map<BinaryNinja::QualifiedName, std::pair<TypeRef, std::shared_ptr<TypeTreeNode>>> m_typeNodes;
+	// TODO: Gross
+	std::map<std::string, std::pair<std::pair<BinaryNinja::QualifiedName, TypeRef>, std::shared_ptr<TypeTreeNode>>> m_typeNodes;
 
 public:
 	TypeContainerTreeNode(class TypeBrowserModel* model, std::optional<std::weak_ptr<TypeBrowserTreeNode>> parent, const std::string& m_containerId);
@@ -157,7 +160,6 @@ public:
 	virtual bool lessThan(const TypeBrowserTreeNode& other, int column) const override;
 
 	const std::string& containerId() const { return m_containerId; }
-	std::map<BinaryNinja::QualifiedName, TypeRef> getTypes() const;
 	std::optional<PlatformRef> platform() const;
 	std::optional<BinaryNinja::TypeContainer> typeContainer() const;
 	std::optional<BNTypeContainerType> containerType() const;
@@ -248,6 +250,9 @@ public:
 	void OnTypeArchiveDetached(BinaryNinja::BinaryView* data, const std::string& id, const std::string& path) override;
 	void OnTypeArchiveConnected(BinaryNinja::BinaryView* data, BinaryNinja::TypeArchive* archive) override;
 	void OnTypeArchiveDisconnected(BinaryNinja::BinaryView* data, BinaryNinja::TypeArchive* archive) override;
+
+Q_SIGNALS:
+	void updateComplete();
 
 public Q_SLOTS:
 	void markDirty();
@@ -367,6 +372,7 @@ public:
 	void selectTypeByName(const std::string& name, bool newSelection);
 
 	bool navigateToType(const std::string& typeName, uint64_t offset);
+	void scrollToIndexWithContext(const QModelIndex& index, int context = 1);
 
 	// Selection helpers
 
