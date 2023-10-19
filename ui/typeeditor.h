@@ -15,6 +15,8 @@ class BINARYNINJAUIAPI TypeEditor: public TokenizedTextWidget
 	mutable std::optional<BinaryViewRef> m_emptyView;
 	std::vector<BinaryNinja::QualifiedName> m_typeNames;
 
+	// line index -> index of first line from wrapped line
+	std::vector<size_t> m_lineUnwrapIndex;
 	// line index -> type name
 	std::vector<BinaryNinja::QualifiedName> m_lineTypeRefs;
 	// type name -> index of first line
@@ -48,6 +50,10 @@ public:
 	std::vector<BinaryNinja::QualifiedName> typeNames() const { return m_typeNames; }
 	void setTypeNames(const std::vector<BinaryNinja::QualifiedName>& names);
 
+	int selectedLineCount() const;
+	int selectedRootTypeCount() const;
+	size_t firstWrappedLineIndexForLineIndex(size_t index) const;
+	size_t lastWrappedLineIndexForLineIndex(size_t index) const;
 	std::optional<std::reference_wrapper<const BinaryNinja::TypeDefinitionLine>> typeLineAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
 	std::optional<BinaryNinja::QualifiedName> rootTypeNameAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
 	std::optional<TypeRef> rootTypeAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
