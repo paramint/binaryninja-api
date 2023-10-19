@@ -739,6 +739,8 @@ bool WinMainFunctionRecognizer::RecognizeLowLevelIL(BinaryView* view, Function* 
 		LogDebug("main function found in function: 0x%llx", func->GetStart());
 		auto entry = new Metadata(info.address);
 		view->StoreMetadata("__BN_main_function_address", entry, true);
+		auto symbol = new Symbol(FunctionSymbol, "main", info.address);
+		view->DefineAutoSymbol(symbol);
 		return true;
 	}
 
