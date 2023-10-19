@@ -4,21 +4,6 @@
 using namespace BinaryNinja;
 using namespace std;
 
-// TODO read the list from ui.files.navigation.preferMain
-vector<string> mainFunctionNames = {"main", "wmain", "WinMain", "wWinMain"};
-
-
-struct WinMainDetectionInfo
-{
-	bool found = false;
-	bool method1 = false;
-	bool method2 = false;
-	bool method3 = false;
-	uint64_t address = 0;
-	string reason;
-};
-
-
 bool IsDLL(const Ref<BinaryView>& bv)
 {
 	auto sym = bv->GetSymbolByRawName("__coff_header");
@@ -63,23 +48,13 @@ bool IsDriver(const Ref<BinaryView>& bv)
 }
 
 
-static bool StringEndsWith(const string& text, const string& end)
+bool WinMainFunctionRecognizer::IsExitFunction(BinaryView* view, uint64_t address)
 {
-	if (end.size() > text.size())
-		return false;
-
-	return text.substr(text.size() - end.size()) == end;
-}
-
-
-bool IsExitFunction(const Ref<BinaryView>& view, uint64_t address)
-{
-	std::vector<string> exitFunctions = {"exit", "_exit", "_o__cexit", "_o_exit", "_cexit", "common_exit", "doexit"};
 	auto sym = view->GetSymbolByAddress(address);
 	if (sym)
 	{
 		auto name = sym->GetShortName();
-		for (const auto& funcName: exitFunctions)
+		for (const auto& funcName: m_exitFunctionNames)
 			if (name == funcName)
 				return true;
 	}
@@ -110,7 +85,7 @@ bool IsExitFunction(const Ref<BinaryView>& view, uint64_t address)
 	if (stubSym)
 	{
 		auto name = stubSym->GetShortName();
-		for (const auto& funcName: exitFunctions)
+		for (const auto& funcName: m_exitFunctionNames)
 			if (name == funcName)
 				return true;
 		return false;
@@ -147,8 +122,8 @@ bool IsExitFunction(const Ref<BinaryView>& view, uint64_t address)
 }
 
 
-std::optional<SSARegister> GetRegisterSetInBlocks(const Ref<BasicBlock>& block, uint32_t reg,
-												  uint64_t maxSearchIndex = -1)
+std::optional<SSARegister> WinMainFunctionRecognizer::GetRegisterSetInBlocks(BasicBlock* block, uint32_t reg,
+																			 uint64_t maxSearchIndex)
 {
 	auto function = block->GetLowLevelILFunction();
 	auto searchStart = std::min<uint64_t>(block->GetEnd() - 1, maxSearchIndex);
@@ -180,7 +155,7 @@ std::optional<SSARegister> GetRegisterSetInBlocks(const Ref<BasicBlock>& block, 
 }
 
 
-std::set<SSARegister> GetTargetSSARegisters(const Ref<LowLevelILFunction>& ssa)
+std::set<SSARegister> WinMainFunctionRecognizer::GetTargetSSARegisters(LowLevelILFunction* ssa)
 {
 	std::set<SSARegister> result;
 
@@ -279,8 +254,8 @@ std::set<SSARegister> GetTargetSSARegisters(const Ref<LowLevelILFunction>& ssa)
 }
 
 
-bool SinkToReturn(const std::set<SSARegister>& targetRegs, const Ref<LowLevelILFunction>& func,
-				  const SSARegister& ssaReg, std::set<uint32_t>& seen)
+bool WinMainFunctionRecognizer::SinkToReturn(const std::set<SSARegister>& targetRegs, LowLevelILFunction* func,
+											 const SSARegister& ssaReg, std::set<uint32_t>& seen)
 {
 	auto instrs = func->GetSSARegisterUses(ssaReg);
 	for (const auto& index: instrs)
@@ -378,7 +353,8 @@ bool SinkToReturn(const std::set<SSARegister>& targetRegs, const Ref<LowLevelILF
 }
 
 
-std::vector<WinMainDetectionInfo> DetectionMethod1(BinaryView* view, Function* func, LowLevelILFunction* llil)
+std::vector<WinMainDetectionInfo> WinMainFunctionRecognizer::DetectionMethod1(BinaryView* view, Function* func,
+																			  LowLevelILFunction* llil)
 {
 	std::vector<WinMainDetectionInfo> results;
 
@@ -416,8 +392,8 @@ std::vector<WinMainDetectionInfo> DetectionMethod1(BinaryView* view, Function* f
 			auto sym = view->GetSymbolByAddress(value);
 			if (sym)
 			{
-				if (std::find(mainFunctionNames.begin(), mainFunctionNames.end(), sym->GetRawName()) !=
-					mainFunctionNames.end())
+				if (std::find(m_mainFunctionNames.begin(), m_mainFunctionNames.end(), sym->GetRawName()) !=
+					m_mainFunctionNames.end())
 				{
 					WinMainDetectionInfo result;
 					result.found = true;
@@ -480,7 +456,8 @@ static std::optional<std::pair<Ref<BasicBlock>, size_t>> GetCallingBlockAndInstr
 }
 
 
-std::vector<WinMainDetectionInfo> DetectionMethod2(BinaryView* view, Function* func, LowLevelILFunction* llil)
+std::vector<WinMainDetectionInfo> WinMainFunctionRecognizer::DetectionMethod2(BinaryView* view, Function* func,
+																			  LowLevelILFunction* llil)
 {
 	std::vector<WinMainDetectionInfo> results;
 
@@ -508,8 +485,8 @@ std::vector<WinMainDetectionInfo> DetectionMethod2(BinaryView* view, Function* f
 		auto value = dest.GetValue().value;
 		auto sym = view->GetSymbolByAddress(value);
 		if ((!sym) ||
-			std::find(mainFunctionNames.begin(), mainFunctionNames.end(), sym->GetRawName())
-			!= mainFunctionNames.end())
+			std::find(m_mainFunctionNames.begin(), m_mainFunctionNames.end(), sym->GetRawName())
+			!= m_mainFunctionNames.end())
 		{
 			WinMainDetectionInfo result;
 			result.found = true;
@@ -525,7 +502,8 @@ std::vector<WinMainDetectionInfo> DetectionMethod2(BinaryView* view, Function* f
 }
 
 
-std::vector<WinMainDetectionInfo> DetectionMethod3(BinaryView* view, Function* func, LowLevelILFunction* llil)
+std::vector<WinMainDetectionInfo> WinMainFunctionRecognizer::DetectionMethod3(BinaryView* view, Function* func,
+																			  LowLevelILFunction* llil)
 {
 	std::vector<WinMainDetectionInfo> results;
 
@@ -578,7 +556,7 @@ std::vector<WinMainDetectionInfo> DetectionMethod3(BinaryView* view, Function* f
 }
 
 
-WinMainDetectionInfo IsCommonMain(BinaryView* view, Function* func, LowLevelILFunction* il)
+WinMainDetectionInfo WinMainFunctionRecognizer::IsCommonMain(BinaryView* view, Function* func, LowLevelILFunction* il)
 {
 	WinMainDetectionInfo result;
 
@@ -659,6 +637,7 @@ WinMainFunctionRecognizer::WinMainFunctionRecognizer(Ref<Platform> platform) : m
 {
 	auto settings = Settings::Instance();
 	m_mainFunctionNames = settings->Get<vector<string>>("ui.files.navigation.mainSymbols");
+	m_exitFunctionNames = settings->Get<vector<string>>("ui.files.navigation.exitSymbols");
 }
 
 
