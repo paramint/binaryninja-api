@@ -344,6 +344,7 @@ public:
 	TypeBrowserContainer* getContainer() { return m_container; }
 	TypeBrowserModel* getModel() { return m_model; }
 	TypeBrowserFilterModel* getFilterModel() { return m_filterModel; }
+	QTreeView* getTreeView() { return m_tree; }
 
 	virtual BinaryViewRef getData() override { return m_data; }
 	virtual uint64_t getCurrentOffset() override;
