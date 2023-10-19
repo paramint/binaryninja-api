@@ -1635,6 +1635,7 @@ extern "C"
 		PaddingLineType,
 		UndefinedXrefLineType,
 		CollapsedPaddingLineType,
+		EmptyLineType,
 	} BNTypeDefinitionLineType;
 
 	typedef struct BNTypeDefinitionLine

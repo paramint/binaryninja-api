@@ -51,12 +51,18 @@ public:
 	void setTypeNames(const std::vector<BinaryNinja::QualifiedName>& names);
 
 	int selectedLineCount() const;
+	std::unordered_set<size_t> selectedLineStarts() const;
 	int selectedRootTypeCount() const;
-	size_t firstWrappedLineIndexForLineIndex(size_t index) const;
-	size_t lastWrappedLineIndexForLineIndex(size_t index) const;
+	std::unordered_set<BinaryNinja::QualifiedName> selectedRootTypes() const;
+	size_t firstWrappedLineIndexForLineIndex(size_t lineIndex) const;
+	size_t lastWrappedLineIndexForLineIndex(size_t lineIndex) const;
+	std::optional<std::reference_wrapper<const BinaryNinja::TypeDefinitionLine>> typeLineAtIndex(size_t lineIndex) const;
 	std::optional<std::reference_wrapper<const BinaryNinja::TypeDefinitionLine>> typeLineAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
+	std::optional<BinaryNinja::QualifiedName> rootTypeNameAtIndex(size_t lineIndex) const;
 	std::optional<BinaryNinja::QualifiedName> rootTypeNameAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
+	std::optional<TypeRef> rootTypeAtIndex(size_t lineIndex) const;
 	std::optional<TypeRef> rootTypeAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
+	std::optional<uint64_t> offsetAtIndex(size_t lineIndex) const;
 	std::optional<uint64_t> offsetAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
 
 	bool canCreateAllMembersForStructure();
@@ -69,6 +75,8 @@ public:
 	void renameMember();
 	bool canUndefine();
 	void undefine();
+	void undefineRoots();
+	void undefineMembers();
 	bool canCreateArray();
 	void createArray();
 	bool canChangeType();
