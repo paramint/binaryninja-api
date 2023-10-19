@@ -53,17 +53,18 @@ bool WinMainFunctionRecognizer::IsExitFunction(BinaryView* view, uint64_t addres
 	auto sym = view->GetSymbolByAddress(address);
 	if (sym)
 	{
-		auto name = sym->GetShortName();
-		for (const auto& funcName: m_exitFunctionNames)
-			if (name == funcName)
-				return true;
+		if (std::find(m_exitFunctionNames.begin(), m_exitFunctionNames.end(), sym->GetShortName()) !=
+			m_exitFunctionNames.end())
+		{
+			return true;
+		}
 	}
 
 	auto func = view->GetAnalysisFunction(view->GetDefaultPlatform(), address);
 	if (!func)
 		return false;
 
-	auto llil = func->GetLowLevelIL();
+	auto llil = func->GetLowLevelILIfAvailable();
 	if (!llil)
 		return false;
 
@@ -79,16 +80,19 @@ bool WinMainFunctionRecognizer::IsExitFunction(BinaryView* view, uint64_t addres
 		return false;
 
 	auto dest = il.GetDestExpr<LLIL_TAILCALL_SSA>();
+	if (!dest.GetValue().IsConstant())
+		return false;
+
 	uint64_t stubAddress = dest.GetValue().value;
 
 	auto stubSym = view->GetSymbolByAddress(stubAddress);
 	if (stubSym)
 	{
-		auto name = stubSym->GetShortName();
-		for (const auto& funcName: m_exitFunctionNames)
-			if (name == funcName)
-				return true;
-		return false;
+		if (std::find(m_exitFunctionNames.begin(), m_exitFunctionNames.end(), stubSym->GetShortName()) !=
+			m_exitFunctionNames.end())
+		{
+			return true;
+		}
 	}
 	else
 	{
@@ -100,7 +104,7 @@ bool WinMainFunctionRecognizer::IsExitFunction(BinaryView* view, uint64_t addres
 		if (!func)
 			return false;
 
-		llil = func->GetLowLevelIL();
+		llil = func->GetLowLevelILIfAvailable();
 		if (!llil)
 			return false;
 
@@ -116,6 +120,9 @@ bool WinMainFunctionRecognizer::IsExitFunction(BinaryView* view, uint64_t addres
 			return false;
 
 		dest = il.GetDestExpr<LLIL_TAILCALL_SSA>();
+		if (!dest.GetValue().IsConstant())
+			return false;
+
 		return dest.GetValue().value == stubAddress;
 	}
 	return false;
@@ -183,6 +190,9 @@ std::set<SSARegister> WinMainFunctionRecognizer::GetTargetSSARegisters(LowLevelI
 		case LLIL_CALL_SSA:
 		{
 			auto dest = il.GetDestExpr<LLIL_CALL_SSA>();
+			if (!dest.GetValue().IsConstant())
+				break;
+
 			if (!IsExitFunction(ssa->GetFunction()->GetView(), dest.GetValue().value))
 				break;
 
@@ -314,6 +324,9 @@ bool WinMainFunctionRecognizer::SinkToReturn(const std::set<SSARegister>& target
 		case LLIL_STORE_SSA:
 		{
 			auto dest = il.GetDestExpr<LLIL_STORE_SSA>();
+			if (!dest.GetValue().IsConstant())
+				break;
+
 			auto storeAddress = dest.GetValue().value;
 			for (size_t i = 0; i < func->GetInstructionCount(); i++)
 			{
@@ -331,7 +344,7 @@ bool WinMainFunctionRecognizer::SinkToReturn(const std::set<SSARegister>& target
 					continue;
 
 				src = src.GetSourceExpr<LLIL_LOAD_SSA>();
-				if ((src.GetValue().state != ConstantValue) && (src.GetValue().state != ConstantPointerValue))
+				if (!src.GetValue().IsConstant())
 					continue;
 				if (src.GetValue().value != storeAddress)
 					continue;
@@ -388,6 +401,8 @@ std::vector<WinMainDetectionInfo> WinMainFunctionRecognizer::DetectionMethod1(Bi
 		case LLIL_TAILCALL_SSA:
 		{
 			auto dest = il.GetDestExpr();
+			if (!dest.GetValue().IsConstant())
+				break;
 			auto value = dest.GetValue().value;
 			auto sym = view->GetSymbolByAddress(value);
 			if (sym)
@@ -442,7 +457,7 @@ static std::optional<std::pair<Ref<BasicBlock>, size_t>> GetCallingBlockAndInstr
 			if (il.operation != LLIL_CALL)
 				continue;
 			auto dest = il.GetDestExpr<LLIL_CALL>();
-			if ((dest.GetValue().state != ConstantValue) && (dest.GetValue().state != ConstantPointerValue))
+			if (!dest.GetValue().IsConstant())
 				continue;
 			auto value = dest.GetValue().value;
 			auto sym = view->GetSymbolByAddress(value);
@@ -479,7 +494,7 @@ std::vector<WinMainDetectionInfo> WinMainFunctionRecognizer::DetectionMethod2(Bi
 		if (il.operation != LLIL_CALL)
 			continue;
 		auto dest = il.GetDestExpr<LLIL_CALL>();
-		if ((dest.GetValue().state != ConstantValue) && (dest.GetValue().state != ConstantPointerValue))
+		if (!dest.GetValue().IsConstant())
 			break;
 		// If the call destination has no symbol or the symbol name is a known main function name, treat it as main
 		auto value = dest.GetValue().value;
@@ -525,6 +540,8 @@ std::vector<WinMainDetectionInfo> WinMainFunctionRecognizer::DetectionMethod3(Bi
 			continue;
 
 		auto dest = il.GetDestExpr<LLIL_CALL_SSA>();
+		if (!dest.GetValue().IsConstant())
+			break;
 		auto value = dest.GetValue().value;
 		auto mainStub = view->GetAnalysisFunction(view->GetDefaultPlatform(), value);
 		if (!mainStub)
@@ -542,6 +559,8 @@ std::vector<WinMainDetectionInfo> WinMainFunctionRecognizer::DetectionMethod3(Bi
 			break;
 
 		auto tailCallDest = tailCall.GetDestExpr<LLIL_TAILCALL_SSA>();
+		if (!tailCallDest.GetValue().IsConstant())
+			break;
 		auto tailCallValue = tailCallDest.GetValue().value;
 
 		WinMainDetectionInfo result;
