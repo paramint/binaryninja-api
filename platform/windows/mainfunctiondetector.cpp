@@ -583,7 +583,7 @@ WinMainDetectionInfo IsCommonMain(BinaryView* view, Function* func, LowLevelILFu
 	WinMainDetectionInfo result;
 
 	bool isCalledByEntry = false;
-	auto entryPoint = view->GetStart();
+	auto entryPoint = view->GetEntryPoint();
 	auto refs = view->GetCodeReferences(func->GetStart());
 	for (const auto& ref: refs)
 	{
