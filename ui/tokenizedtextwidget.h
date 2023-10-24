@@ -178,6 +178,7 @@ private:
 
 	virtual UIActionContext actionContext();
 	Menu& contextMenu() { return m_contextMenu; }
+	void showContextMenu();
 
 	void left(size_t count, bool selecting);
 	void right(size_t count, bool selecting);
