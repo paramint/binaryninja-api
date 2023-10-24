@@ -16285,7 +16285,7 @@ namespace std
 		typedef BinaryNinja::Ref<T> argument_type;
 		size_t operator()(argument_type const& value) const
 		{
-			return std::hash<T*>()(value.GetPtr());
+			return std::hash<decltype(T::GetObject(value.GetPtr()))>()(T::GetObject(value.GetPtr()));
 		}
 	};
 }  // namespace std
