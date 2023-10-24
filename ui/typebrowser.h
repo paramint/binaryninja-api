@@ -337,6 +337,7 @@ class BINARYNINJAUIAPI TypeBrowserView : public QFrame, public View, public Filt
 	bool m_updatedWidths;
 
 	class TypeEditor* m_typeEditor;
+	QTextEdit* m_debugText;
 
 public:
 	TypeBrowserView(ViewFrame* frame, BinaryViewRef data, TypeBrowserContainer* container);

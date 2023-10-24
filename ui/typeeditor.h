@@ -21,10 +21,10 @@ class BINARYNINJAUIAPI TypeEditor: public TokenizedTextWidget
 	std::vector<BinaryNinja::QualifiedName> m_lineTypeRefs;
 	// type name -> index of first line
 	std::map<BinaryNinja::QualifiedName, size_t> m_lineTypeStarts;
-	// type name -> { line index -> offset }
-	std::map<BinaryNinja::QualifiedName, std::map<size_t, size_t>> m_lineTypeOffsets;
-	// type name -> { offset -> index of first line }
-	std::map<BinaryNinja::QualifiedName, std::map<size_t, size_t>> m_lineTypeOffsetStarts;
+	// type name -> { offset -> index of first { line, token } at offset }
+	std::map<BinaryNinja::QualifiedName, std::map<size_t, std::pair<size_t, size_t>>> m_lineTypeOffsetStarts;
+	// type name -> { offset -> index of last { line, token } at offset }
+	std::map<BinaryNinja::QualifiedName, std::map<size_t, std::pair<size_t, size_t>>> m_lineTypeOffsetEnds;
 	// line index -> line
 	std::vector<BinaryNinja::TypeDefinitionLine> m_typeLines;
 
@@ -64,6 +64,8 @@ public:
 	std::optional<TypeRef> rootTypeAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
 	std::optional<uint64_t> offsetAtIndex(size_t lineIndex) const;
 	std::optional<uint64_t> offsetAtPosition(const TokenizedTextWidgetCursorPosition& position) const;
+	std::optional<TokenizedTextWidgetCursorPosition> firstPositionForOffset(const BinaryNinja::QualifiedName& name, uint64_t offset) const;
+	std::optional<TokenizedTextWidgetCursorPosition> lastPositionForOffset(const BinaryNinja::QualifiedName& name, uint64_t offset) const;
 
 	bool canCreateAllMembersForStructure();
 	void createAllMembersForStructure();
@@ -115,6 +117,8 @@ public:
 	void goToAddress(bool selecting);
 	void toggleWrapLines();
 
+	std::string getDebugText();
+
 Q_SIGNALS:
 	void typeNameNavigated(const std::string& typeName);
 	void currentTypeUpdated(const BinaryNinja::QualifiedName& typeName);
@@ -126,4 +130,7 @@ private:
 	BinaryViewRef binaryViewOrEmpty() const;
 	void updateInTransaction(std::function<void()> transaction);
 	void updateInTransaction(std::function<void(BinaryViewRef)> transaction);
+
+	void forEachMember(const TokenizedTextWidgetCursorPosition& begin, const TokenizedTextWidgetCursorPosition& end,
+		std::function<void(TypeRef /* type */, TypeRef /* parent */, size_t /* memberIndex */, size_t /* rootOffset */)> func, bool childrenFirst = false);
 };
