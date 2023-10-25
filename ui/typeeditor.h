@@ -88,7 +88,8 @@ public:
 	void changeTypeRoot();
 	void changeTypeAddMember();
 	void changeTypeMember();
-	void changeTypeMembers();
+	bool canChangeTypeMembers();
+	void changeTypeMembers(TypeRef newType);
 	bool canSetStructureSize();
 	void setStructureSize();
 	bool canAddUserXref();
@@ -136,6 +137,7 @@ private:
 	BinaryViewRef binaryViewOrEmpty() const;
 	void updateInTransaction(std::function<void()> transaction);
 	void updateInTransaction(std::function<void(BinaryViewRef)> transaction);
+	std::string dumpType(TypeRef type);
 
 	void forEachMember(const TokenizedTextWidgetCursorPosition& begin, const TokenizedTextWidgetCursorPosition& end,
 		std::function<void(TypeRef /* type */, TypeRef /* parent */, size_t /* memberIndex */, size_t /* rootOffset */)> func, bool childrenFirst = false);
