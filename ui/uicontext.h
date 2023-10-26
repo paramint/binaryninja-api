@@ -451,7 +451,7 @@ public:
 	virtual ProjectRef getProject();
 
 	virtual bool openFilename(const QString& path, bool openOptions = false);
-	virtual bool openProject(const QString& path);
+	virtual ProjectRef openProject(const QString& path);
 	virtual ViewFrame* openFileContext(FileContext* file, const QString& forcedView = "", bool addTab = true);
 	virtual bool openProjectFile(ProjectFileRef file, ExternalLocationRef loc = nullptr, bool openWithOptions = false);
 	virtual void recreateViewFrames(FileContext* file) = 0;
