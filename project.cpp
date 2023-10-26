@@ -384,7 +384,7 @@ void Project::PushFile(Ref<ProjectFile> file)
 }
 
 
-void Project::DeleteFile(Ref<ProjectFile> file)
+void Project::DeleteFile_(Ref<ProjectFile> file)
 {
 	BNProjectDeleteFile(m_object, file->m_object);
 }

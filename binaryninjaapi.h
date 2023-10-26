@@ -2344,7 +2344,7 @@ namespace BinaryNinja {
 		std::vector<Ref<ProjectFile>> GetFiles() const;
 		Ref<ProjectFile> GetFileById(const std::string& id) const;
 		void PushFile(Ref<ProjectFile> file);
-		void DeleteFile(Ref<ProjectFile> file);
+		void DeleteFile_(Ref<ProjectFile> file);
 
 		void RegisterNotification(ProjectNotification* notify);
 		void UnregisterNotification(ProjectNotification* notify);
