@@ -333,6 +333,10 @@ private Q_SLOTS:
 	void tagAddressAccepted(TagTypeRef tt);
 	void manageAddressTags();
 
+	void createExternalLink();
+	void editExternalLink();
+	void removeExternalLink();
+
 	void convertToNop();
 	void alwaysBranch();
 	void invertBranch();
