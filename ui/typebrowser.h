@@ -352,6 +352,7 @@ public:
 	virtual uint64_t getCurrentOffset() override;
 	virtual void setSelectionOffsets(BNAddressRange range) override;
 	virtual bool navigate(uint64_t offset) override;
+	virtual SelectionInfoForXref getSelectionForXref() override;
 	virtual QFont getFont() override;
 	virtual void updateFonts() override;
 
