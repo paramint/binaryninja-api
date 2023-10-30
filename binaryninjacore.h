@@ -3334,6 +3334,7 @@ extern "C"
 	BINARYNINJACOREAPI BNProjectFolder* BNProjectFileGetFolder(BNProjectFile* file);
 	BINARYNINJACOREAPI void BNProjectFileSetFolder(BNProjectFile* file, BNProjectFolder* folder);
 	BINARYNINJACOREAPI BNProject* BNProjectFileGetProject(BNProjectFile* file);
+	BINARYNINJACOREAPI bool BNProjectFileExport(BNProjectFile* file, const char* destination);
 
 	// ProjectFolder object
 	BINARYNINJACOREAPI BNProjectFolder* BNNewProjectFolderReference(BNProjectFolder* folder);
@@ -3347,6 +3348,8 @@ extern "C"
 	BINARYNINJACOREAPI BNProjectFolder* BNProjectFolderGetParent(BNProjectFolder* folder);
 	BINARYNINJACOREAPI void BNProjectFolderSetParent(BNProjectFolder* folder, BNProjectFolder* parent);
 	BINARYNINJACOREAPI BNProject* BNProjectFolderGetProject(BNProjectFolder* folder);
+	BINARYNINJACOREAPI bool BNProjectFolderExport(BNProjectFolder* folder, const char* destination, void* ctxt,
+		bool (*progress)(void* ctxt, size_t progress, size_t total));
 
 	// ExternalLibrary object
 	BINARYNINJACOREAPI BNExternalLibrary* BNNewExternalLibraryReference(BNExternalLibrary* lib);

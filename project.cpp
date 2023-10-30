@@ -495,6 +495,12 @@ void ProjectFile::SetFolder(Ref<ProjectFolder> folder)
 }
 
 
+bool ProjectFile::Export(const std::string& destination) const
+{
+	return BNProjectFileExport(m_object, destination.c_str());
+}
+
+
 ProjectFolder::ProjectFolder(BNProjectFolder* folder)
 {
 	m_object = folder;
@@ -558,4 +564,12 @@ Ref<ProjectFolder> ProjectFolder::GetParent() const
 void ProjectFolder::SetParent(Ref<ProjectFolder> parent)
 {
 	BNProjectFolderSetParent(m_object, parent ? parent->m_object : nullptr);
+}
+
+
+bool ProjectFolder::Export(const std::string& destination, const std::function<bool(size_t progress, size_t total)>& progressCallback) const
+{
+	ProgressContext cb;
+	cb.callback = progressCallback;
+	return BNProjectFolderExport(m_object, destination.c_str(), &cb, ProgressCallback);
 }

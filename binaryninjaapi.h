@@ -2278,6 +2278,7 @@ namespace BinaryNinja {
 		void SetDescription(const std::string& description);
 		Ref<ProjectFolder> GetParent() const;
 		void SetParent(Ref<ProjectFolder> parent);
+		bool Export(const std::string& destination, const std::function<bool(size_t progress, size_t total)>& progressCallback = {}) const;
 	};
 
 	/*!
@@ -2299,6 +2300,7 @@ namespace BinaryNinja {
 		std::string GetId() const;
 		Ref<ProjectFolder> GetFolder() const;
 		void SetFolder(Ref<ProjectFolder> folder);
+		bool Export(const std::string& destination) const;
 	};
 
 
