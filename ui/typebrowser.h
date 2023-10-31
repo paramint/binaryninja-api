@@ -221,12 +221,12 @@ public:
 	void updateFonts();
 	void runAfterUpdate(std::function<void()> callback);
 
-	int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-	int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-	QModelIndex parent(const QModelIndex &child) const override;
-	QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;
-	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+	QModelIndex parent(const QModelIndex& child) const override;
+	QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
+	QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
 	std::shared_ptr<TypeBrowserTreeNode> nodeForIndex(const QModelIndex& index) const;
 	QModelIndex indexForNode(std::shared_ptr<TypeBrowserTreeNode> node, int column = 0) const;
@@ -236,10 +236,10 @@ public:
 	bool filter(const QModelIndex& index, const std::string& filter) const;
 	bool lessThan(const QModelIndex& left, const QModelIndex& right) const;
 
-	void OnTypeDefined(BinaryNinja::BinaryView *data, const BinaryNinja::QualifiedName &name, BinaryNinja::Type *type) override;
-	void OnTypeUndefined(BinaryNinja::BinaryView *data, const BinaryNinja::QualifiedName &name, BinaryNinja::Type *type) override;
-	void OnTypeReferenceChanged(BinaryNinja::BinaryView *data, const BinaryNinja::QualifiedName &name, BinaryNinja::Type *type) override;
-	void OnTypeFieldReferenceChanged(BinaryNinja::BinaryView *data, const BinaryNinja::QualifiedName &name, uint64_t offset) override;
+	void OnTypeDefined(BinaryNinja::BinaryView* data, const BinaryNinja::QualifiedName& name, BinaryNinja::Type* type) override;
+	void OnTypeUndefined(BinaryNinja::BinaryView* data, const BinaryNinja::QualifiedName& name, BinaryNinja::Type* type) override;
+	void OnTypeReferenceChanged(BinaryNinja::BinaryView* data, const BinaryNinja::QualifiedName& name, BinaryNinja::Type* type) override;
+	void OnTypeFieldReferenceChanged(BinaryNinja::BinaryView* data, const BinaryNinja::QualifiedName& name, uint64_t offset) override;
 
 	void OnTypeAdded(TypeArchiveRef archive, const std::string& id, TypeRef definition) override;
 	void OnTypeUpdated(TypeArchiveRef archive, const std::string& id, TypeRef oldDefinition, TypeRef newDefinition) override;
@@ -268,8 +268,8 @@ class BINARYNINJAUIAPI TypeBrowserFilterModel : public QSortFilterProxyModel
 	std::string m_filter;
 
 protected:
-	bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
-	bool lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const override;
+	bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
+	bool lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const override;
 
 public:
 	TypeBrowserFilterModel(BinaryViewRef data, TypeBrowserModel* model);
@@ -411,7 +411,7 @@ public:
 	std::optional<std::unordered_map<std::string, std::unordered_set<std::string>>> selectedTATypeIds() const;
 
 	// Names -> Ids, if any don't exist then nullopt
-	static std::optional<std::unordered_set<std::string>> typeIdsFromNames(BinaryViewRef view, const std::unordered_set<BinaryNinja::QualifiedName> &names);
+	static std::optional<std::unordered_set<std::string>> typeIdsFromNames(BinaryViewRef view, const std::unordered_set<BinaryNinja::QualifiedName>& names);
 	// Ids -> Option<TypeArchive>
 	static std::unordered_map<std::optional<TypeArchiveRef>, std::unordered_set<std::string>> associatedTypeArchivesForTypeIds(BinaryViewRef view, const std::unordered_set<std::string>& typeIds);
 
