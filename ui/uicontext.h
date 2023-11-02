@@ -365,8 +365,9 @@ public:
 	    Open a tab containing the given widget with the given name
 	    \param name Name for tab
 	    \param widget Widget to display in the tab (optionally a ViewFrame)
+	    \return Index of created tab
 	 */
-	virtual void createTabForWidget(const QString& name, QWidget* widget) = 0;
+	virtual int createTabForWidget(const QString& name, QWidget* widget) = 0;
 
 	/*!
 	 * Open a new window with the same file context and Navigate to a given location
