@@ -267,6 +267,10 @@ std::set<SSARegister> WinMainFunctionRecognizer::GetTargetSSARegisters(LowLevelI
 bool WinMainFunctionRecognizer::SinkToReturn(const std::set<SSARegister>& targetRegs, LowLevelILFunction* func,
 											 const SSARegister& ssaReg, std::set<uint32_t>& seen)
 {
+	// Avoid overflowing the stack
+	if (seen.size() > 10)
+		return false;
+
 	auto instrs = func->GetSSARegisterUses(ssaReg);
 	for (const auto& index: instrs)
 	{
@@ -719,18 +723,18 @@ bool WinMainFunctionRecognizer::RecognizeLowLevelIL(BinaryView* view, Function* 
 
 	if (func->GetStart() == entryFunc->GetStart())
 	{
-		// Add the callees of the entry function into the priority queue, so they get analyzed sooner and the detection
-		// can finish faster
-		if (AddEntryCalleeToPriorityQueue(view, entryFunc))
-			return false;
-
 		if (IsDLL(view) || IsDriver(view))
 		{
-			// Do not detect main for DLL and driver
+			// Do not detect main for DLL and driver (for now)
 			auto notFound = new Metadata(true);
 			view->StoreMetadata("__BN_main_function_not_found", notFound, true);
 			return false;
 		}
+
+		// Add the callees of the entry function into the priority queue, so they get analyzed sooner and the detection
+		// can finish faster
+		if (AddEntryCalleeToPriorityQueue(view, entryFunc))
+			return false;
 	}
 
 	auto info = IsCommonMain(view, func, il);
