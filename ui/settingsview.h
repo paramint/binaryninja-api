@@ -369,6 +369,7 @@ class BINARYNINJAUIAPI SettingsScopeBar : public QWidget
 
 	void refresh();
 	void setResource(BinaryViewRef view);
+	void setScope(BNSettingsScope scope);
 	void updateTheme();
 
   Q_SIGNALS:
@@ -438,6 +439,7 @@ class BINARYNINJAUIAPI SettingsView : public QWidget
 	void refreshAllSettings();
 	void refreshCurrentScope();
 	void setData(BinaryViewRef view, const QString& name = "");
+	void setScope(BNSettingsScope scope);
 	void setDefaultGroupSelection(const QString& group, const QString& subgroup = "");
 	void focusSearch();
 	void setSearchFilter(const QString& filter) { if (m_search) m_search->setText(filter); };
