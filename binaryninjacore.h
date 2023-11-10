@@ -4247,10 +4247,10 @@ extern "C"
 	    BNFunction* func, BNArchitecture* arch, uint64_t instrAddr, uint64_t value, size_t operand);
 	BINARYNINJACOREAPI void BNSetIntegerConstantDisplayType(BNFunction* func, BNArchitecture* arch, uint64_t instrAddr,
 	    uint64_t value, size_t operand, BNIntegerDisplayType type);
-	BINARYNINJACOREAPI BNType* BNGetIntegerConstantDisplayTypeEnumerationType(
+	BINARYNINJACOREAPI char* BNGetIntegerConstantDisplayTypeEnumerationType(
 		BNFunction* func, BNArchitecture* arch, uint64_t instrAddr, uint64_t value, size_t operand);
 	BINARYNINJACOREAPI void BNSetIntegerConstantDisplayTypeEnumerationType(
-		BNFunction* func, BNArchitecture* arch, uint64_t instrAddr, uint64_t value, size_t operand, BNType* type);
+		BNFunction* func, BNArchitecture* arch, uint64_t instrAddr, uint64_t value, size_t operand, const char* typeID);
 
 	BINARYNINJACOREAPI bool BNIsFunctionTooLarge(BNFunction* func);
 	BINARYNINJACOREAPI bool BNIsFunctionAnalysisSkipped(BNFunction* func);
