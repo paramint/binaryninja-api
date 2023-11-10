@@ -345,6 +345,26 @@ class SymbolsView;
 class ViewFrame;
 class ViewPane;
 
+
+class TimerWithMaxTries: public QObject
+{
+	Q_OBJECT
+
+	QTimer* timer;
+	size_t attempts;
+	size_t maxTries;
+
+public:
+	TimerWithMaxTries(size_t n);
+	void start(size_t msec);
+	void stop();
+	~TimerWithMaxTries();
+
+Q_SIGNALS:
+	void timeout();
+};
+
+
 /*!
 
 	\ingroup viewframe
@@ -373,6 +393,7 @@ class BINARYNINJAUIAPI ViewFrame : public QWidget
 	bool m_aboutToClose = false;
 
 	UIActionHandler m_actionHandler;
+	TimerWithMaxTries* m_mainNavigationTimer;
 
   protected:
 	QPointer<CompileDialog> compileDialog;
@@ -388,6 +409,8 @@ class BINARYNINJAUIAPI ViewFrame : public QWidget
 	    \return Entry, if successful, else nullptr
 	 */
 	BinaryNinja::Ref<HistoryEntry> deserializeHistoryEntry(const Json::Value& json);
+
+	bool tryMainSymbolsNavigation();
 
   public:
 	explicit ViewFrame(QWidget* parent, FileContext* file, const QString& type, bool createDynamicWidgets = false);
@@ -487,6 +510,7 @@ class BINARYNINJAUIAPI ViewFrame : public QWidget
 	void updateCrossReferenceSelection();
 	void nextCrossReference();
 	void prevCrossReference();
+	void tryNavigateToMain();
 
 	void updateVariableList();
 	void updateStackView();
