@@ -355,7 +355,7 @@ class TimerWithMaxTries: public QObject
 	size_t maxTries;
 
 public:
-	TimerWithMaxTries(size_t n);
+	TimerWithMaxTries(QWidget* parent, size_t n);
 	void start(size_t msec);
 	void stop();
 	~TimerWithMaxTries();
