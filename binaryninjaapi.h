@@ -2331,8 +2331,6 @@ namespace BinaryNinja {
 		void StoreMetadata(const std::string& key, Ref<Metadata> value);
 		void RemoveMetadata(const std::string& key);
 
-		bool PathExists(Ref<ProjectFolder> folder, const std::string& name) const;
-
 		Ref<ProjectFolder> CreateFolderFromPath(const std::string& path, Ref<ProjectFolder> parent, const std::string& description,
 			const std::function<bool(size_t progress, size_t total)>& progressCallback = {});
 		Ref<ProjectFolder> CreateFolder(Ref<ProjectFolder> parent, const std::string& name, const std::string& description);

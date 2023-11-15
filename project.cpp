@@ -266,13 +266,6 @@ void Project::RemoveMetadata(const std::string& key)
 }
 
 
-bool Project::PathExists(Ref<ProjectFolder> folder, const std::string& name) const
-{
-	LogWarn("Path exists called");
-	return false;
-}
-
-
 Ref<ProjectFolder> Project::CreateFolderFromPath(const std::string& path, Ref<ProjectFolder> parent, const std::string& description,
 	const std::function<bool(size_t progress, size_t total)>& progressCallback)
 {
