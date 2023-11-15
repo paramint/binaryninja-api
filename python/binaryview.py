@@ -66,6 +66,7 @@ from . import mediumlevelil
 from . import highlevelil
 from . import debuginfo
 from . import flowgraph
+from . import project
 # The following are imported as such to allow the type checker disambiguate the module name
 # from properties and methods of the same name
 from . import workflow as _workflow
@@ -2320,7 +2321,7 @@ class BinaryView:
 		return BinaryView(file_metadata=file_metadata, handle=view)
 
 	@staticmethod
-	def load(source: Union[str, bytes, bytearray, 'databuffer.DataBuffer', 'os.PathLike', 'BinaryView'], update_analysis: Optional[bool] = True,
+	def load(source: Union[str, bytes, bytearray, 'databuffer.DataBuffer', 'os.PathLike', 'BinaryView', 'project.ProjectFile'], update_analysis: Optional[bool] = True,
 	    progress_func: Optional[ProgressFuncType] = None, options: Mapping[str, Any] = {}) -> Optional['BinaryView']:
 		"""
 		``load`` opens, generates default load options (which are overridable), and returns the first available \
@@ -2369,6 +2370,8 @@ class BinaryView:
 			source = str(source)
 		if isinstance(source, BinaryView):
 			handle = core.BNLoadBinaryView(source.handle, update_analysis, progress_cfunc, metadata.Metadata(options).handle, source.file.has_database)
+		elif isinstance(source, project.ProjectFile):
+			handle = core.BNLoadProjectFile(source._handle, update_analysis, progress_cfunc, metadata.Metadata(options).handle)
 		elif isinstance(source, str):
 			handle = core.BNLoadFilename(source, update_analysis, progress_cfunc, metadata.Metadata(options).handle)
 		elif isinstance(source, bytes) or isinstance(source, bytearray) or isinstance(source, databuffer.DataBuffer):

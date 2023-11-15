@@ -5812,6 +5812,8 @@ extern "C"
 
 	BINARYNINJACOREAPI BNBinaryView* BNLoadFilename(const char* const filename, const bool updateAnalysis,
 		bool (*progress)(size_t, size_t), const BNMetadata* const options);
+	BINARYNINJACOREAPI BNBinaryView* BNLoadProjectFile(BNProjectFile* projectFile, const bool updateAnalysis,
+		bool (*progress)(size_t, size_t), const BNMetadata* const options);
 	BINARYNINJACOREAPI BNBinaryView* BNLoadBinaryView(BNBinaryView* view, const bool updateAnalysis,
 		bool (*progress)(size_t, size_t), const BNMetadata* const options, const bool isDatabase);
 
