@@ -30,6 +30,7 @@ from .metadata import Metadata, MetadataValueType
 
 
 ProgressFuncType = Callable[[int, int], bool]
+AsPath = Union[PathLike, str]
 
 #TODO: notifications
 
@@ -126,8 +127,8 @@ class ProjectFile:
 		folder_handle = None if new_folder is None else new_folder._handle
 		core.BNProjectFileSetFolder(self._handle, folder_handle)
 
-	def export(self, dest: str):
-		core.BNProjectFileExport(self._handle, dest)
+	def export(self, dest: AsPath):
+		core.BNProjectFileExport(self._handle, str(dest))
 
 
 class ProjectFolder:
@@ -191,12 +192,12 @@ class ProjectFolder:
 		return ProjectFolder(handle=folder_handle)
 
 	@parent.setter
-	def folder(self, new_parent: Optional['ProjectFolder']):
+	def parent(self, new_parent: Optional['ProjectFolder']):
 		parent_handle = None if new_parent is None else new_parent._handle
 		core.BNProjectFolderSetParent(self._handle, parent_handle)
 
-	def export(self, dest: str, progress_func: ProgressFuncType = nop):
-		core.BNProjectFolderExport(self._handle, dest, None, wrap_progress(progress_func))
+	def export(self, dest: AsPath, progress_func: ProgressFuncType = nop):
+		core.BNProjectFolderExport(self._handle, str(dest), None, wrap_progress(progress_func))
 
 
 class Project:
@@ -214,14 +215,14 @@ class Project:
 		return f'<Project: {self.name}>'
 
 	@staticmethod
-	def open_project(path: Union[str, PathLike]) -> 'Project':
+	def open_project(path: AsPath) -> 'Project':
 		project_handle = core.BNOpenProject(str(path))
 		if project_handle is None:
 			raise ProjectException("Failed to open project")
 		return Project(handle=project_handle)
 
 	@staticmethod
-	def create_project(path: Union[str, PathLike], name: str) -> 'Project':
+	def create_project(path: AsPath, name: str) -> 'Project':
 		project_handle = core.BNCreateProject(str(path), name)
 		if project_handle is None:
 			raise ProjectException("Failed to create project")
@@ -330,7 +331,7 @@ class Project:
 	def delete_folder(self, folder: ProjectFolder, progress_func: ProgressFuncType = nop):
 		core.BNProjectDeleteFolder(self._handle, folder._handle, None, wrap_progress(progress_func))
 
-	def create_file_from_path(self, path: Union[PathLike, str], folder: Optional[ProjectFile], name: str, description: str = "") -> ProjectFile:
+	def create_file_from_path(self, path: AsPath, folder: Optional[ProjectFile], name: str, description: str = "") -> ProjectFile:
 		folder_handle = folder._handle if folder is not None else None
 		file_handle = core.BNProjectCreateFileFromPath(
 			project=self._handle,
@@ -347,10 +348,11 @@ class Project:
 
 	def create_file(self, contents: bytes, folder: Optional[ProjectFile], name: str, description: str = "") -> ProjectFile:
 		folder_handle = folder._handle if folder is not None else None
-
+		buf = (ctypes.c_ubyte * len(contents))()
+		ctypes.memmove(buf, contents, len(contents))
 		file_handle = core.BNProjectCreateFile(
 			project=self._handle,
-			contents=contents,
+			contents=buf,
 			contentsSize=len(contents),
 			folder=folder_handle,
 			name=name,
