@@ -2713,6 +2713,19 @@ class Function:
 		    core.BNGetIntegerConstantDisplayType(self.handle, arch.handle, instr_addr, value, operand)
 		)
 
+	def get_int_enum_display_typeid(self, instr_addr: int, value: int, operand: int,
+									arch: Optional['architecture.Architecture'] = None) -> str:
+		if arch is None:
+			arch = self.arch
+		type_id = core.BNGetIntegerConstantDisplayTypeEnumerationType(self.handle, arch.handle, instr_addr, value, operand)
+		return type_id
+
+	def set_int_enum_display_typeid(self, instr_addr: int, value: int, operand: int, type_id: str,
+									arch: Optional['architecture.Architecture'] = None) -> None:
+		if arch is None:
+			arch = self.arch
+		core.BNSetIntegerConstantDisplayTypeEnumerationType(self.handle, arch.handle, instr_addr, value, operand, type_id)
+
 	def set_int_display_type(
 	    self, instr_addr: int, value: int, operand: int, display_type: IntegerDisplayType,
 	    arch: Optional['architecture.Architecture'] = None
