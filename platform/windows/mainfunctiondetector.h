@@ -24,15 +24,15 @@ class WinMainFunctionRecognizer : public BinaryNinja::FunctionRecognizer
 	// a main candidate. Note this method is purely based on SSA dataflow and does not rely on any symbol information.
 	// in most cases it is the detection method that actually finds the main. Note, the main function detection runs
 	// very early and the PDB symbol info could still be loading when it starts.
-	std::vector<WinMainDetectionInfo> DetectionMethod1(BinaryNinja::BinaryView* view, BinaryNinja::Function* func,
+	std::vector<WinMainDetectionInfo> FindMainViaReturnSinkToExit(BinaryNinja::BinaryView* view, BinaryNinja::Function* func,
 													   BinaryNinja::LowLevelILFunction* il);
 	// This method finds an instruction that calls __p__argc and find the next call instruction after it. If the
 	// target of the next call has no symbol or has a main symbol, it is considered a main candidate.
-	std::vector<WinMainDetectionInfo> DetectionMethod2(BinaryNinja::BinaryView* view, BinaryNinja::Function* func,
+	std::vector<WinMainDetectionInfo> FindMainViaCommandLineArgUsage(BinaryNinja::BinaryView* view, BinaryNinja::Function* func,
 													   BinaryNinja::LowLevelILFunction* il);
 	// This method finds a function called invoke_main and finds a call to the one-instruction stub that calls the
 	// main function in it.
-	std::vector<WinMainDetectionInfo> DetectionMethod3(BinaryNinja::BinaryView* view, BinaryNinja::Function* func,
+	std::vector<WinMainDetectionInfo> FindMainViaInvokeMain(BinaryNinja::BinaryView* view, BinaryNinja::Function* func,
 													   BinaryNinja::LowLevelILFunction* il);
 
 	bool IsExitFunction(BinaryNinja::BinaryView* view, uint64_t address);

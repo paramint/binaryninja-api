@@ -370,7 +370,7 @@ bool WinMainFunctionRecognizer::SinkToReturn(const std::set<SSARegister>& target
 }
 
 
-std::vector<WinMainDetectionInfo> WinMainFunctionRecognizer::DetectionMethod1(BinaryView* view, Function* func,
+std::vector<WinMainDetectionInfo> WinMainFunctionRecognizer::FindMainViaReturnSinkToExit(BinaryView* view, Function* func,
 																			  LowLevelILFunction* llil)
 {
 	std::vector<WinMainDetectionInfo> results;
@@ -475,8 +475,8 @@ static std::optional<std::pair<Ref<BasicBlock>, size_t>> GetCallingBlockAndInstr
 }
 
 
-std::vector<WinMainDetectionInfo> WinMainFunctionRecognizer::DetectionMethod2(BinaryView* view, Function* func,
-																			  LowLevelILFunction* llil)
+std::vector<WinMainDetectionInfo> WinMainFunctionRecognizer::FindMainViaCommandLineArgUsage(
+		BinaryView* view, Function* func, LowLevelILFunction* llil)
 {
 	std::vector<WinMainDetectionInfo> results;
 
@@ -521,7 +521,7 @@ std::vector<WinMainDetectionInfo> WinMainFunctionRecognizer::DetectionMethod2(Bi
 }
 
 
-std::vector<WinMainDetectionInfo> WinMainFunctionRecognizer::DetectionMethod3(BinaryView* view, Function* func,
+std::vector<WinMainDetectionInfo> WinMainFunctionRecognizer::FindMainViaInvokeMain(BinaryView* view, Function* func,
 																			  LowLevelILFunction* llil)
 {
 	std::vector<WinMainDetectionInfo> results;
@@ -602,13 +602,13 @@ WinMainDetectionInfo WinMainFunctionRecognizer::IsCommonMain(BinaryView* view, F
 	if (isCalledByEntry)
 	{
 		// detection method 1 and 2 require that the current function is called by the entry point
-		auto results1 = DetectionMethod1(view, func, il);
-		auto results2 = DetectionMethod2(view, func, il);
+		auto results1 = FindMainViaReturnSinkToExit(view, func, il);
+		auto results2 = FindMainViaCommandLineArgUsage(view, func, il);
 		candidates.insert(candidates.end(), results1.begin(), results1.end());
 		candidates.insert(candidates.end(), results2.begin(), results2.end());
 	}
 
-	auto results3 = DetectionMethod3(view, func, il);
+	auto results3 = FindMainViaInvokeMain(view, func, il);
 	candidates.insert(candidates.end(), results3.begin(), results3.end());
 
 	if (candidates.empty())
