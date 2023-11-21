@@ -352,11 +352,14 @@ class TimerWithMaxTries: public QObject
 
 	QTimer* timer;
 	size_t attempts;
+	size_t initialDelay;
 	size_t maxTries;
+	size_t delay;
+	bool stopped = false;
 
 public:
-	TimerWithMaxTries(QWidget* parent, size_t n);
-	void start(size_t msec);
+	TimerWithMaxTries(QWidget* parent, size_t initialDelay, size_t n, size_t msec);
+	void start();
 	void stop();
 	~TimerWithMaxTries();
 
