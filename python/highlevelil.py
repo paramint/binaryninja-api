@@ -20,6 +20,7 @@
 
 import ctypes
 import struct
+import inspect
 from typing import Optional, Generator, List, Union, NewType, Tuple, ClassVar, Mapping, Set, Callable, Any
 from dataclasses import dataclass
 from enum import Enum
@@ -826,7 +827,27 @@ class HighLevelILInstruction(BaseILInstruction):
 				return False
 		return True
 
-	def visit(self, cb: HighLevelILVisitorCallback,
+	def visit(self, cb: Callable[['HighLevelILInstruction', Any], Any], name: str = "root", parent: Optional['HighLevelILInstruction'] = None, *args: Any, **kwargs: Any) -> Any:
+		"""
+		Visits all HighLevelILInstructions in the operands of this instruction and any sub-instructions.
+
+		The old function signature for this function required four parameters (see :py:func:`_visit_old`).
+
+		The new function signature is more simple and more flexible (see :py:func:`_visit_new`).
+
+		:param cb: Callback function that takes only the instruction
+		:param args: Custom user-defined arguments
+		:param kwargs: Custom user-defined keyword arguments
+		:return: None if your callback doesn't return anything and all instructions were visited, otherwise it returns the value from your callback.
+		"""
+
+		if callable(cb) and len(list(inspect.signature(cb).parameters.values())) == 4:
+			return self._visit_old(cb, name=name, parent=parent)
+		else:
+			return self._visit_new(cb, *args, **kwargs)
+
+	@deprecation.deprecated(deprecated_in="3.6.4654", details='Your provided callback is using a deprecated type signature. See :py:func:`visit` for the new signature.')
+	def _visit_old(self, cb: HighLevelILVisitorCallback,
 	       name: str = "root", parent: Optional['HighLevelILInstruction'] = None) -> bool:
 		"""
 		Visits all HighLevelILInstructions in the operands of this instruction and any sub-instructions.
@@ -850,16 +871,16 @@ class HighLevelILInstruction(BaseILInstruction):
 		for name, op, opType in self.detailed_operands:
 			if opType == "HighLevelILInstruction":
 				assert isinstance(op, HighLevelILInstruction)
-				if not op.visit(cb, name, self):
+				if not op._visit_old(cb, name, self):
 					return False
 			elif opType == "List[HighLevelILInstruction]":
 				assert isinstance(op, list) and all(isinstance(i, HighLevelILInstruction) for i in op)
 				for i in op:
-					if not i.visit(cb, name, self): # type: ignore
+					if not i._visit_old(cb, name, self): # type: ignore
 						return False
 		return True
 
-	def visit_simple(self, cb: Callable[['HighLevelILInstruction', Any], Any], *args: Any, **kwargs: Any) -> Any:
+	def _visit_new(self, cb: Callable[['HighLevelILInstruction', Any], Any], *args: Any, **kwargs: Any) -> Any:
 		"""
 		Visits all HighLevelILInstructions in the operands of this instruction and any sub-instructions.
 		The callback you provide only needs to accept a single instruction, but accepts anything, and can return whatever you want.
@@ -903,12 +924,12 @@ class HighLevelILInstruction(BaseILInstruction):
 		for _, op, opType in self.detailed_operands:
 			if opType == "HighLevelILInstruction":
 				assert isinstance(op, HighLevelILInstruction)
-				if (result := op.visit(cb, *args, **kwargs)) is not None:
+				if (result := op._visit_new(cb, *args, **kwargs)) is not None:
 					return result
 			elif opType == "List[HighLevelILInstruction]":
 				assert isinstance(op, list) and all(isinstance(i, HighLevelILInstruction) for i in op)
 				for i in op:
-					if (result := i.visit(cb, *args, **kwargs)) is not None:
+					if (result := i._visit_new(cb, *args, **kwargs)) is not None:
 						return result
 		return None
 
