@@ -708,6 +708,7 @@ static bool AddEntryCalleeToPriorityQueue(BinaryView* bv, Function* entry)
 
 bool WinMainFunctionRecognizer::RecognizeLowLevelIL(BinaryView* view, Function* func, LowLevelILFunction* il)
 {
+	return false;
 	// Make sure the function belongs to the desired platform. Platform specific function recognizers
 	// are not a feature so this was registered for the architecture as a whole.
 	if (func->GetPlatform() != m_platform)
