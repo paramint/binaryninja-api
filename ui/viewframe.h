@@ -355,7 +355,7 @@ class TimerWithMaxTries: public QObject
 	size_t initialDelay;
 	size_t maxTries;
 	size_t delay;
-	bool stopped = false;
+	std::atomic<bool> stopped = false;
 
 public:
 	TimerWithMaxTries(QWidget* parent, size_t initialDelay, size_t n, size_t msec);
