@@ -2328,7 +2328,7 @@ namespace BinaryNinja {
 		void SetDescription(const std::string& description);
 
 		Ref<Metadata> QueryMetadata(const std::string& key);
-		void StoreMetadata(const std::string& key, Ref<Metadata> value);
+		bool StoreMetadata(const std::string& key, Ref<Metadata> value);
 		void RemoveMetadata(const std::string& key);
 
 		Ref<ProjectFolder> CreateFolderFromPath(const std::string& path, Ref<ProjectFolder> parent, const std::string& description,

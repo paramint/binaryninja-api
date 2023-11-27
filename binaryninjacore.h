@@ -3298,7 +3298,7 @@ extern "C"
 	BINARYNINJACOREAPI void BNProjectSetDescription(BNProject* project, const char* description);
 
 	BINARYNINJACOREAPI BNMetadata* BNProjectQueryMetadata(BNProject* project, const char* key);
-	BINARYNINJACOREAPI void BNProjectStoreMetadata(BNProject* project, const char* key, BNMetadata* value);
+	BINARYNINJACOREAPI bool BNProjectStoreMetadata(BNProject* project, const char* key, BNMetadata* value);
 	BINARYNINJACOREAPI void BNProjectRemoveMetadata(BNProject* project, const char* key);
 
 	BINARYNINJACOREAPI BNProjectFile* BNProjectCreateFileFromPath(BNProject* project, const char* path, BNProjectFolder* folder, const char* name, const char* description);

@@ -254,9 +254,9 @@ Ref<Metadata> Project::QueryMetadata(const std::string& key)
 }
 
 
-void Project::StoreMetadata(const std::string& key, Ref<Metadata> value)
+bool Project::StoreMetadata(const std::string& key, Ref<Metadata> value)
 {
-	BNProjectStoreMetadata(m_object, key.c_str(), value->m_object);
+	return BNProjectStoreMetadata(m_object, key.c_str(), value->m_object);
 }
 
 
